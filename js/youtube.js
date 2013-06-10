@@ -4,6 +4,7 @@ var win = gui.Window.get();
 var fs = require('fs');
 var ytdl = require('ytdl');
 var youtube = require('youtube-feeds');
+var multicurl = require("multicurl");
 
 // app var
 var search_type = 'Videos';
@@ -20,6 +21,7 @@ var videos_responses = new Array();
 var current_song = NaN;
 var next_vid;
 var prev_vid;
+var isDownloading = false;
     
 $(document).ready(function(){
     var player = $('#video_youtube').mediaelementplayer()[0].player;
@@ -112,7 +114,7 @@ $(document).ready(function(){
     // download file signal and callback
     $(document).on('click','.download_file',function(e) {
         e.preventDefault();
-        $('#player').trigger('download_file',[$(this).attr('href'),$(this).attr('title')]);
+        downloadFile($(this).attr('href'),$(this).attr('title'));
     });
     $('#player').on('download_file',function(e,link,title){
         var a = document.createElement("a");
@@ -162,12 +164,77 @@ function startSearch(query){
     }
 }
 
+function getUserHome() {
+  return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+}
+
+function downloadFile(link,title){
+    var vid = title.split('::')[1];
+    var pbar = $('#progress_'+vid);
+    var title = title.split('::')[0];
+    if ( isDownloading === true ){
+         pbar.show();
+         $('#progress_'+vid+' strong').html('a download is already running, please wait...');
+         setTimeout(function(){pbar.hide()},5000);
+         return;
+    }
+    // remove file if already exist
+    fs.unlink(getUserHome()+'/'+title, function (err) {
+        if (err) {
+        } else {
+            console.log('successfully deleted '+getUserHome()+'/'+title);
+        }
+    });
+    
+    // start download
+    isDownloading = true;
+    var opt = {};
+    var val = $('#progress_'+vid+' progress').attr('value');
+    pbar.show();
+    opt.link = link;
+    opt.title = title;
+    opt.vid = vid;
+    var currentTime;
+    var startTime = (new Date()).getTime();
+    var target = getUserHome()+'/ht5_download.'+startTime;
+    var download = new multicurl(link, {
+        connections: 3, // The amout of connections used (default: 3)
+        destination: target,
+    });
+
+    download.on("progress", function (bytesDone, bytesTotal) {
+        try {
+            currentTime = (new Date()).getTime();
+            var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
+            var newVal= bytesDone*100/bytesTotal;
+            var txt = Math.floor(newVal)+'% done at '+transfer_speed+ ' kb/s';
+            $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
+            $('#progress_'+vid+' strong').html(txt);
+            if ( newVal === 100 ){
+                $('#progress_'+vid+' strong').html('processing...');
+            }
+        } catch(err) {
+            console.log()
+        }
+    });
+
+    download.on("done", function () {
+        fs.rename(target,getUserHome()+'/'+title);
+        $('#progress_'+vid+' strong').html('complete !');
+        isDownloading = false;
+        setTimeout(function(){pbar.hide()},5000);
+    });
+
+    download.run();
+    
+}
+
 function printVideoInfos(infos){
     try{
         var title = infos.title;
         var thumb = infos.thumbnail_url;
         var vid = infos.video_id;
-        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="youtube_entry_res_'+vid+'"></div></div>');
+        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress></div><div id="youtube_entry_res_'+vid+'"></div></div>');
         var num=infos.formats.length;
         if ( parseInt(num) === 0) {
                 return;
@@ -192,7 +259,7 @@ function printVideoInfos(infos){
             } else {
                 img='images/sd.png';
             }
-            $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" title="'+title+'.'+container+'" class="download_file"><img src="images/down_arrow.png" /></a></div>');
+            $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" title="'+title+'.'+container+'::'+vid+'" class="download_file"><img src="images/down_arrow.png" /></a></div>');
         }
         if ($('#youtube_entry_res_'+vid+' div a.video_link').length === 0){
             $('#youtube_entry_res_'+vid).parent().remove();

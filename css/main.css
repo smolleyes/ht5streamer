@@ -145,3 +145,68 @@ a:hover {
     margin-left: -37px;
     top: 60px;
 }
+
+
+/*Progress bars*/
+
+
+progress{
+    display: inline-block;
+    -moz-box-sizing: border-box;
+         box-sizing: border-box;
+    width: 300px;
+    height: 20px;
+    padding: 3px 3px 2px 3px;
+    background: #333; 
+    background: -webkit-linear-gradient(#2d2d2d,#444);
+    background:    -moz-linear-gradient(#2d2d2d,#444);
+    background:      -o-linear-gradient(#2d2d2d,#444);
+    background:         linear-gradient(#2d2d2d,#444);
+    border: 1px solid rgba(0,0,0,.5);
+    border-radius: 15px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.2);   
+}
+
+progress::-webkit-progress-value {
+
+    border-radius:10px;
+    background: #09c;
+    background: 
+      -moz-repeating-linear-gradient(
+        45deg, 
+        rgba(255,255,255,.2) 0,
+        rgba(255,255,255,.2) 10px, 
+        rgba(255,255,255,0) 10px,
+        rgba(255,255,255,0) 20px
+      ),
+      -moz-linear-gradient(
+        rgba(255,255,255,.1) 50%,
+        rgba(255,255,255,0) 60%
+      ),
+      #09c;
+    background: 
+      repeating-linear-gradient(
+        45deg, 
+        rgba(255,255,255,.2) 0,
+        rgba(255,255,255,.2) 10px, 
+        rgba(255,255,255,0) 10px,
+        rgba(255,255,255,0) 20px
+      ),
+      linear-gradient(
+        rgba(255,255,255,.1) 50%,
+        rgba(255,255,255,0) 60%
+      ),
+      #09c;
+    background-size: 300px 20px, auto, auto;
+    background-position: -300px 0, top, top;
+    background-position: top right, top, top;
+    box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 
+                0 -1px 0 rgba(0,0,0,.8) inset,
+                0 0 2px black;
+  
+}
+
+/* Enlève la couleur d'arrière-plan */
+progress::-webkit-progress-bar{
+    background: transparent;
+}
