@@ -1,0 +1,147 @@
+html{
+    margin:0;
+    padding:0;
+}
+
+body {
+    font: 12px Verdana,Arial,Helvetica,sans-serif;
+}
+
+a {
+    text-decoration:None;
+    color:black;
+}
+
+a:hover {
+    color:red;
+}
+
+.youtube_item, .youtube_item_playlist {
+    border:1px solid black;
+    overflow:auto;
+}
+
+.resolutions_container {
+    float:left;
+}
+.resolutions_container img, #loading img {
+    display:inline-block;
+    vertical-align:middle;
+}
+
+
+.video_link, download_file {
+    display:inline-block;
+    vertical-align: middle;
+}
+
+.back, .back span img {
+    float:left;
+}
+
+.back span {
+    position:relative;
+    left:5px;
+    top:-10px;
+}
+
+.next, .next span img {
+    float:right;
+}
+
+.next span {
+    position:relative;
+    right:5px;
+    top:-10px;
+}
+
+.video_thumbnail {
+    float:left;
+    width:120px;
+    height:90px;
+}
+
+.highlight {
+    border: 1px solid rgba(0,0,0,0.5);
+   background: rgba(0,0,0,0.25);
+   box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+   -o-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+   -webkit-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+   -moz-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+   color:black;
+}
+
+.highlight a {
+    color:black;
+}
+
+.highlight a:hover {
+    color:white;
+}
+
+#player {
+    margin: 10px 0;
+}
+
+#items_container {
+    border:1px solid black;
+    width: 665px;
+}
+
+#video_search {
+    float:left;
+    margin: 0 10px 10px 0;
+}
+
+.right {
+    float:right;
+}
+
+.left {
+    float:left;
+}
+
+.space {
+    margin :0 10px;
+}
+
+/* Home page */
+.black {
+    background:black;
+}
+
+#home {
+    position: fixed;
+    top: 135px;
+    left: 50%;
+    padding:5px;
+    margin-left: -302px;
+    width: 604px;
+    border: 1px solid black;
+    border-radius: 25px;
+    overflow: auto;
+    height: 405px;
+    background:white;
+    -moz-box-shadow:    inset 0 0 10px #000000;
+    -webkit-box-shadow: inset 0 0 10px #000000;
+    box-shadow:         inset 0 0 10px #000000;
+}
+
+#engines {
+    position: relative;
+    top: 10px;
+    left: 50%;
+    width:304px;
+    margin-left: -152px;
+}
+
+#home h1 {
+    text-align: center;
+}
+
+#donate {
+    position: relative;
+    left: 50%;
+    margin-left: -37px;
+    top: 60px;
+}

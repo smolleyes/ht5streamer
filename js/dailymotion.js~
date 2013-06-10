@@ -1,0 +1,42 @@
+//load modules
+var gui = require('nw.gui');
+var win = gui.Window.get();
+var fs = require('fs');
+var scrapper = require('scrapper');
+//var
+var player;
+var vidinfo = require('vidinfo')({format:true});
+var resolutions_regex = ['stream_h264_ld_url','stream_h264_hq_url','stream_h264_hd_url','stream_h264_hd1080_url'];
+
+
+$(document).ready(function(){
+    player = $('video').mediaelementplayer()[0];
+
+vidinfo.dmo('xycczk',function (obj) {
+   //$('#items_container').append('(byapi) dailymotion: '+JSON.stringify(obj)+'\n\n');
+   //$('#items_container').append(obj.url);
+    var link = obj.embed_url;
+
+    scrapper.get(""+link+"", function($){
+        loadhtml($('body').text().replace(/\\/g,''))
+        }, {text: 'NodeJS!'}, {'User-Agent': 'Googlebot'});
+    });
+
+});
+
+function loadhtml(str){
+    for(var v=0; v<resolutions_regex.length; v++) {
+        try{
+            var regex = "/"+resolutions_regex[v]+'":(.*?),/i';
+            console.log(regex);
+            var link=str.match(regex)[1].replace(/\"/g,'');
+        } catch(err) {
+            console.log(err);
+        }
+    }
+    //console.log(link);
+    //player.pause();
+    //player.setSrc(link);
+    //player.play();
+     
+}
