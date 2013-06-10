@@ -66,7 +66,7 @@ $(document).ready(function(){
         current_song = $(this).parent().parent()[0].id;
         $('#'+current_song).closest('.youtube_item').toggleClass('highlight','true');
         try {
-            next_vid = $(this).parent().parent().parent().next().find('div')[0].id;
+            next_vid = $(this).parent().parent().parent().next().find('div')[1].id;
         } catch(err) {
             load_first_song_next=true;
         }
