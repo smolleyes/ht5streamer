@@ -5,6 +5,7 @@ var fs = require('fs');
 var ytdl = require('ytdl');
 var youtube = require('youtube-feeds');
 var multicurl = require("multicurl");
+var ffmpeg = require('fluent-ffmpeg');
 
 // app var
 var search_type = 'Videos';
@@ -153,6 +154,18 @@ $(document).ready(function(){
     current_search = 'rza';
 });
 
+function converTomp3(file) {
+    var target=file.substring(0, file.lastIndexOf('.'))+'.mp3';
+var proc = new ffmpeg({ source: file })
+  .withAudioBitrate('192k')
+  .withAudioCodec('libmp3lame')
+  .withAudioChannels(2)
+  .toFormat('mp3')
+  .saveToFile(target, function(stdout, stderr) {
+    console.log('file has been converted succesfully');
+  });    
+}
+
 function startSearch(query){
     $('#items_container').hide();
     $('#pagination').hide();
@@ -222,6 +235,7 @@ function downloadFile(link,title){
         fs.rename(target,getUserHome()+'/'+title);
         $('#progress_'+vid+' strong').html('complete !');
         isDownloading = false;
+        converTomp3(getUserHome()+'/'+title);
         setTimeout(function(){pbar.hide()},5000);
     });
 

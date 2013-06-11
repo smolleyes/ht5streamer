@@ -8,6 +8,7 @@ var https = require('https');
 var http= require('http');
 var multicurl = require("multicurl");
 var request = require('request');
+var wget = require('wget');
 
 //var
 //var player;
