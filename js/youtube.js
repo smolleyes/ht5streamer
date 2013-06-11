@@ -235,7 +235,7 @@ function downloadFile(link,title){
         fs.rename(target,getUserHome()+'/'+title);
         $('#progress_'+vid+' strong').html('complete !');
         isDownloading = false;
-        converTomp3(getUserHome()+'/'+title);
+        //converTomp3(getUserHome()+'/'+title);
         setTimeout(function(){pbar.hide()},5000);
     });
 
