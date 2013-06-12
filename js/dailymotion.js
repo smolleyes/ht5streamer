@@ -8,7 +8,7 @@ var https = require('https');
 var http= require('http');
 var multicurl = require("multicurl");
 var request = require('request');
-var wget = require('wget');
+
 
 //var
 //var player;
@@ -158,13 +158,61 @@ function getUserHome() {
 }
 
 function downloadFile(link,title){
-    var datas = {};
-    datas.link = link;
-    datas.title= title;
-    var req = request(datas.link, function (error, response, body) {
+    var vid = title.split('::')[1];
+    var pbar = $('#progress_'+vid);
+    var title = title.split('::')[0];
+    if ( isDownloading === true ){
+         pbar.show();
+         $('#progress_'+vid+' strong').html('a download is already running, please wait...');
+         setTimeout(function(){pbar.hide()},5000);
+         return;
+    }
+    // remove file if already exist
+    fs.unlink(getUserHome()+'/'+title, function (err) {
+        if (err) {
+        } else {
+            console.log('successfully deleted '+getUserHome()+'/'+title);
+        }
+    });
+    // start download
+    isDownloading = true;
+    var opt = {};
+    var val = $('#progress_'+vid+' progress').attr('value');
+    pbar.show();
+    opt.link = link;
+    opt.title = title;
+    opt.vid = vid;
+    var currentTime;
+    var startTime = (new Date()).getTime();
+    var target = getUserHome()+'/ht5_download.'+startTime;
+    
+    var req = request(link, function (error, response, body) {
         if (!error) {
-            datas.link = response.request.href;
-            console.log(datas.link);
+            pbar.show();
+            link = response.request.href;
+            var request = http.request(link,
+                function (response) {
+                    var contentLength = response.headers["content-length"];
+                    var file = fs.createWriteStream(target);
+                    response.on('data',function (chunk) {
+                        file.write(chunk);
+                        var bytesDone = file.bytesWritten;
+                        currentTime = (new Date()).getTime();
+                        var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
+                        var newVal= bytesDone*100/contentLength;
+                        var txt = Math.floor(newVal)+'% done at '+transfer_speed+ ' kb/s';
+                        $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
+                        $('#progress_'+vid+' strong').html(txt);
+                    });
+                    response.on('end', function() {
+                        file.end();
+                        fs.rename(target,getUserHome()+'/'+title);
+                        $('#progress_'+vid+' strong').html('complete !');
+                        isDownloading = false;
+                        setTimeout(function(){pbar.hide()},5000);
+                    });
+                });
+            request.end();
             //startDownload(datas.link,datas.title);
         } else {
             console.log('can\'t get dailymotion download link');
@@ -174,7 +222,6 @@ function downloadFile(link,title){
 }
 
 function startDownload(link,title) {
-    console.log(link);
     var vid = title.split('::')[1];
     var pbar = $('#progress_'+vid);
     var title = title.split('::')[0];
