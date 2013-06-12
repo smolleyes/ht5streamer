@@ -178,6 +178,13 @@ function converTomp3(file) {
           .toFormat('mp3')
           .saveToFile(target, function(stdout, stderr) {
             $('#progress_'+vid+' strong').html('file has been converted succesfully');
+            fs.rename(target.replace(/ /,'\\ '),target, function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log('successfully renamed '+getUserHome()+'/'+title);
+                }
+            });
             setTimeout(function(){pbar.hide()},5000);
         });
     } catch(err) {
@@ -251,7 +258,12 @@ function downloadFile(link,title){
     });
 
     download.on("done", function () {
-        fs.rename(target,getUserHome()+'/'+title);
+        fs.rename(target,getUserHome()+'/'+title, function (err) {
+            if (err) {
+            } else {
+                console.log('successfully renamed '+getUserHome()+'/'+title);
+            }
+        });
         $('#progress_'+vid+' strong').html('complete !');
         $('#progress_'+vid+' a.convert').attr('alt',getUserHome()+'/'+title+'::'+vid).show();
         $('#progress_'+vid+' a.hide_bar').show();
