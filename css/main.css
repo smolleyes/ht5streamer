@@ -29,8 +29,16 @@ a:hover {
     vertical-align:middle;
 }
 
+.hide_bar, .convert {
+    margin-left: 5px;
+}
 
-.video_link, download_file {
+.hide_bar {
+    position:relative;
+    top: -2px;
+}
+
+.video_link, .download_file {
     display:inline-block;
     vertical-align: middle;
 }

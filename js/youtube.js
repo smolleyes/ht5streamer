@@ -148,6 +148,16 @@ $(document).ready(function(){
         current_page+=1;
         startSearch(current_search);
     });
+    // convert to mp3
+    $(document).on('click','.convert',function(e) {
+        e.preventDefault();
+        converTomp3($(this).attr('alt'));
+    });
+    // hide progress
+    $(document).on('click','.hide_bar',function(e) {
+        e.preventDefault();
+        $(this).closest('.progress').hide();
+    });
     
     //start a req
     startSearch('rza');
@@ -155,15 +165,24 @@ $(document).ready(function(){
 });
 
 function converTomp3(file) {
-    var target=file.substring(0, file.lastIndexOf('.'))+'.mp3';
-var proc = new ffmpeg({ source: file })
-  .withAudioBitrate('192k')
-  .withAudioCodec('libmp3lame')
-  .withAudioChannels(2)
-  .toFormat('mp3')
-  .saveToFile(target, function(stdout, stderr) {
-    console.log('file has been converted succesfully');
-  });    
+    try{
+        var vid = file.split('::')[1];
+        var title = file.split('::')[0];
+        var pbar = $('#progress_'+vid);
+        var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
+        $('#progress_'+vid+' strong').html('Converting video to mp3, please wait...');
+        var proc = new ffmpeg({ source: title })
+          .withAudioBitrate('192k')
+          .withAudioCodec('libmp3lame')
+          .withAudioChannels(2)
+          .toFormat('mp3')
+          .saveToFile(target, function(stdout, stderr) {
+            $('#progress_'+vid+' strong').html('file has been converted succesfully');
+            setTimeout(function(){pbar.hide()},5000);
+        });
+    } catch(err) {
+        console.log('can\'t convert you video '+title+' to mp3...')
+    }
 }
 
 function startSearch(query){
@@ -234,9 +253,9 @@ function downloadFile(link,title){
     download.on("done", function () {
         fs.rename(target,getUserHome()+'/'+title);
         $('#progress_'+vid+' strong').html('complete !');
+        $('#progress_'+vid+' a.convert').attr('alt',getUserHome()+'/'+title+'::'+vid).show();
+        $('#progress_'+vid+' a.hide_bar').show();
         isDownloading = false;
-        //converTomp3(getUserHome()+'/'+title);
-        setTimeout(function(){pbar.hide()},5000);
     });
 
     download.run();
@@ -248,7 +267,7 @@ function printVideoInfos(infos){
         var title = infos.title;
         var thumb = infos.thumbnail_url;
         var vid = infos.video_id;
-        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress></div><div id="youtube_entry_res_'+vid+'"></div></div>');
+        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
         var num=infos.formats.length;
         if ( parseInt(num) === 0) {
                 return;

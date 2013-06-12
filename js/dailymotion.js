@@ -6,8 +6,8 @@ var scrapper = require('scrapper');
 var vidinfo = require('vidinfo')({format:true});
 var https = require('https');
 var http= require('http');
-var multicurl = require("multicurl");
 var request = require('request');
+var ffmpeg = require('fluent-ffmpeg');
 
 
 //var
@@ -149,9 +149,40 @@ $(document).ready(function(){
         current_page+=1;
         startSearch(current_search);
     });
+    // convert to mp3
+    $(document).on('click','.convert',function(e) {
+        e.preventDefault();
+        converTomp3($(this).attr('alt'));
+    });
+    // hide progress
+    $(document).on('click','.hide_bar',function(e) {
+        e.preventDefault();
+        $(this).closest('.progress').hide();
+    });
     
     startSearch('wu tang clan');
 });
+
+function converTomp3(file) {
+    try{
+        var vid = file.split('::')[1];
+        var title = file.split('::')[0];
+        var pbar = $('#progress_'+vid);
+        var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
+        $('#progress_'+vid+' strong').html('Converting video to mp3, please wait...');
+        var proc = new ffmpeg({ source: title })
+          .withAudioBitrate('192k')
+          .withAudioCodec('libmp3lame')
+          .withAudioChannels(2)
+          .toFormat('mp3')
+          .saveToFile(target, function(stdout, stderr) {
+            $('#progress_'+vid+' strong').html('file has been converted succesfully');
+            setTimeout(function(){pbar.hide()},5000);
+        });
+    } catch(err) {
+        console.log('can\'t convert you video '+title+' to mp3...')
+    }
+}
 
 function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -209,7 +240,8 @@ function downloadFile(link,title){
                         fs.rename(target,getUserHome()+'/'+title);
                         $('#progress_'+vid+' strong').html('complete !');
                         isDownloading = false;
-                        setTimeout(function(){pbar.hide()},5000);
+                        $('#progress_'+vid+' a.convert').attr('alt',getUserHome()+'/'+title+'::'+vid).show();
+                        $('#progress_'+vid+' a.hide_bar').show();
                     });
                 });
             request.end();
@@ -219,67 +251,6 @@ function downloadFile(link,title){
             return;
         }
     });
-}
-
-function startDownload(link,title) {
-    var vid = title.split('::')[1];
-    var pbar = $('#progress_'+vid);
-    var title = title.split('::')[0];
-    if ( isDownloading === true ){
-         pbar.show();
-         $('#progress_'+vid+' strong').html('a download is already running, please wait...');
-         setTimeout(function(){pbar.hide()},5000);
-         return;
-    }
-    // remove file if already exist
-    fs.unlink(getUserHome()+'/'+title, function (err) {
-        if (err) {
-        } else {
-            console.log('successfully deleted '+getUserHome()+'/'+title);
-        }
-    });
-    
-    // start download
-    isDownloading = true;
-    var opt = {};
-    var val = $('#progress_'+vid+' progress').attr('value');
-    pbar.show();
-    opt.link = link;
-    opt.title = title;
-    opt.vid = vid;
-    var currentTime;
-    var startTime = (new Date()).getTime();
-    var target = getUserHome()+'/ht5_download.'+startTime;
-    var download = new multicurl(link, {
-        connections: 3, // The amout of connections used (default: 3)
-        destination: target,
-    });
-
-    download.on("progress", function (bytesDone, bytesTotal) {
-        try {
-            currentTime = (new Date()).getTime();
-            var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
-            var newVal= bytesDone*100/bytesTotal;
-            var txt = Math.floor(newVal)+'% done at '+transfer_speed+ ' kb/s';
-            $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
-            $('#progress_'+vid+' strong').html(txt);
-            if ( newVal === 100 ){
-                $('#progress_'+vid+' strong').html('processing...');
-            }
-        } catch(err) {
-            console.log()
-        }
-    });
-
-    download.on("done", function () {
-        fs.rename(target,getUserHome()+'/'+title);
-        $('#progress_'+vid+' strong').html('complete !');
-        isDownloading = false;
-        setTimeout(function(){pbar.hide()},5000);
-    });
-
-    download.run();
-    
 }
 
 function startSearch(query){
@@ -484,7 +455,7 @@ function printVideoInfos(infos){
         var title = infos.title;
         var thumb = infos.thumb;
         var vid = infos.id;
-        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress></div><div id="youtube_entry_res_'+vid+'"></div></div>');
+        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
         var resolutions_string = ['1080p','720p','480p','360p'];
         for(var i=0; i<infos.resolutions.length; i++) {
             var vlink = infos.resolutions[i];
