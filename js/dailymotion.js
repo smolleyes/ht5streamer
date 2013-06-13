@@ -216,7 +216,6 @@ function downloadFile(link,title){
     isDownloading = true;
     var opt = {};
     var val = $('#progress_'+vid+' progress').attr('value');
-    pbar.show();
     opt.link = link;
     opt.title = title;
     opt.vid = vid;
