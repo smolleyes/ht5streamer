@@ -226,6 +226,7 @@ function convertTomp3(file) {
 function startSearch(query){
     $('#items_container').hide();
     $('#pagination').hide();
+    $('#search_results').hide()
     $('#loading').show();
     if (search_type == 'Videos') {
         searchVideos(query);
@@ -362,12 +363,25 @@ function downloadFile(link,title){
     
 }
 
+function secondstotime(secs)
+{
+    var t = new Date(1970,0,1);
+    t.setSeconds(secs);
+    var s = t.toTimeString().substr(0,8);
+    if(secs > 86399)
+    	s = Math.floor((t - Date.parse("1/1/70")) / 3600000) + s.substr(2);
+    return s;
+}
+
 function printVideoInfos(infos){
     try{
         var title = infos.title;
         var thumb = infos.thumbnail_url;
         var vid = infos.video_id;
-        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
+        var seconds = secondstotime(infos.length_seconds);
+        var views = infos.view_count;
+        var author = infos.author;
+        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><span class="video_length">'+seconds+'</span><p><b>'+title+'</b></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
         var num=infos.formats.length;
         if ( parseInt(num) === 0) {
                 return;
@@ -426,6 +440,7 @@ function storeVideosInfos(infos,num,total){
         videos_responses= new Array();
         $('#items_container').show();
         $('#pagination').show();
+        $('#search_results').show();
         $('#loading').hide();
         if (load_first_song_next == true || load_first_song_prev === true) {
             playNextVideo();
@@ -435,6 +450,7 @@ function storeVideosInfos(infos,num,total){
 
 //playlists
 function searchPlaylists(user_search){
+    var totalResults = 0;
     try {
         videos_responses = new Array();
         $('#items_container').empty();
@@ -446,8 +462,19 @@ function searchPlaylists(user_search){
             },
         function( err, data ) {
         if( err ) {
-            console.log( err );
+            $('#search_results').html('<p><strong>No playlists</strong> found for your search <strong>'+user_search+'</strong></p>');
+            $('#search_results').show();
+            $('#loading').hide();
+            return;
         } else {
+            totalResults = data.totalItems;
+            if (totalResults === 0) {
+                $('#search_results').html('<p><strong>No playlists</strong> found for your search <strong>'+user_search+'</strong></p>');
+                $('#search_results').show();
+                $('#loading').hide();
+                return;
+            }
+            $('#search_results').html('<p><strong>'+totalResults+'</strong> playlists found for your search <strong>'+user_search+'</strong>, page '+current_page+'</p>');
             items=data.items;
             current_prev_start_index=current_start_index;
                 if (current_page == 1){
@@ -479,12 +506,14 @@ function getPlaylistInfos(item){
     $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;"/><div class="left" style="width:440px;"><p><b>'+title+'</b></p><p>Description: '+description+'</p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'" class="load_playlist"><img src="images/play.png" /></a></div></div>');
     $('#items_container').show();
     $('#pagination').show();
+    $('#search_results').show();
     $('#loading').hide();
 }
 
 function loadPlaylistSongs(pid){
     $('#items_container').hide();
     $('#pagination').hide();
+    $('#search_results').hide();
     $('#loading').show();
     var plid = pid.split('::')[0];
     var length = pid.split('::')[1];
@@ -506,6 +535,7 @@ function loadSongs(plid,length){
                 console.log( err );
             } else {
                 try{
+                    $('#search_results').html('<p><strong>'+length+'</strong> videos in this playlist</p>');
                     items=data.items;
                     current_start_index+=items.length+1;
                     for(var i=0; i<items.length; i++) {
@@ -524,6 +554,8 @@ function loadSongs(plid,length){
 }
 
 function searchVideos(user_search){
+    var totalResults = 0;
+    $('#search_results').empty();
     try{
        videos_responses = new Array();
         $('#items_container').empty();
@@ -534,9 +566,20 @@ function searchVideos(user_search){
                 orderby:        'relevance'
             },
             function( err, data ) {
-            if( err instanceof Error ) {
-                console.log( err );
+            if( err ) {
+                $('#search_results').html('<p><strong>No videos</strong> found for your search <strong>'+user_search+'</strong></p>');
+                $('#search_results').show();
+                $('#loading').hide();
+                return;
             } else {
+                totalResults = data.totalItems;
+                if (totalResults === 0) {
+                    $('#search_results').html('<p><strong>No videos</strong> found for your search <strong>'+user_search+'</strong></p>');
+                    $('#search_results').show();
+                    $('#loading').hide();
+                    return;
+                }
+                $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found for your search <strong>'+user_search+'</strong>, page '+current_page+'</p>');
                 items=data.items;
                 current_prev_start_index=current_start_index;
                 if (current_page == 1){

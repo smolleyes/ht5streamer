@@ -154,6 +154,14 @@ a:hover {
     top: 60px;
 }
 
+.video_length {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    position: relative;
+    left: -68px;
+    top: 73px;
+    padding: 2px 5px;
+}
 
 /*Progress bars*/
 

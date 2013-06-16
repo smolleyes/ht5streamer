@@ -291,6 +291,7 @@ function downloadFile(link,title){
 function startSearch(query){
     $('#items_container').hide();
     $('#pagination').hide();
+    $('#search_results').hide();
     $('#loading').show();
     current_search=query;
     if (search_type == 'Videos') {
@@ -301,6 +302,7 @@ function startSearch(query){
 }
 
 function searchPlaylists(user_search){
+    var totalResults = 0;
     try{
        videos_responses = new Array();
         $('#items_container').empty();
@@ -313,6 +315,14 @@ function searchPlaylists(user_search){
             });
             response.on('end', function() {
                 var datas = JSON.parse(data.join(''));
+                totalResults = datas.total;
+                if (totalResults === 0) {
+                    $('#search_results').html('<p><strong>No playlists</strong> found for your search <strong>'+user_search+'</strong></p>');
+                    $('#search_results').show();
+                    $('#loading').hide();
+                    return;
+                }
+                $('#search_results').html('<p><strong>'+totalResults+'</strong> playlists found for your search <strong>'+user_search+'</strong>, page '+current_page+'</p>');
                 items=datas.list;
                 if (current_page == 1){
                     $('.back').css({'display':'None'});
@@ -348,12 +358,14 @@ function getPlaylistInfos(item){
     $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:440px;"><p><b>'+title+'</b></p><p>Description: '+description+'</p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'" class="load_playlist"><img src="images/play.png" /></a></div></div>');
     $('#items_container').show();
     $('#pagination').show();
+    $('#search_results').show();
     $('#loading').hide();
 }
 
 function loadPlaylistSongs(pid){
     $('#items_container').hide();
     $('#pagination').hide();
+    $('#search_results').hide();
     $('#loading').show();
     var plid = pid.split('::')[0];
     var length = pid.split('::')[1];
@@ -376,6 +388,7 @@ function loadSongs(plid,length){
                 response.on('end',function(){
                     var datas = JSON.parse(data.join(''));
                     items=datas.list;
+                    $('#search_results').html('<p><strong>'+length+'</strong> videos in this playlist</p>');
                     if (current_page == 1){
                         $('.back').css({'display':'None'});
                     } else {
@@ -401,6 +414,7 @@ function loadSongs(plid,length){
 }
 
 function searchVideos(user_search){
+    var totalResults = 0;
     try{
        videos_responses = new Array();
         $('#items_container').empty();
@@ -412,6 +426,14 @@ function searchVideos(user_search){
             });
             response.on('end',function(){
                 var datas = JSON.parse(data.join(''));
+                totalResults = datas.total;
+                if (totalResults === 0) {
+                    $('#search_results').html('<p><strong>No videos</strong> found for your search <strong>'+user_search+'</strong></p>');
+                    $('#search_results').show();
+                    $('#loading').hide();
+                    return;
+                }
+                $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found for your search <strong>'+user_search+'</strong>, page '+current_page+'</p>');
                 items=datas.list;
                 if (current_page == 1){
                     $('.back').css({'display':'None'});
@@ -446,6 +468,9 @@ function getVideoInfos(id,num,total) {
     video.title = obj.title;
     video.views = obj.views_total;
     video.thumb =  obj.thumbnail_medium_url;
+    video.views = obj.views_total;
+    video.author = obj['user.username'];
+    video.duration = obj.duration;
     
     scrapper.get(video.link, function($){
         loadhtml($('body').text().replace(/\\/g,''),video)
@@ -478,6 +503,7 @@ function storeVideosInfos(infos){
         videos_responses= new Array();
         $('#items_container').show();
         $('#pagination').show();
+        $('#search_results').show();
         $('#loading').hide();
         if (load_first_song_next == true || load_first_song_prev === true) {
             playNextVideo();
@@ -485,12 +511,25 @@ function storeVideosInfos(infos){
     }
 }
 
+function secondstotime(secs)
+{
+    var t = new Date(1970,0,1);
+    t.setSeconds(secs);
+    var s = t.toTimeString().substr(0,8);
+    if(secs > 86399)
+    	s = Math.floor((t - Date.parse("1/1/70")) / 3600000) + s.substr(2);
+    return s;
+}
+
 function printVideoInfos(infos){
     try{
         var title = infos.title;
         var thumb = infos.thumb;
         var vid = infos.id;
-        $('#items_container').append('<div class="youtube_item"><img src="'+thumb+'" class="video_thumbnail" /><p><b>'+title+'</b></p><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
+        var seconds = secondstotime(parseInt(infos.duration));
+        var views = infos.views;
+        var author = infos.author;
+        $('#items_container').append('<div class="youtube_item"><span class="video_length">'+seconds+'</span><img src="'+thumb+'" class="video_thumbnail" /><div><p><b>'+title+'</b></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
         var resolutions_string = ['1080p','720p','480p','360p'];
         for(var i=0; i<infos.resolutions.length; i++) {
             var vlink = infos.resolutions[i];
