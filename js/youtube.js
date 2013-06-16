@@ -7,8 +7,11 @@ var youtube = require('youtube-feeds');
 var multicurl = require("multicurl");
 var ffmpeg = require('fluent-ffmpeg');
 var http = require('http');
+var path = require('path');
+var spawn = require('child_process').spawn;
 
-// app var
+//var player;
+var exec_path=path.dirname(process.execPath);
 var search_type = 'Videos';
 var selected_resolution='1080p';
 var current_video = NaN;
@@ -156,7 +159,11 @@ $(document).ready(function(){
     // convert to mp3
     $(document).on('click','.convert',function(e) {
         e.preventDefault();
-        converTomp3($(this).attr('alt'));
+        if ( process.platform === 'win32' ){
+            convertTomp3Win($(this).attr('alt'));
+        }else{
+            convertTomp3($(this).attr('alt'));
+        }
     });
     // hide progress
     $(document).on('click','.hide_bar',function(e) {
@@ -169,7 +176,26 @@ $(document).ready(function(){
     current_search = 'rza';
 });
 
-function converTomp3(file) {
+function convertTomp3Win(file){
+	var vid = file.split('::')[1];
+    var title = file.split('::')[0];
+    var pbar = $('#progress_'+vid);
+    var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
+    $('#progress_'+vid+' strong').html('Converting video to mp3, please wait...');
+	var args = ['-i', title, '-ab', '192k', target];
+    var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
+    console.log('Spawning ffmpeg ' + args.join(' '));
+    ffmpeg.on('exit', function(){
+		console.log('ffmpeg exited');
+		$('#progress_'+vid+' strong').html('file has been converted succesfully');
+		setTimeout(function(){pbar.hide()},5000);
+	});
+    ffmpeg.stderr.on('data', function(data) {
+        console.log('grep stderr: ' + data);
+    });
+}
+
+function convertTomp3(file) {
     try{
         var vid = file.split('::')[1];
         var title = file.split('::')[0];
@@ -235,46 +261,38 @@ function downloadFileWin(link,title) {
     var currentTime;
     var startTime = (new Date()).getTime();
     var target = getUserHome()+'/ht5_download.'+startTime;
-    
-    var req = request(link, function (error, response, body) {
-        if (!error) {
-            pbar.show();
-            link = response.request.href;
-            var request = http.request(link,
-                function (response) {
-                    var contentLength = response.headers["content-length"];
-                    var file = fs.createWriteStream(target);
-                    response.on('data',function (chunk) {
-                        file.write(chunk);
-                        var bytesDone = file.bytesWritten;
-                        currentTime = (new Date()).getTime();
-                        var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
-                        var newVal= bytesDone*100/contentLength;
-                        var txt = Math.floor(newVal)+'% done at '+transfer_speed+ ' kb/s';
-                        $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
-                        $('#progress_'+vid+' strong').html(txt);
-                    });
-                    response.on('end', function() {
-                        file.end();
-                        fs.rename(target,getUserHome()+'/'+title, function (err) {
-                            if (err) {
-                            } else {
-                                console.log('successfully renamed '+getUserHome()+'/'+title);
-                            }
-                        });
-                        $('#progress_'+vid+' strong').html('complete !');
-                        isDownloading = false;
-                        $('#progress_'+vid+' a.convert').attr('alt',getUserHome()+'/'+title+'::'+vid).show();
-                        $('#progress_'+vid+' a.hide_bar').show();
-                    });
-                });
-            request.end();
-            //startDownload(datas.link,datas.title);
-        } else {
-            console.log('can\'t download this youtube link');
-            return;
-        }
-    });
+    pbar.show();
+	var request = http.request(link,
+		function (response) {
+			var contentLength = response.headers["content-length"];
+			console.log(contentLength);
+			var file = fs.createWriteStream(target);
+			response.on('data',function (chunk) {
+				file.write(chunk);
+				var bytesDone = file.bytesWritten;
+				currentTime = (new Date()).getTime();
+				var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
+				var newVal= bytesDone*100/contentLength;
+				var txt = Math.floor(newVal)+'% done at '+transfer_speed+ ' kb/s';
+				$('#progress_'+vid+' progress').attr('value',newVal).text(txt);
+				$('#progress_'+vid+' strong').html(txt);
+			});
+			response.on('end', function() {
+				file.end();
+				fs.rename(target,getUserHome()+'/'+title, function (err) {
+					if (err) {
+					} else {
+						console.log('successfully renamed '+getUserHome()+'/'+title);
+					}
+				});
+				$('#progress_'+vid+' strong').html('complete !');
+				isDownloading = false;
+				$('#progress_'+vid+' a.convert').attr('alt',getUserHome()+'/'+title+'::'+vid).show();
+				$('#progress_'+vid+' a.hide_bar').show();
+			});
+		});
+	request.end();
+	//startDownload(datas.link,datas.title);
 }
 
 function downloadFile(link,title){

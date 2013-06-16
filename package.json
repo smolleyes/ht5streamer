@@ -1,10 +1,10 @@
 {
-"name":"gmediafinder",
+"name":"ht5streamer",
 "main":"index.html",
 "user-agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1521.3 Safari/537.36",
 "window": {
     "toolbar": false,
-    "width": 700,
+    "width": 710,
     "height": 800,
     "position": "center",
     "min_width": 588,

@@ -8,10 +8,11 @@ var https = require('https');
 var http= require('http');
 var request = require('request');
 var ffmpeg = require('fluent-ffmpeg');
+var path = require('path');
+var spawn = require('child_process').spawn;
 
-
-//var
 //var player;
+var exec_path=path.dirname(process.execPath);
 var search_type = 'Videos';
 var selected_resolution='1080p';
 var current_video = NaN;
@@ -152,7 +153,11 @@ $(document).ready(function(){
     // convert to mp3
     $(document).on('click','.convert',function(e) {
         e.preventDefault();
-        converTomp3($(this).attr('alt'));
+        if ( process.platform === 'win32' ){
+            convertTomp3Win($(this).attr('alt'));
+        }else{
+            convertTomp3($(this).attr('alt'));
+        }
     });
     // hide progress
     $(document).on('click','.hide_bar',function(e) {
@@ -163,7 +168,26 @@ $(document).ready(function(){
     startSearch('wu tang clan');
 });
 
-function converTomp3(file) {
+function convertTomp3Win(file){
+	var vid = file.split('::')[1];
+    var title = file.split('::')[0];
+    var pbar = $('#progress_'+vid);
+    var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
+    $('#progress_'+vid+' strong').html('Converting video to mp3, please wait...');
+	var args = ['-i', title, '-ab', '192k', target];
+    var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
+    console.log('Spawning ffmpeg ' + args.join(' '));
+    ffmpeg.on('exit', function(){
+		console.log('ffmpeg exited');
+		$('#progress_'+vid+' strong').html('file has been converted succesfully');
+		setTimeout(function(){pbar.hide()},5000);
+	});
+    ffmpeg.stderr.on('data', function(data) {
+        console.log('grep stderr: ' + data);
+    });
+}
+
+function convertTomp3(file) {
     try{
         var vid = file.split('::')[1];
         var title = file.split('::')[0];
