@@ -72,7 +72,7 @@ $(document).ready(function(){
         current_song = $(this).parent().parent()[0].id;
         $('#'+current_song).closest('.youtube_item').toggleClass('highlight','true');
         try {
-            next_vid = $(this).parent().parent().parent().next().find('div')[1].id;
+            next_vid = $('#'+current_song).parent().parent().next().find('div')[5].id;
         } catch(err) {
             load_first_song_next=true;
         }
@@ -469,7 +469,7 @@ function getVideoInfos(id,num,total) {
     video.views = obj.views_total;
     video.thumb =  obj.thumbnail_medium_url;
     video.views = obj.views_total;
-    video.author = obj['user.username'];
+    video.author = obj['user.screenname'];
     video.duration = obj.duration;
     
     scrapper.get(video.link, function($){
@@ -529,7 +529,7 @@ function printVideoInfos(infos){
         var seconds = secondstotime(parseInt(infos.duration));
         var views = infos.views;
         var author = infos.author;
-        $('#items_container').append('<div class="youtube_item"><span class="video_length">'+seconds+'</span><img src="'+thumb+'" class="video_thumbnail" /><div><p><b>'+title+'</b></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div>');
+        $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><b>'+title+'</b></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
         var resolutions_string = ['1080p','720p','480p','360p'];
         for(var i=0; i<infos.resolutions.length; i++) {
             var vlink = infos.resolutions[i];
@@ -546,8 +546,8 @@ function printVideoInfos(infos){
             }
             $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" title="'+title+'.'+container+'::'+vid+'" class="download_file"><img src="images/down_arrow.png" /></a></div>');
         }
-        if ($('#youtube_entry_res_'+vid+' div a.video_link').length === 0){
-            $('#youtube_entry_res_'+vid).parent().remove();
+        if ($('#youtube_entry_res_'+vid+' a.video_link').length === 0){
+            $('#youtube_entry_res_'+vid).parent().parent().remove();
         }
     } catch(err){
         console.log('printVideoInfos err: '+err);
@@ -562,7 +562,7 @@ function playNextVideo(vid_id) {
             // if some items are loaded
             if ($('#items_container').children().length > 1){
                 // play first item
-                vid_id = $('#items_container').find('.youtube_item').find('div')[0].id;
+                vid_id = $('#items_container').find('.youtube_item').find('div')[5].id;
             } else {
                 return;
             } 

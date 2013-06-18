@@ -23,6 +23,7 @@ a:hover {
 
 .resolutions_container {
     float:left;
+    margin-top:10px;
 }
 .resolutions_container img, #loading img {
     display:inline-block;
@@ -61,6 +62,13 @@ a:hover {
     position:relative;
     right:5px;
     top:-10px;
+    margin-right:5px;
+}
+
+.item_infos {
+    position: relative;
+    top: -20;
+    padding-left:125px;
 }
 
 .video_thumbnail {
@@ -158,8 +166,8 @@ a:hover {
     background: rgba(0, 0, 0, 0.6);
     color: white;
     position: relative;
-    left: -68px;
-    top: 73px;
+    left: -74px;
+    top: 94px;
     padding: 2px 5px;
 }
 
