@@ -291,7 +291,7 @@ function downloadFile(link,title){
 function startSearch(query){
     $('#items_container').hide();
     $('#pagination').hide();
-    $('#search_results').hide();
+    $('#search').hide();
     $('#loading').show();
     current_search=query;
     if (search_type == 'Videos') {
@@ -317,12 +317,12 @@ function searchPlaylists(user_search){
                 var datas = JSON.parse(data.join(''));
                 totalResults = datas.total;
                 if (totalResults === 0) {
-                    $('#search_results').html('<p><strong>No playlists</strong> found for your search <strong>'+user_search+'</strong></p>');
-                    $('#search_results').show();
+                    $('#search_results').html('<p><strong>No playlists</strong> found...</p>');
+                    $('#search').show();
                     $('#loading').hide();
                     return;
                 }
-                $('#search_results').html('<p><strong>'+totalResults+'</strong> playlists found for your search <strong>'+user_search+'</strong>, page '+current_page+'</p>');
+                $('#search_results').html('<p><strong>'+totalResults+'</strong> playlists found, page '+current_search_page+'</p>');
                 items=datas.list;
                 if (current_page == 1){
                     $('.back').css({'display':'None'});
@@ -358,14 +358,14 @@ function getPlaylistInfos(item){
     $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:440px;"><p><b>'+title+'</b></p><p>Description: '+description+'</p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'" class="load_playlist"><img src="images/play.png" /></a></div></div>');
     $('#items_container').show();
     $('#pagination').show();
-    $('#search_results').show();
+    $('#search').show();
     $('#loading').hide();
 }
 
 function loadPlaylistSongs(pid){
     $('#items_container').hide();
     $('#pagination').hide();
-    $('#search_results').hide();
+    $('#search').hide();
     $('#loading').show();
     var plid = pid.split('::')[0];
     var length = pid.split('::')[1];
@@ -428,12 +428,12 @@ function searchVideos(user_search){
                 var datas = JSON.parse(data.join(''));
                 totalResults = datas.total;
                 if (totalResults === 0) {
-                    $('#search_results').html('<p><strong>No videos</strong> found for your search <strong>'+user_search+'</strong></p>');
-                    $('#search_results').show();
+                    $('#search_results').html('<p><strong>No videos</strong> found...</p>');
+                    $('#search').show();
                     $('#loading').hide();
                     return;
                 }
-                $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found for your search <strong>'+user_search+'</strong>, page '+current_page+'</p>');
+                $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found, page '+current_page+'</p>');
                 items=datas.list;
                 if (current_page == 1){
                     $('.back').css({'display':'None'});
@@ -503,7 +503,7 @@ function storeVideosInfos(infos){
         videos_responses= new Array();
         $('#items_container').show();
         $('#pagination').show();
-        $('#search_results').show();
+        $('#search').show();
         $('#loading').hide();
         if (load_first_song_next == true || load_first_song_prev === true) {
             playNextVideo();

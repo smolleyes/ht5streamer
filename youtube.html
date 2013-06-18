@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
-    <div>
+    <div id="menu">
         <a class="left space" href="index.html" title="back to home"><img src="images/home.png" /></a>
         <form id="video_search">
             <label>Search:</label>
@@ -33,11 +33,11 @@
         <video id="video_youtube" width="668" height="400" controls="controls"><source src="" type="video/webm" /></video>
     </div>
     <div id="loading" style="display:None;"><img style="width:28px;height:28px;"src="images/spinner.gif" /> Loading videos...</div>
-    <div id="search_results"></div>
-    <div id ="items_container"></div>
-    <div id="pagination">
+    <div id="search">
         <a class="back"><img id="next" src="images/back.png" /><span>Back</span></a>
+        <div id="search_results"></div>
         <a class="next"><span>Next</span><img id="back" src="images/next.png" /></a>
     </div>
+        <div id ="items_container"></div>
 </body>
 </html>

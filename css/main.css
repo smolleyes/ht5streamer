@@ -16,6 +16,48 @@ a:hover {
     color:red;
 }
 
+#menu {
+    position: fixed;
+    width:100%;
+    top: 0px;
+    height: 50px;
+    z-index: 1000;
+    background: white;
+    padding: 10px 0;
+}
+
+#loading {
+    position: fixed;
+    z-index: 500;
+    top: 455px;
+}
+
+#search {
+    position: fixed;
+    z-index: 500;
+    top: 440px;
+    width:100%;
+    background:white;
+    overflow:auto;
+}
+
+#search_results {
+    position:fixed;
+    top:450px;
+    float:left;
+    left:34%;
+}
+
+#search p {
+    text-align:center;
+    margin:0;
+}
+
+#search a {
+    display:inline-block;
+    vertical-align:middle;
+}
+
 .youtube_item, .youtube_item_playlist {
     border:1px solid black;
     overflow:auto;
@@ -52,17 +94,26 @@ a:hover {
     position:relative;
     left:5px;
     top:-10px;
+    z-index: 600;
+}
+
+.next {
+    position: relative;
+    right:-60px;
+}
+
+.next span {
+    position: relative;
+    top: -10px;
+    right: 5px;
 }
 
 .next, .next span img {
     float:right;
 }
 
-.next span {
-    position:relative;
-    right:5px;
-    top:-10px;
-    margin-right:5px;
+.next, .back {
+    width:20%;
 }
 
 .item_infos {
@@ -96,12 +147,25 @@ a:hover {
 }
 
 #player {
-    margin: 10px 0;
+    position: fixed;
+    top: 40;
+    z-index: 1000;
+}
+
+#pagination {
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    background: white;
+    zindex:400;
 }
 
 #items_container {
-    border:1px solid black;
+    border: 1px solid black;
     width: 665px;
+    position: absolute;
+    top: 480px;
+    z-index:300;
 }
 
 #video_search {
@@ -169,6 +233,10 @@ a:hover {
     left: -74px;
     top: 94px;
     padding: 2px 5px;
+}
+
+::-webkit-scrollbar { 
+    display: none; 
 }
 
 /*Progress bars*/
