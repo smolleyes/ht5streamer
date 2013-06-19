@@ -46,6 +46,7 @@ function checkConf(confdir) {
 function chooseDownloadDir(confdir) {
     var download_dir = '';
     var chooser = $('#fileDialog');
+    alert('Welcome to ht5streamer, please select a download directory in the next dialog...');
     chooser.trigger('click');            
     chooser.change(function(evt) {
         download_dir=$(this).val();
