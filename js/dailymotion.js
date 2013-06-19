@@ -30,6 +30,17 @@ var next_vid;
 var prev_vid;
 var isDownloading = false;
 
+// settings
+var confDir;
+if (process.platform === 'win32') {
+    confDir = process.env.USERDATA+'/ht5streamer';
+} else {
+    confDir = getUserHome()+'/.config/ht5streamer';
+}
+var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="ascii"));
+var download_dir = settings.download_dir;
+var selected_resolution = settings.resolution;
+
 $(document).ready(function(){
      var player = $('#video_dailymotion').mediaelementplayer()[0].player;
      $('#video_search').bind('submit', function(e){
@@ -230,10 +241,10 @@ function downloadFile(link,title){
          return;
     }
     // remove file if already exist
-    fs.unlink(getUserHome()+'/'+title, function (err) {
+    fs.unlink(download_dir+'/'+title, function (err) {
         if (err) {
         } else {
-            console.log('successfully deleted '+getUserHome()+'/'+title);
+            console.log('successfully deleted '+download_dir+'/'+title);
         }
     });
     // start download
@@ -245,7 +256,7 @@ function downloadFile(link,title){
     opt.vid = vid;
     var currentTime;
     var startTime = (new Date()).getTime();
-    var target = getUserHome()+'/ht5_download.'+startTime;
+    var target = download_dir+'/ht5_download.'+startTime;
     
     var req = request(link, function (error, response, body) {
         if (!error) {
@@ -267,15 +278,15 @@ function downloadFile(link,title){
                     });
                     response.on('end', function() {
                         file.end();
-                        fs.rename(target,getUserHome()+'/'+title, function (err) {
+                        fs.rename(target,download_dir+'/'+title, function (err) {
                             if (err) {
                             } else {
-                                console.log('successfully renamed '+getUserHome()+'/'+title);
+                                console.log('successfully renamed '+download_dir+'/'+title);
                             }
                         });
                         $('#progress_'+vid+' strong').html('complete !');
                         isDownloading = false;
-                        $('#progress_'+vid+' a.convert').attr('alt',getUserHome()+'/'+title+'::'+vid).show();
+                        $('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
                         $('#progress_'+vid+' a.hide_bar').show();
                     });
                 });
