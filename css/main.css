@@ -20,7 +20,7 @@ a:hover {
     position: fixed;
     width:100%;
     top: 0px;
-    z-index: 1200;
+    z-index: 1000;
     background: white;
     padding: 10px 10px 0 0;
     margin-left: -8px;
