@@ -7,7 +7,13 @@ function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
 
-var confdir = getUserHome()+'/.config/ht5streamer'
+// settings
+var confdir;
+if (process.platform === 'win32') {
+    confdir = process.env.USERDATA+'/ht5streamer';
+} else {
+    confdir = getUserHome()+'/.config/ht5streamer';
+}
 
 fs.exists(confdir, function (exists) {
   util.debug(exists ? checkConf(confdir) : makeConfdir(confdir));
@@ -55,6 +61,6 @@ function chooseDownloadDir(confdir) {
 }
 
 function loadConf(confdir) {
-    var settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="ascii"));
+    console.log('config file ok!');
 }
 
