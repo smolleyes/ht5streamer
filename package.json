@@ -9,6 +9,7 @@
     "position": "center",
     "min_width": 588,
     "min_height": 200,
+    "max-width": 685,
     "title":"ht5streamer"
   }
 }

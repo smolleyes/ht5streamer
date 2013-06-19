@@ -10,7 +10,8 @@ function getUserHome() {
 // settings
 var confdir;
 if (process.platform === 'win32') {
-    confdir = process.env.USERDATA+'/ht5streamer';
+    var cdir = process.env.APPDATA+'/ht5streamer';
+    confdir = cdir.replace(/\\/g,'//');
 } else {
     confdir = getUserHome()+'/.config/ht5streamer';
 }
@@ -55,8 +56,12 @@ function chooseDownloadDir(confdir) {
     alert('Welcome to ht5streamer, please select a download directory in the next dialog...');
     chooser.trigger('click');            
     chooser.change(function(evt) {
-        download_dir=$(this).val();
-	makeConfigFile(confdir,download_dir);
+		if (process.platform === 'win32') {
+			download_dir=$(this).val().replace(/\\/g,'//');
+		} else {
+			download_dir=$(this).val();
+		}
+		makeConfigFile(confdir,download_dir);
     });
 }
 

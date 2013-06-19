@@ -33,11 +33,11 @@ var isDownloading = false;
 // settings
 var confDir;
 if (process.platform === 'win32') {
-    confDir = process.env.USERDATA+'/ht5streamer';
+    confDir = process.env.APPDATA+'/ht5streamer';
 } else {
     confDir = getUserHome()+'/.config/ht5streamer';
 }
-var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="ascii"));
+var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 var download_dir = settings.download_dir;
 var selected_resolution = settings.resolution;
 

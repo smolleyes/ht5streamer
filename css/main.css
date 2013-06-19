@@ -20,22 +20,22 @@ a:hover {
     position: fixed;
     width:100%;
     top: 0px;
-    height: 50px;
-    z-index: 1000;
+    z-index: 1200;
     background: white;
-    padding: 10px 0;
+    padding: 10px 10px 0 0;
+    margin-left: -8px;
 }
 
 #loading {
     position: fixed;
     z-index: 500;
-    top: 455px;
+    top: 461px;
 }
 
 #search {
     position: fixed;
     z-index: 500;
-    top: 440px;
+    top: 446px;
     width:100%;
     background:white;
     overflow:auto;
@@ -43,7 +43,7 @@ a:hover {
 
 #search_results {
     position:fixed;
-    top:450px;
+    top:456px;
     float:left;
     left:34%;
 }
@@ -148,23 +148,15 @@ a:hover {
 
 #player {
     position: fixed;
-    top: 40;
+    top: 46px;
     z-index: 1000;
-}
-
-#pagination {
-    position: fixed;
-    bottom: 0px;
-    width: 100%;
-    background: white;
-    zindex:400;
 }
 
 #items_container {
     border: 1px solid black;
     width: 665px;
     position: absolute;
-    top: 480px;
+    top: 486px;
     z-index:300;
 }
 
