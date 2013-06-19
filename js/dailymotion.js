@@ -337,6 +337,7 @@ function searchPlaylists(user_search){
                 items=datas.list;
                 if (current_page == 1){
                     $('.back').css({'display':'None'});
+                    $('.next').css({'display':'block'});
                 } else {
                     $('.back').css({'display':'block'});
                     $('.next').css({'display':'block'});
@@ -412,6 +413,9 @@ function loadSongs(plid,length){
                     if (datas.has_more === true) {
                         current_search_page+=1;
                         setTimeout(function(){loadSongs(plid,length);}, 2000);
+                    } else {
+                        current_page = 1;
+                        current_search_page = 1;
                     }
                 });
             });

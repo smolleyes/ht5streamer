@@ -39,6 +39,7 @@ a:hover {
     width:100%;
     background:white;
     overflow:auto;
+    height:40px;
 }
 
 #search_results {

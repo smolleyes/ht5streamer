@@ -419,6 +419,7 @@ function searchPlaylists(user_search){
             current_prev_start_index=current_start_index;
                 if (current_page == 1){
                     $('.back').css({'display':'None'});
+                    $('.next').css({'display':'block'});
                 } else {
                     $('.back').css({'display':'block'});
                     $('.next').css({'display':'block'});
@@ -487,6 +488,9 @@ function loadSongs(plid,length){
         });
         if ( parseInt(current_start_index) < parseInt(length) ) {
             setTimeout(function(){loadSongs(plid,length);}, 5000);
+        } else {
+            current_start_index=1;
+            current_page=1;
         }
     } catch(err) {
         console.log('loadSongs err: '+err);
