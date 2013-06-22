@@ -13,7 +13,7 @@ var youtube = require('yt-streamer');
 
 //var player;
 var exec_path=path.dirname(process.execPath);
-var search_type = 'Videos';
+var search_type = 'videos';
 var selected_resolution='1080p';
 var current_video = NaN;
 var current_search = '';
@@ -28,9 +28,10 @@ var current_song = NaN;
 var next_vid;
 var prev_vid;
 var isDownloading = false;
+var valid_vid=0;
 
 // global var
-var search_engine = 'youtube';
+var search_engine = '';
 
 
 // settings
@@ -45,6 +46,12 @@ var download_dir = settings.download_dir;
 var selected_resolution = settings.resolution;
 
 $(document).ready(function(){
+    $('#resolutions_select').val(selected_resolution);
+    $("select#engines_select option:selected").each(function () {
+                search_engine = $(this).val();
+                console.log(search_engine);
+    });
+    
      var player = $('#video_player').mediaelementplayer()[0].player;
      $('#video_search').bind('submit', function(e){
         e.preventDefault();
@@ -68,13 +75,12 @@ $(document).ready(function(){
         e.preventDefault();
         playNextVideo(prev_vid);
     });
-    // load video signal and callback
-    $(document).on('click','.video_link',function(e) {
+    // start video by clicking title
+     $(document).on('click','.start_video',function(e) {
         e.preventDefault();
         try {
             $('#'+current_song).closest('.youtube_item').toggleClass('highlight','false');
         } catch(err) {
-            console.log(err);
         }
         // save current song/page and search for back btn
         try {
@@ -83,7 +89,20 @@ $(document).ready(function(){
             console.log('no media loaded, can\'t save current song...');
         }
         current_song_page = current_page;
-        current_song = $(this).parent().parent()[0].id;
+        current_song = $(this).parent().closest('.youtube_item').find('div')[5].id;
+        $('#'+current_song).closest('.youtube_item').toggleClass('highlight','true');
+        startVideo(current_song);
+    });
+    // load video signal and callback
+    $(document).on('click','.video_link',function(e) {
+        e.preventDefault();
+        try {
+            $('#'+current_song).closest('.youtube_item').toggleClass('highlight','false');
+        } catch(err) {
+            console.log(err);
+        }
+        current_song_page = current_page;
+        current_song = $(this).parent().closest('.youtube_item').find('div')[5].id;
         $('#'+current_song).closest('.youtube_item').toggleClass('highlight','true');
         try {
             next_vid = $('#'+current_song).parent().parent().next().find('div')[5].id;
@@ -141,17 +160,25 @@ $(document).ready(function(){
         a.setAttribute("download",title);
         a.click();
     });
+    //engine select
+    $("select#engines_select").change(function () {
+        $("select#engines_select option:selected").each(function () {
+                search_engine = $(this).val();
+                current_page=1;
+                current_search_page=1;
+                current_start_index=1;
+        });
+    });
     //resolutions select
     $("select#resolutions_select").change(function () {
-        var str = "";
         $("select#resolutions_select option:selected").each(function () {
-                selected_resolution = $(this).text();
+                selected_resolution = $(this).val();
+                saveConfig();
         });
     });
     $("select#search_type_select").change(function () {
-        var str = "";
         $("select#search_type_select option:selected").each(function () {
-                search_type = $(this).text();
+                search_type = $(this).val();
         });
     });
     
@@ -179,7 +206,7 @@ $(document).ready(function(){
         $(this).closest('.progress').hide();
     });
     
-    startSearch('gza');
+    startSearch('wu tang clan');
 });
 
 
@@ -189,19 +216,21 @@ function startSearch(query){
     $('#pagination').hide();
     $('#search').hide();
     $('#loading').show();
+    if (query !== current_search) {
+        current_page =1;
+        current_search_page=1;
+        current_start_index=1;
+    }
     current_search=query;
-    current_page =1;
-    current_search=1;
-    current_start_index=1;
     if (search_engine === 'dailymotion') {
-        if (search_type === 'Videos') {
+        if (search_type === 'videos') {
             dailymotion.searchVideos(query,current_page,function(datas){ getVideosDetails(datas,'dailymotion'); });
         } else {
             dailymotion.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'dailymotion'); });
         }
     }
     else if (search_engine === 'youtube') {
-        if (search_type === 'Videos') {
+        if (search_type === 'videos') {
             youtube.searchVideos(query,current_page,function(datas){ getVideosDetails(datas,'youtube'); });
         } else {
             youtube.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'youtube'); });
@@ -215,6 +244,7 @@ function getVideosDetails(datas,engine) {
     // show next or hide back button if necessary
     if (current_page == 1){
         $('.back').css({'display':'None'});
+        $('.next').css({'display':'block'});
     } else {
         $('.back').css({'display':'block'});
         $('.next').css({'display':'block'});
@@ -227,6 +257,8 @@ function getVideosDetails(datas,engine) {
             $('#search_results').html('<p><strong>No videos</strong> found...</p>');
             $('#search').show();
             $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
             return;
         }
         if (datas.has_more === 'true') {
@@ -234,7 +266,16 @@ function getVideosDetails(datas,engine) {
         }
         // print total results
         $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found, page '+current_page+'</p>');
-        
+        try {
+            p = items.length;
+        } catch(err) {
+            $('#search_results').html('<p><strong>No videos</strong> found...</p>');
+            $('#search').show();
+            $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
+            return;
+        }
         // load videos
         for(var i=0; i<items.length; i++) {
             dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas);});
@@ -247,6 +288,8 @@ function getVideosDetails(datas,engine) {
             $('#search_results').html('<p><strong>No videos</strong> found...</p>');
             $('#search').show();
             $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
             return;
         }
         $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found, page '+current_page+'</p>');
@@ -259,6 +302,8 @@ function getVideosDetails(datas,engine) {
             $('#search_results').html('<p><strong>No videos</strong> found...</p>');
             $('#search').show();
             $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
             return;
         }
         // load videos
@@ -284,14 +329,24 @@ function getPlaylistInfos(datas, engine){
             $('#search_results').html('<p><strong>No playlists</strong> found...</p>');
             $('#search').show();
             $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
             return;
         }
         $('#search_results').html('<p><strong>'+totalResults+'</strong> playlists found, page '+current_search_page+'</p>');
         if (datas.has_more === 'true') {
             $('.next').css({'display':'None'});
         }
-        for(var i=0; i<items.length; i++) {
-            loadPlaylistItems(items[i], 'dailymotion');
+        try {
+            for(var i=0; i<items.length; i++) {
+                loadPlaylistItems(items[i], 'dailymotion');
+            }
+        } catch(err) {
+            $('#search_results').html('<p><strong>No playlists</strong> found...</p>');
+            $('#search').show();
+            $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
         }
     }
     // youtube
@@ -313,6 +368,8 @@ function getPlaylistInfos(datas, engine){
             $('#search_results').html('<p><strong>No playlist</strong> found...</p>');
             $('#search').show();
             $('#loading').hide();
+            $('.next').css({'display':'None'});
+            $('.back').css({'display':'None'});
             return;
         }
         // load videos
@@ -343,7 +400,7 @@ function loadPlaylistItems(item, engine) {
         var thumb =  item.thumbnail.sqDefault;
         var title = item.title;
     }
-    $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:440px;"><p><b>'+title+'</b></p><p>Description: '+description+'</p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img src="images/play.png" /></a></div></div>');
+    $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:288px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img src="images/play.png" /></a></div></div>');
 }
 
 function loadPlaylistSongs(pid){
@@ -367,7 +424,8 @@ function loadPlaylistSongs(pid){
 }
 
 function fillPlaylistFromPlaylist(datas, length, pid, engine) {
-    $('#search_results').html('<p><strong>'+length+'</strong> videos in this playlist (loading...)</p>');
+    $('.next').css({'display':'None'});
+    $('.back').css({'display':'None'});
     if (engine === 'dailymotion') {
         var items=datas.list;
         for(var i=0; i<items.length; i++) {
@@ -387,6 +445,7 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
         try {
             t = items.length;
         } catch(err) {
+            var valid_vid = $('.youtube_item').length
             $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
             current_start_index=1;
             current_page=1;
@@ -411,7 +470,7 @@ function fillPlaylist(items) {
     $('#pagination').show();
     $('#search').show();
     $('#loading').hide();
-    if (search_type === 'Playlists') {
+    if (search_type === 'playlists') {
         var valid_vid = $('.youtube_item').length
         $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
     }
@@ -428,7 +487,7 @@ function printVideoInfos(infos){
         var seconds = secondstotime(parseInt(infos.duration));
         var views = infos.views;
         var author = infos.author;
-        $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><b>'+title+'</b></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+        $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'" style="display:none;"></div></div></div>');
         var resolutions_string = ['1080p','720p','480p','360p'];
         var resolutions = infos.resolutions;
         for(var i=0; i<resolutions_string.length; i++) {
@@ -473,31 +532,35 @@ function playNextVideo(vid_id) {
         load_first_song_next=false;
         load_first_song_prev=false;
         current_song_page = current_page;
-        var childs = $('#'+vid_id+' a.video_link');
-        var elength = parseInt(childs.length);
-        if (elength > 1){
-            for(var i=0; i<elength; i++) {
-                var found = false;
-                var res = $(childs[i],this).attr('alt');
-                if ( res == selected_resolution ){
-                    childs[i].click();
-                    break;
-                } else {
-                    // if not found  select the highest resolution available...
-                    if ( i+1 == elength){
-                        if (found === false){
-                            childs[0].click();
-                        } else {
-                            continue;
-                        }
+        startVideo(vid_id);
+    } catch(err) {
+        console.log(err + " : can't play next video...");
+    }
+}
+
+function startVideo(vid_id) {
+    var childs = $('#'+vid_id+' a.video_link');
+    var elength = parseInt(childs.length);
+    if (elength > 1){
+        for(var i=0; i<elength; i++) {
+            var found = false;
+            var res = $(childs[i],this).attr('alt');
+            if ( res == selected_resolution ){
+                childs[i].click();
+                break;
+            } else {
+                // if not found  select the highest resolution available...
+                if ( i+1 == elength){
+                    if (found === false){
+                        childs[0].click();
+                    } else {
+                        continue;
                     }
                 }
             }
-        } else {
-            childs[0].click();
         }
-    } catch(err) {
-        console.log(err + " : can't play next video...");
+    } else {
+        childs[0].click();
     }
 }
 
@@ -638,4 +701,15 @@ function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
 
+function saveConfig() {
+    settings.resolution = selected_resolution;
+    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+        if(err) {
+            console.log(err);
+	    return;
+        } else {
+            console.log("ht5config config updated successfully!");
+        }
+    });
+}
 

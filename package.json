@@ -4,12 +4,11 @@
 "user-agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1521.3 Safari/537.36",
 "window": {
     "toolbar": false,
-    "width": 685,
-    "height": 800,
+    "width": 1100,
+    "height": 600,
     "position": "center",
     "min_width": 588,
     "min_height": 200,
-    "max-width": 685,
     "title":"ht5streamer"
   }
 }

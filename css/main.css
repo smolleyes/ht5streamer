@@ -16,6 +16,21 @@ a:hover {
     color:red;
 }
 
+#content {
+    width: 100%;
+    height:100%;
+}
+
+#left {
+    float:left;
+    width:44%;
+    margin-left:-9px;
+}
+
+#right {
+    float:right;
+}
+
 #menu {
     position: fixed;
     width:100%;
@@ -24,34 +39,31 @@ a:hover {
     background: white;
     padding: 10px 10px 0 0;
     margin-left: -8px;
+    background: -webkit-linear-gradient(top, rgba(226,226,226,1) 0%,rgba(219,219,219,1) 50%,rgba(209,209,209,1) 51%,rgba(254,254,254,1) 100%);
 }
 
 #loading {
     position: fixed;
     z-index: 500;
-    top: 461px;
+    top: 61px;
+    left: 9px;
 }
 
 #search {
     position: fixed;
     z-index: 500;
-    top: 446px;
-    width:100%;
+    top: 46px;
+    width: 44%;
     background:white;
     overflow:auto;
-    height:40px;
+    height:30px;
 }
 
 #search_results {
-    position:fixed;
-    top:456px;
-    float:left;
-    left:34%;
 }
 
 #search p {
-    text-align:center;
-    margin:0;
+    margin:10px;
 }
 
 #search a {
@@ -87,34 +99,8 @@ a:hover {
     vertical-align: middle;
 }
 
-.back, .back span img {
-    float:left;
-}
-
-.back span {
-    position:relative;
-    left:5px;
-    top:-10px;
-    z-index: 600;
-}
-
-.next {
-    position: relative;
-    right:-60px;
-}
-
-.next span {
-    position: relative;
-    top: -10px;
-    right: 5px;
-}
-
-.next, .next span img {
-    float:right;
-}
-
 .next, .back {
-    width:20%;
+    float:left;
 }
 
 .item_infos {
@@ -130,13 +116,7 @@ a:hover {
 }
 
 .highlight {
-    border: 1px solid rgba(0,0,0,0.5);
-   background: rgba(0,0,0,0.25);
-   box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
-   -o-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
-   -webkit-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
-   -moz-box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
-   color:black;
+    background: -webkit-linear-gradient(top, rgba(226,226,226,1) 0%,rgba(219,219,219,1) 50%,rgba(209,209,209,1) 51%,rgba(254,254,254,1) 100%);
 }
 
 .highlight a {
@@ -147,23 +127,33 @@ a:hover {
     color:white;
 }
 
+#max_res {
+    position:absolute;
+    top:10px;
+    right:100px;
+}
+
 #player {
     position: fixed;
-    top: 46px;
-    z-index: 1000;
+    right:5px;
+    top:48px;
+    z-index: 1200;
 }
 
 #items_container {
     border: 1px solid black;
-    width: 665px;
-    position: absolute;
-    top: 486px;
-    z-index:300;
+    position: relative;
+    left:5px;
+    top:76px;
 }
 
 #video_search {
     float:left;
     margin: 0 10px 10px 0;
+}
+
+#engines {
+    float:left;
 }
 
 .right {
@@ -200,23 +190,14 @@ a:hover {
     box-shadow:         inset 0 0 10px #000000;
 }
 
-#engines {
-    position: relative;
-    top: 10px;
-    left: 50%;
-    width:304px;
-    margin-left: -152px;
-}
-
 #home h1 {
     text-align: center;
 }
 
 #donate {
-    position: relative;
-    left: 50%;
-    margin-left: -37px;
-    top: 60px;
+   position:absolute;
+   top:12px;
+   right:10px;
 }
 
 .video_length {
@@ -295,3 +276,4 @@ progress::-webkit-progress-value {
 progress::-webkit-progress-bar{
     background: transparent;
 }
+
