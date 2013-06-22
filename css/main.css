@@ -97,6 +97,7 @@ a:hover {
 .video_link, .download_file {
     display:inline-block;
     vertical-align: middle;
+    margin-right:10px;
 }
 
 .next, .back {
