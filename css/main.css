@@ -23,12 +23,27 @@ a:hover {
 
 #left {
     float:left;
-    width:44%;
+    width:40%;
     margin-left:-9px;
 }
 
 #right {
-    float:right;
+    position:fixed;
+    top:50px;
+    width:60%;
+    left:40%;
+    height:100% !important;
+    z-index:1200;
+}
+
+video{
+    width:100%;
+    height:100% !important;
+}
+
+#mep_0 {
+width:100%;
+height:calc(100% - 50px) !important;
 }
 
 #menu {
@@ -52,8 +67,8 @@ a:hover {
 #search {
     position: fixed;
     z-index: 500;
-    top: 46px;
-    width: 44%;
+    top: 50px;
+    width: 40%;
     background:white;
     overflow:auto;
     height:30px;
@@ -134,11 +149,13 @@ a:hover {
     right:100px;
 }
 
-#player {
+#video_player {
     position: fixed;
     right:5px;
     top:48px;
     z-index: 1200;
+    width:100%;
+    height:100%;
 }
 
 #items_container {

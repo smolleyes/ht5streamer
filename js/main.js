@@ -6,6 +6,7 @@ var request = require('request');
 var https = require('https');
 var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
+var spawn = require('child_process').spawn;
 
 //engines
 var dailymotion = require('dailymotion');
@@ -52,7 +53,7 @@ $(document).ready(function(){
                 console.log(search_engine);
     });
     
-     var player = $('#video_player').mediaelementplayer()[0].player;
+     var player = $('video').mediaelementplayer()[0].player;
      $('#video_search').bind('submit', function(e){
         e.preventDefault();
         query=$('#video_search_query').val();
@@ -63,6 +64,11 @@ $(document).ready(function(){
     });
     // fullscreen signal and callback
     $(document).on('click','.mejs-fullscreen-button',function(e) {
+        if (win.isFullscreen === true) {
+            $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+        } else {
+            $('#mep_0').attr('style', 'height: 100% !important');
+        }
         win.toggleFullscreen();
     });
     // next signal and callback
@@ -109,10 +115,9 @@ $(document).ready(function(){
         } catch(err) {
             load_first_song_next=true;
         }
-        $('#player').trigger('loadPlayer',[$(this).attr('href'),next_vid]);
+        $('video').trigger('loadPlayer',[$(this).attr('href'),next_vid]);
     });
-    $('#player').on('loadPlayer',function(e,link,next_vid){
-        $(document).scrollTop( $("#player").offset().top);
+    $('video').on('loadPlayer',function(e,link,next_vid){
         player.pause();
         player.setSrc(link);
         player.play();
