@@ -67,7 +67,7 @@ height:calc(100% - 50px) !important;
 #search {
     position: fixed;
     z-index: 500;
-    top: 50px;
+    top: 46px;
     width: 40%;
     background:white;
     overflow:auto;
