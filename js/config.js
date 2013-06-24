@@ -2,6 +2,8 @@ var path = require('path');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var util = require('util');
+var gui = require('nw.gui');
+var win = gui.Window.get();
 
 function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -39,6 +41,7 @@ function makeConfigFile(confdir,download_dir) {
 	    return;
         } else {
             console.log("ht5config file created!");
+	    win.reload();
 	    loadConf(confdir);
         }
     });
