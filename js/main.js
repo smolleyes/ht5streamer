@@ -405,7 +405,7 @@ function loadPlaylistItems(item, engine) {
         var thumb =  item.thumbnail.sqDefault;
         var title = item.title;
     }
-    $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:288px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img src="images/play.png" /></a></div></div>');
+    $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:238px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
 }
 
 function loadPlaylistSongs(pid){
@@ -447,16 +447,15 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
     else if ( engine === 'youtube') {
         var items=datas.items;
         current_start_index+=25;
+        valid_vid = $('.youtube_item').length
+        $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
         try {
-            t = items.length;
+            for(var i=0; i<items.length; i++) {
+                youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].video.id,i,items.length,function(datas) {fillPlaylist(datas);});
+            }
         } catch(err) {
-            var valid_vid = $('.youtube_item').length
             $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
-            current_start_index=1;
-            current_page=1;
-        }
-        for(var i=0; i<items.length; i++) {
-            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].video.id,i,items.length,function(datas) {fillPlaylist(datas);});
+            return;
         }
         if ( parseInt(current_start_index) < parseInt(length) ) {
             setTimeout(function(){youtube.loadSongs(pid,length,current_start_index, function(datas, length, pid, engine) { fillPlaylistFromPlaylist(datas, length, pid, engine); });}, 2000);
