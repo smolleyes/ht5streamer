@@ -283,7 +283,7 @@ function getVideosDetails(datas,engine) {
         }
         // load videos
         for(var i=0; i<items.length; i++) {
-            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas);});
+            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas)});
         }
     }
     // youtube
@@ -313,7 +313,7 @@ function getVideosDetails(datas,engine) {
         }
         // load videos
         for(var i=0; i<items.length; i++) {
-            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas);});
+            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas)});
         }
     }
 }
