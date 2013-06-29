@@ -782,7 +782,7 @@ function editSettings() {
               "position": 'center',
               "width": 640,
               "height": 250,
-              "toolbar": true
+              "toolbar": false
             });
             new_win.on('close', function() {
               settings.edit=false;
