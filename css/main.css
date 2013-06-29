@@ -143,7 +143,7 @@ height:calc(100% - 50px) !important;
     color:white;
 }
 
-#max_res {
+#config_btn {
     position:absolute;
     top:10px;
     right:100px;
@@ -216,6 +216,36 @@ height:calc(100% - 50px) !important;
    position:absolute;
    top:12px;
    right:10px;
+}
+
+/* flags in config */
+.ddcommon {
+    position: absolute !important;
+    display: -moz-inline-stack;
+    zoom: 1;
+    display: inline-block;
+    cursor: default;
+    left: 200px;
+}
+
+#resolutions_select {
+    position: absolute;
+    left: 200px;
+}
+
+#download_path {
+    position: absolute;
+    left:200px;
+}
+
+#choose_download_dir {
+    position: absolute;
+    left:533px;
+}
+
+#main_config label {
+    position: relative;
+    top: 5px;
 }
 
 .video_length {

@@ -8,6 +8,10 @@ var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
 
+//localize
+var Localize = require('localize');
+var myLocalize = new Localize('./translations/');
+
 //engines
 var dailymotion = require('dailymotion');
 var youtube = require('yt-streamer');
@@ -45,8 +49,57 @@ if (process.platform === 'win32') {
 var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 var download_dir = settings.download_dir;
 var selected_resolution = settings.resolution;
+var locale = settings.locale;
+myLocalize.setLocale(locale);
+
+var htmlStr = '<div id="menu"> \
+    <div id="engines" class="space"> \
+        <label>'+myLocalize.translate("Engine:")+'</label> \
+        <select id="engines_select"> \
+            <option value = "youtube">Youtube</option> \
+            <option value = "dailymotion">dailymotion</option> \
+        </select> \
+    </div> \
+    <form id="video_search"> \
+        <label class="space">'+myLocalize.translate("Search:")+'</label> \
+        <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" required /> \
+        <input type="submit" value="'+myLocalize.translate("Send")+'" />  \
+    </form> \
+        <label>'+myLocalize.translate("Search type:")+'</label> \
+        <select id="search_type_select"> \
+            <option value = "videos">Videos</option> \
+            <option value = "playlists">Playlists</option> \
+        </select> \
+        <a id="config_btn" href="#" title="'+myLocalize.translate("Settings")+'"> \
+            <img src="images/config.png" height="28" width="28" /> \
+        </a> \
+        <div> \
+        <form id="donate" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"> \
+            <input type="hidden" name="cmd" value="_s-xclick"> \
+            <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7----- "> \
+            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!"> \
+            <img alt="" border="0" src="https://www.paypalobjects.com/fr_FR/i/scr/pixel.gif" width="1" height="1"> \
+        </form> \
+        </div> \
+</div> \
+<div id="content"> \
+    <div id="left"> \
+        <div id="loading" style="display:None;"><img style="width:28px;height:28px;"src="images/spinner.gif" />'+myLocalize.translate(" Loading videos...")+'</div> \
+         <div id="search"> \
+            <a class="back" title="'+myLocalize.translate("Previous page")+'"><img id="next" src="images/back.png" /></a> \
+            <a title="'+myLocalize.translate("Next page")+'" class="next"><img id="back" src="images/next.png" /></a> \
+            <div id="search_results"></div> \
+        </div> \
+        <div id="items_container"></div> \
+    </div> \
+    <div id="right"> \
+            <video width="100%" height="100%" src="t.mp4"></video> \
+    </div> \
+</div>';
+
 
 $(document).ready(function(){
+    $('#main').append(htmlStr);
     $('#resolutions_select').val(selected_resolution);
     $("select#engines_select option:selected").each(function () {
                 search_engine = $(this).val();
@@ -174,13 +227,6 @@ $(document).ready(function(){
                 current_start_index=1;
         });
     });
-    //resolutions select
-    $("select#resolutions_select").change(function () {
-        $("select#resolutions_select option:selected").each(function () {
-                selected_resolution = $(this).val();
-                saveConfig();
-        });
-    });
     $("select#search_type_select").change(function () {
         $("select#search_type_select option:selected").each(function () {
                 search_type = $(this).val();
@@ -210,7 +256,10 @@ $(document).ready(function(){
         e.preventDefault();
         $(this).closest('.progress').hide();
     });
-    
+    //settings
+    $('#config_btn').click(function() {
+        editSettings();
+    });
     startSearch('wu tang clan');
 });
 
@@ -259,7 +308,7 @@ function getVideosDetails(datas,engine) {
         var items = datas.list;
         var totalResults = datas.total;
         if (totalResults === 0) {
-            $('#search_results').html('<p><strong>No videos</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
@@ -270,11 +319,11 @@ function getVideosDetails(datas,engine) {
             $('.next').css({'display':'None'});
         }
         // print total results
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found, page '+current_page+'</p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong>'+myLocalize.translate("videos found, page")+' '+current_page+'</p>');
         try {
             p = items.length;
         } catch(err) {
-            $('#search_results').html('<p><strong>No videos</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
@@ -290,21 +339,21 @@ function getVideosDetails(datas,engine) {
     else if (engine === 'youtube') {
         totalResults = datas.totalItems;
         if (totalResults === 0) {
-            $('#search_results').html('<p><strong>No videos</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate(myLocalize.translate("<p><strong>No videos</strong> found...</p>")));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
             $('.back').css({'display':'None'});
             return;
         }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> videos found, page '+current_page+'</p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found, page")+' '+current_page+'</p>');
         var items=datas.items;
         try {
             if (items.length < 25) {
                 $('.next').css({'display':'None'});
             }
         } catch(err) {
-            $('#search_results').html('<p><strong>No videos</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
@@ -331,14 +380,14 @@ function getPlaylistInfos(datas, engine){
         var items=datas.list;
         var totalResults = datas.total;
         if (totalResults === 0) {
-            $('#search_results').html('<p><strong>No playlists</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
             $('.back').css({'display':'None'});
             return;
         }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> playlists found, page '+current_search_page+'</p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found, page")+' '+current_search_page+'</p>');
         if (datas.has_more === 'true') {
             $('.next').css({'display':'None'});
         }
@@ -347,7 +396,7 @@ function getPlaylistInfos(datas, engine){
                 loadPlaylistItems(items[i], 'dailymotion');
             }
         } catch(err) {
-            $('#search_results').html('<p><strong>No playlists</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
@@ -358,19 +407,19 @@ function getPlaylistInfos(datas, engine){
     else if (engine === 'youtube') {
         totalResults = datas.totalItems;
         if (totalResults === 0) {
-            $('#search_results').html('<p><strong>No playlist</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             return;
         }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> playlist found, page '+current_page+'</p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found, page")+' '+current_page+'</p>');
         var items=datas.items;
         try {
             if (items.length < 25) {
                 $('.next').css({'display':'None'});
             }
         } catch(err) {
-            $('#search_results').html('<p><strong>No playlist</strong> found...</p>');
+            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             $('.next').css({'display':'None'});
@@ -448,13 +497,13 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
         var items=datas.items;
         current_start_index+=25;
         valid_vid = $('.youtube_item').length
-        $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
+        $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');
         try {
             for(var i=0; i<items.length; i++) {
                 youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].video.id,i,items.length,function(datas) {fillPlaylist(datas);});
             }
         } catch(err) {
-            $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
+            $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');
             return;
         }
         if ( parseInt(current_start_index) < parseInt(length) ) {
@@ -476,7 +525,7 @@ function fillPlaylist(items) {
     $('#loading').hide();
     if (search_type === 'playlists') {
         var valid_vid = $('.youtube_item').length
-        $('#search_results').html('<p><strong>'+valid_vid+'</strong> verified videos in this playlist</p>');
+        $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');
     }
     if (load_first_song_next == true || load_first_song_prev === true) {
         playNextVideo();
@@ -491,7 +540,7 @@ function printVideoInfos(infos){
         var seconds = secondstotime(parseInt(infos.duration));
         var views = infos.views;
         var author = infos.author;
-        $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>Posted by: </b> '+author+  ' </span><span style="margin-left:10px;"><b>Views: </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>Downloading :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="convert to mp3"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="close"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+        $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
         var resolutions_string = ['1080p','720p','480p','360p'];
         var resolutions = infos.resolutions;
         for(var i=0; i<resolutions_string.length; i++) {
@@ -576,7 +625,7 @@ function downloadFile(link,title){
     var title = title.split('::')[0];
     if ( isDownloading === true ){
          pbar.show();
-         $('#progress_'+vid+' strong').html('a download is already running, please wait...');
+         $('#progress_'+vid+' strong').html(myLocalize.translate('A download is already running, please wait...'));
          setTimeout(function(){pbar.hide()},5000);
          return;
     }
@@ -589,7 +638,7 @@ function downloadFile(link,title){
     });
     // start download
     pbar.show();
-    $('#progress_'+vid+' strong').html('waiting for connection...');
+    $('#progress_'+vid+' strong').html(myLocalize.translate('Waiting for connection...'));
     isDownloading = true;
     var opt = {};
     var val = $('#progress_'+vid+' progress').attr('value');
@@ -613,7 +662,7 @@ function downloadFile(link,title){
                         currentTime = (new Date()).getTime();
                         var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
                         var newVal= bytesDone*100/contentLength;
-                        var txt = Math.floor(newVal)+'% done at '+transfer_speed+ ' kb/s';
+                        var txt = Math.floor(newVal)+'% '+ myLocalize.translate('done at')+' '+transfer_speed+' kb/s';
                         $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
                         $('#progress_'+vid+' strong').html(txt);
                     });
@@ -625,7 +674,7 @@ function downloadFile(link,title){
                                 console.log('successfully renamed '+download_dir+'/'+title);
                             }
                         });
-                        $('#progress_'+vid+' strong').html('complete !');
+                        $('#progress_'+vid+' strong').html(myLocalize.translate('Download ended !'));
                         isDownloading = false;
                         $('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
                         $('#progress_'+vid+' a.hide_bar').show();
@@ -646,13 +695,13 @@ function convertTomp3Win(file){
     var title = file.split('::')[0];
     var pbar = $('#progress_'+vid);
     var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
-    $('#progress_'+vid+' strong').html('Converting video to mp3, please wait...');
+    $('#progress_'+vid+' strong').html(myLocalize.translate("Converting video to mp3, please wait..."));
 	var args = ['-i', title, '-ab', '192k', target];
     var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
     console.log('Spawning ffmpeg ' + args.join(' '));
     ffmpeg.on('exit', function(){
 		console.log('ffmpeg exited');
-		$('#progress_'+vid+' strong').html('file has been converted succesfully');
+		$('#progress_'+vid+' strong').html(myLocalize.translate("video converted successfully !"));
 		setTimeout(function(){pbar.hide()},5000);
 	});
     ffmpeg.stderr.on('data', function(data) {
@@ -666,14 +715,14 @@ function convertTomp3(file) {
         var title = file.split('::')[0];
         var pbar = $('#progress_'+vid);
         var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
-        $('#progress_'+vid+' strong').html('Converting video to mp3, please wait...');
+        $('#progress_'+vid+' strong').html(myLocalize.translate("Converting video to mp3, please wait..."));
         var proc = new ffmpeg({ source: title })
           .withAudioBitrate('192k')
           .withAudioCodec('libmp3lame')
           .withAudioChannels(2)
           .toFormat('mp3')
           .saveToFile(target, function(stdout, stderr) {
-            $('#progress_'+vid+' strong').html('file has been converted succesfully');
+            $('#progress_'+vid+' strong').html(myLocalize.translate("video converted successfully !"));
             fs.rename(target.replace(/ /,'\\ '),target, function (err) {
                 if (err) {
                     console.log(err);
@@ -705,15 +754,42 @@ function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
 
-function saveConfig() {
-    settings.resolution = selected_resolution;
-    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+function saveConfig(old_locale) {
+    settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+    fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
         if(err) {
             console.log(err);
 	    return;
         } else {
-            console.log("ht5config config updated successfully!");
+            if ( old_locale !== settings.locale) {
+                win.reload();
+            } else {
+                download_dir = settings.download_dir;
+                selected_resolution = settings.resolution;
+            }
         }
     });
 }
 
+function editSettings() {
+    var old_locale=settings.locale;
+    settings.edit=true;
+    fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+        if(err) {
+            console.log(err);
+        } else {
+            var new_win = gui.Window.open('config.html', {
+              "position": 'center',
+              "width": 640,
+              "height": 250,
+              "toolbar": true
+            });
+            new_win.on('close', function() {
+              settings.edit=false;
+              saveConfig(old_locale);
+              this.hide();
+              this.close(true);
+            });
+        }
+    });
+}

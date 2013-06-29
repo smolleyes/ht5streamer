@@ -1,0 +1,90 @@
+{
+    "Search:": {
+        "fr": "Recherche:"
+    },
+    "Enter your search...": {
+        "fr": "Entrez votre recherche..."
+    },
+    "Send": {
+        "fr": "Envoyer"
+    },
+    "Search type:": {
+        "fr": "Type de recherche:"
+    },
+    "Engine:": {
+        "fr": "Moteur:"
+    },
+    "Views:": {
+        "fr": "Vues:"
+    },
+    "Posted by:": {
+        "fr": "Posté par:"
+    },
+    "Maximum resolution:": {
+        "fr": "Résolution maximum:"
+    },
+    " Loading videos...": {
+        "fr": " Chargement des vidéos..."
+    },
+    "Previous page": {
+        "fr": "Page précédente"
+    },
+    "Next page": {
+        "fr": "Page suivante"
+    },
+    "<p><strong>No videos</strong> found...</p>": {
+        "fr": "<p><strong>Aucune vidéo</strong> trouvée...</p>"
+    },
+    "<p><strong>No playlist</strong> found...</p>": {
+        "fr": "<p><strong>Aucune playlist</strong> trouvée...</p>"
+    },
+    "videos found, page": {
+        "fr": "vidéos trouvées, page"
+    },
+    "playlists found, page": {
+        "fr": "playlists trouvées, page"
+    },
+    "Converting video to mp3, please wait...": {
+        "fr": "Conversion de la vidéo en mp3..."
+    },
+    "video converted successfully !": {
+        "fr": "vidéo convertie avec succès !"
+    },
+    "A download is already running, please wait...": {
+        "fr": "Un téléchargement est déjà en cours..."
+    },
+    "Waiting for connection...": {
+        "fr": "En attente de connexion..."
+    },
+    "done at": {
+        "fr": "effectué à"
+    },
+    "Download ended !": {
+        "fr": "Téléchargement terminé !"
+    },
+    "Downloading": {
+        "fr": "Téléchargement"
+    },
+    "Convert to mp3": {
+        "fr": "Convertir en mp3"
+    },
+    "Close": {
+        "fr": "Fermer"
+    },
+    "Settings": {
+        "fr": "Paramètres"
+    },
+    "Language:": {
+        "fr": "Langage:"
+    },
+    "verified videos in this playlist": {
+        "fr": "vidéos vérifiées dans cette playlist"
+    },
+    "Download directory:": {
+        "fr": "Dossier de téléchargements:"
+    },
+    "Select": {
+        "fr": "Sélectionner"
+    }
+}
+
