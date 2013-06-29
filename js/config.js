@@ -53,7 +53,7 @@ var htmlConfig='<div style="height:36px;"> \
 		<label>'+myLocalize.translate("Download directory:")+'</label> \
 		<input type="text" id="download_path" size="50"></input><button id="choose_download_dir">'+myLocalize.translate("Select")+'</button> \
 	    </div> \
-	    <button id="valid_config">Save</button> \
+	    <button id="valid_config">'+myLocalize.translate("Save")+'</button> \
 ';
 
 
