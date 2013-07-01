@@ -325,3 +325,64 @@ progress::-webkit-progress-bar{
     background: transparent;
 }
 
+/* context menu */
+#custom-menu
+{
+z-index: 1500;
+position: absolute;
+border: solid 2px black;
+background-color: white;
+padding: 5px 0;
+display: none;
+}
+#custom-menu ol
+{
+padding: 0;
+margin: 0;
+list-style-type: none;
+min-width: 130px;
+width: auto;
+max-width: 200px;
+font-family:Verdana;
+font-size:12px;
+}
+#custom-menu ol li
+{
+margin: 0;
+display: block;
+list-style: none;
+padding: 5px 5px;
+}
+#custom-menu ol li:hover
+{
+background-color: #efefef;
+}
+
+#custom-menu ol li:active
+{
+color: White;
+background-color: #000;
+}
+
+#custom-menu ol .list-devider
+{
+padding: 0px;
+margin: 0px;
+}
+
+#custom-menu ol .list-devider hr
+{
+margin: 2px 0px;
+}
+
+#custom-menu ol li a
+{
+color: Black;
+text-decoration: none;
+display: block;
+padding: 0px 5px;
+}
+#custom-menu ol li a:active
+{
+color: White;
+}

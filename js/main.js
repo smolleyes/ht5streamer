@@ -7,6 +7,12 @@ var https = require('https');
 var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
+var clipboard = gui.Clipboard.get();
+// hidden window
+var hiddenWin = gui.Window.open('www.google.fr', {
+  "toolbar": false,
+  "show": false
+});
 
 //localize
 var Localize = require('localize');
@@ -95,6 +101,16 @@ var htmlStr = '<div id="menu"> \
     <div id="right"> \
             <video width="100%" height="100%" src="t.mp4"></video> \
     </div> \
+    <div id="custom-menu"> \
+<ol> \
+<li><a id="copy" href="#">Copy</a> </li> \
+<!-- <li><a id="paste" href="#">Paste</a> </li> -->\
+<!--<li class="list-devider"> \
+<hr /> \
+</li> \
+<li><a href="#">Mark as unread</a> </li> -->\
+</ol> \
+</div> \
 </div>';
 
 
@@ -260,6 +276,68 @@ $(document).ready(function(){
     $('#config_btn').click(function() {
         editSettings();
     });
+    
+    //custom context menu
+    try {
+		$(document).bind("contextmenu", function(e) {
+			e.preventDefault();
+			$("#custom-menu").css({ top: e.pageY + "px", left: e.pageX + "px" }).show(100);
+			if ((search_engine === 'youtube') && $('#paste_ytlink').length === 0) {
+				$('#custom-menu ol').append('<li><a id="paste_ytlink" href="#">paste youtube link</a></li>');
+			} else {
+				if ((search_engine !== 'youtube') && ($('#paste_ytlink').length === 1)) {
+					$('#paste_ytlink').parent().remove();
+				}
+			}
+			return false;
+		});
+		$('#custom-menu').click(function() {
+			$('#custom-menu').hide();
+		});
+		$(document).click(function() {
+			$('#custom-menu').hide();
+		});
+	} catch (err) {
+		alert(err);
+	}
+	//copy to clipboard
+	$('#copy').click(function() {
+		clipboard.clear()
+		var t='';
+		if(window.getSelection){
+			t = window.getSelection();
+		}else if(document.getSelection){
+			t = document.getSelection();
+		}else if(document.selection){
+			t = document.selection.createRange().text;
+		}
+		if (t === '') {
+			return;
+		}
+        clipboard.set(''+t+'','text');
+    });
+    //paste to clipboard
+	$('#paste').click(function() {
+        var text = clipboard.get('text');
+        var position = window.getSelection().getRangeAt(0).startOffset;
+    });
+    // paste yt link
+    $(document).on('click','#paste_ytlink',function(e) {
+		var vid='';
+		var text = clipboard.get('text');
+		try {
+			text.match('.*v=(.*)?&')[1]
+		} catch(err) {
+			try {
+				vid = text.match('.*v=(.*)')[1];
+			} catch(err) {
+				console.log("can\'t detect video id...")
+			}
+		console.log('youtube id: ' + vid);
+		youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {fillPlaylist(datas)});
+		}
+	});
+    
     startSearch('wu tang clan');
 });
 
@@ -517,7 +595,13 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
 
 function fillPlaylist(items) {
     for(var i=0; i<items.length; i++) {
-        printVideoInfos(items[i]);
+        if (items.length === 1) {
+			printVideoInfos(items[i], true);
+			var pos = $('#items_container .youtube_item').first().position()['top'];
+			$(window).scrollTop(pos);
+		} else {
+			printVideoInfos(items[i],false);
+		}
     }
     $('#items_container').show();
     $('#pagination').show();
@@ -532,15 +616,19 @@ function fillPlaylist(items) {
     }
 }
 
-function printVideoInfos(infos){
+function printVideoInfos(infos,solo){
     try{
-        var title = infos.title;
+        var title = infos.title.replace(/"/g,'');
         var thumb = infos.thumb;
         var vid = infos.id;
         var seconds = secondstotime(parseInt(infos.duration));
         var views = infos.views;
         var author = infos.author;
-        $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+        if (solo === true) {
+			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+		} else {
+			$('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+		}
         var resolutions_string = ['1080p','720p','480p','360p'];
         var resolutions = infos.resolutions;
         for(var i=0; i<resolutions_string.length; i++) {
@@ -756,6 +844,7 @@ function getUserHome() {
 
 function saveConfig(old_locale) {
     settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+    settings.edit=false;
     fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
         if(err) {
             console.log(err);
@@ -785,7 +874,6 @@ function editSettings() {
               "toolbar": false
             });
             new_win.on('close', function() {
-              settings.edit=false;
               saveConfig(old_locale);
               this.hide();
               this.close(true);
@@ -793,3 +881,9 @@ function editSettings() {
         }
     });
 }
+
+// close all windows on exit
+win.on('close', function() {
+    this.close(true);
+    hiddenWin.close(true);
+});
