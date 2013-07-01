@@ -8,11 +8,6 @@ var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
 var clipboard = gui.Clipboard.get();
-// hidden window
-var hiddenWin = gui.Window.open('www.google.fr', {
-  "toolbar": false,
-  "show": false
-});
 
 //localize
 var Localize = require('localize');
@@ -881,9 +876,3 @@ function editSettings() {
         }
     });
 }
-
-// close all windows on exit
-win.on('close', function() {
-    this.close(true);
-    hiddenWin.close(true);
-});
