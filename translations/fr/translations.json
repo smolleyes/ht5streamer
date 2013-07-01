@@ -86,8 +86,14 @@
     "Select": {
         "fr": "Sélectionner"
     },
+    "Copy": {
+        "fr": "Copier"
+    },
     "Save": {
         "fr": "Sauvegarder"
+    },
+    "Paste/Open youtube link": {
+        "fr": "Copier/ouvrir lien youtube"
     }
 }
 

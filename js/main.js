@@ -103,7 +103,7 @@ var htmlStr = '<div id="menu"> \
     </div> \
     <div id="custom-menu"> \
 <ol> \
-<li><a id="copy" href="#">Copy</a> </li> \
+<li><a id="copy" href="#">'+myLocalize.translate("Copy")+'</a> </li> \
 <!-- <li><a id="paste" href="#">Paste</a> </li> -->\
 <!--<li class="list-devider"> \
 <hr /> \
@@ -283,7 +283,7 @@ $(document).ready(function(){
 			e.preventDefault();
 			$("#custom-menu").css({ top: e.pageY + "px", left: e.pageX + "px" }).show(100);
 			if ((search_engine === 'youtube') && $('#paste_ytlink').length === 0) {
-				$('#custom-menu ol').append('<li><a id="paste_ytlink" href="#">paste youtube link</a></li>');
+				$('#custom-menu ol').append('<li><a id="paste_ytlink" href="#">'+myLocalize.translate("Paste/Open youtube link")+'</a></li>');
 			} else {
 				if ((search_engine !== 'youtube') && ($('#paste_ytlink').length === 1)) {
 					$('#paste_ytlink').parent().remove();
