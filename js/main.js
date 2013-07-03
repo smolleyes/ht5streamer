@@ -35,6 +35,7 @@ var next_vid;
 var prev_vid;
 var isDownloading = false;
 var valid_vid=0;
+var search_filters='';
 
 // global var
 var search_engine = '';
@@ -70,6 +71,12 @@ var htmlStr = '<div id="menu"> \
         <select id="search_type_select"> \
             <option value = "videos">Videos</option> \
             <option value = "playlists">Playlists</option> \
+        </select> \
+        <label>'+myLocalize.translate("Filters:")+'</label> \
+        <select id="search_filters"> \
+            <option value = ""></option> \
+            <option value = "hd">HD</option> \
+            <option id="3dopt" value = "3d">3D</option> \
         </select> \
         <a id="config_btn" href="#" title="'+myLocalize.translate("Settings")+'"> \
             <img src="images/config.png" height="28" width="28" /> \
@@ -111,6 +118,17 @@ var htmlStr = '<div id="menu"> \
 
 $(document).ready(function(){
     $('#main').append(htmlStr);
+    // start keyevent listener
+    var fn = function(e){ onKeyPress(e); };
+    document.addEventListener("keydown", fn, false );
+    // remove listener if input focused
+    $('#video_search_query').focusin(function() {
+        document.removeEventListener("keydown",fn, false);
+    });
+    $('#video_search_query').focusout(function() {
+        document.addEventListener("keydown", fn, false );
+    });
+    
     $('#resolutions_select').val(selected_resolution);
     $("select#engines_select option:selected").each(function () {
                 search_engine = $(this).val();
@@ -236,6 +254,17 @@ $(document).ready(function(){
                 current_page=1;
                 current_search_page=1;
                 current_start_index=1;
+                if (search_engine === 'dailymotion') {
+                    $("#3dopt").hide();
+                } else {
+                    $("#3dopt").show();
+                }
+        });
+    });
+    //search filters
+    $("select#search_filters").change(function () {
+        $("select#search_filters option:selected").each(function () {
+                search_filters = $(this).val();
         });
     });
     $("select#search_type_select").change(function () {
@@ -332,10 +361,24 @@ $(document).ready(function(){
 		youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {fillPlaylist(datas)});
 		}
 	});
-    
     startSearch('wu tang clan');
 });
 
+function onKeyPress(key) {
+    if (key.key === 'Esc') {
+        if (win.isFullscreen === true) {
+            $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+            win.toggleFullscreen();
+        }
+    } else if (key.key === 'f') {
+        if (win.isFullscreen === true) {
+            $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+        } else {
+            $('#mep_0').attr('style', 'height: 100% !important');
+        }
+        win.toggleFullscreen();
+    }
+}
 
 //search
 function startSearch(query){
@@ -351,14 +394,14 @@ function startSearch(query){
     current_search=query;
     if (search_engine === 'dailymotion') {
         if (search_type === 'videos') {
-            dailymotion.searchVideos(query,current_page,function(datas){ getVideosDetails(datas,'dailymotion'); });
+            dailymotion.searchVideos(query,current_page,search_filters,function(datas){ getVideosDetails(datas,'dailymotion'); });
         } else {
             dailymotion.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'dailymotion'); });
         }
     }
     else if (search_engine === 'youtube') {
         if (search_type === 'videos') {
-            youtube.searchVideos(query,current_page,function(datas){ getVideosDetails(datas,'youtube'); });
+            youtube.searchVideos(query,current_page,search_filters,function(datas){ getVideosDetails(datas,'youtube'); });
         } else {
             youtube.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'youtube'); });
         }
