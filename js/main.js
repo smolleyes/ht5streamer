@@ -372,11 +372,11 @@ function onKeyPress(key) {
         }
     } else if (key.key === 'f') {
         if (win.isFullscreen === true) {
-            $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+            $('#fullscreen_btn').click();
         } else {
-            $('#mep_0').attr('style', 'height: 100% !important');
+            $('#menu').click();
+            $('#fullscreen_btn').click();
         }
-        win.toggleFullscreen();
     }
 }
 

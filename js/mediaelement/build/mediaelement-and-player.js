@@ -3684,7 +3684,7 @@ if (typeof jQuery != 'undefined') {
 				normalWidth = 0,
 				container = player.container,
 				fullscreenBtn =
-					$('<div class="mejs-button mejs-fullscreen-button">' +
+					$('<div id="fullscreen_btn" class="mejs-button mejs-fullscreen-button">' +
 						'<button type="button" aria-controls="' + t.id + '" title="' + t.options.fullscreenText + '" aria-label="' + t.options.fullscreenText + '"></button>' +
 					'</div>')
 					.appendTo(controls);
