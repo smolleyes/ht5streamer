@@ -144,6 +144,11 @@ $(document).ready(function(){
         current_search=query;
         startSearch(query);
     });
+    // open in browser
+    $(document).on('click','.open_in_browser',function(e) {
+        e.preventDefault();
+        gui.Shell.openExternal($(this).attr('href'));
+    });
     // fullscreen signal and callback
     $(document).on('click','.mejs-fullscreen-button',function(e) {
         if (win.isFullscreen === true) {
@@ -239,7 +244,7 @@ $(document).ready(function(){
     // download file signal and callback
     $(document).on('click','.download_file',function(e) {
         e.preventDefault();
-        downloadFile($(this).attr('href'),$(this).attr('title'));
+        downloadFile($(this).attr('href'),$(this).attr('alt'));
     });
     $('#player').on('download_file',function(e,link,title){
         var a = document.createElement("a");
@@ -300,7 +305,6 @@ $(document).ready(function(){
     $('#config_btn').click(function() {
         editSettings();
     });
-    
     //custom context menu
     try {
 		$(document).bind("contextmenu", function(e) {
@@ -361,6 +365,7 @@ $(document).ready(function(){
 		youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {fillPlaylist(datas)});
 		}
 	});
+    
     startSearch('wu tang clan');
 });
 
@@ -378,6 +383,10 @@ function onKeyPress(key) {
             $('#fullscreen_btn').click();
         }
     }
+}
+
+function copyVideoLink() {
+    
 }
 
 //search
@@ -684,10 +693,15 @@ function printVideoInfos(infos,solo){
             } else {
                 img='images/sd.png';
             }
-            $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" title="'+title+'.'+container+'::'+vid+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
+            $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
         }
         if ($('#youtube_entry_res_'+vid+' a.video_link').length === 0){
             $('#youtube_entry_res_'+vid).parent().parent().remove();
+        }
+        if (search_engine === 'youtube') {
+            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
+        } else if (search_engine === 'dailymotion') {
+            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in dailymotion")+'" href="http://www.dailymotion.com/video/'+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
         }
     } catch(err){
         console.log('printVideoInfos err: '+err);
