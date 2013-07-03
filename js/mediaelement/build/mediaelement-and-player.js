@@ -2875,17 +2875,17 @@ if (typeof jQuery != 'undefined') {
 						if (player.hasFocus && player.options.enableKeyboard) {
 										
 								// find a matching key
-								for (var i=0, il=player.options.keyActions.length; i<il; i++) {
-										var keyAction = player.options.keyActions[i];
-										
-										for (var j=0, jl=keyAction.keys.length; j<jl; j++) {
-												if (e.keyCode == keyAction.keys[j]) {
-														e.preventDefault();
-														keyAction.action(player, media, e.keyCode);
-														return false;
-												}												
-										}
-								}
+								//~ for (var i=0, il=player.options.keyActions.length; i<il; i++) {
+										//~ //var keyAction = player.options.keyActions[i];
+										//~ 
+										//~ for (var j=0, jl=keyAction.keys.length; j<jl; j++) {
+												//~ if (e.keyCode == keyAction.keys[j]) {
+														//~ e.preventDefault();
+														//~ keyAction.action(player, media, e.keyCode);
+														//~ return false;
+												//~ }												
+										//~ }
+								//~ }
 						}
 						
 						return true;
