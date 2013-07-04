@@ -291,7 +291,6 @@ $(document).ready(function(){
                 search_type = $(this).val();
         });
     });
-    
     // pagination
     $('.back').click(function() {
         current_page-=1;
@@ -319,66 +318,6 @@ $(document).ready(function(){
     $('#config_btn').click(function() {
         editSettings();
     });
-    //custom context menu
-    try {
-		$(document).bind("contextmenu", function(e) {
-			e.preventDefault();
-			$("#custom-menu").css({ top: e.pageY + "px", left: e.pageX + "px" }).show(100);
-			if ((search_engine === 'youtube') && $('#paste_ytlink').length === 0) {
-				$('#custom-menu ol').append('<li><a id="paste_ytlink" href="#">'+myLocalize.translate("Paste/Open youtube link")+'</a></li>');
-			} else {
-				if ((search_engine !== 'youtube') && ($('#paste_ytlink').length === 1)) {
-					$('#paste_ytlink').parent().remove();
-				}
-			}
-			return false;
-		});
-		$('#custom-menu').click(function() {
-			$('#custom-menu').hide();
-		});
-		$(document).click(function() {
-			$('#custom-menu').hide();
-		});
-	} catch (err) {
-		alert(err);
-	}
-	//copy to clipboard
-	$('#copy').click(function() {
-		clipboard.clear()
-		var t='';
-		if(window.getSelection){
-			t = window.getSelection();
-		}else if(document.getSelection){
-			t = document.getSelection();
-		}else if(document.selection){
-			t = document.selection.createRange().text;
-		}
-		if (t === '') {
-			return;
-		}
-        clipboard.set(''+t+'','text');
-    });
-    //paste to clipboard
-	$('#paste').click(function() {
-        var text = clipboard.get('text');
-        var position = window.getSelection().getRangeAt(0).startOffset;
-    });
-    // paste yt link
-    $(document).on('click','#paste_ytlink',function(e) {
-		var vid='';
-		var text = clipboard.get('text');
-		try {
-			text.match('.*v=(.*)?&')[1]
-		} catch(err) {
-			try {
-				vid = text.match('.*v=(.*)')[1];
-			} catch(err) {
-				console.log("can\'t detect video id...")
-			}
-		console.log('youtube id: ' + vid);
-		youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {fillPlaylist(datas)});
-		}
-	});
     
     startSearch('wu tang clan');
 });
@@ -414,7 +353,7 @@ function startSearch(query){
     }
     else if (search_engine === 'youtube') {
         if (search_type === 'videos') {
-            youtube.searchVideos(query,current_page,search_filters,function(datas){ getVideosDetails(datas,'youtube'); });
+            youtube.searchVideos(query,current_page,search_filters,function(datas){ getVideosDetails(datas,'youtube',false); });
         } else {
             youtube.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'youtube'); });
         }
@@ -422,8 +361,12 @@ function startSearch(query){
     
 }
 
+function searchRelated(vid) {
+    youtube.searchRelated(vid,current_page,search_filters,function(datas){ getVideosDetails(datas,'youtube',true,vid); });
+}
 
-function getVideosDetails(datas,engine) {
+
+function getVideosDetails(datas,engine,sublist,vid) {
     // show next or hide back button if necessary
     if (current_page == 1){
         $('.back').css({'display':'None'});
@@ -461,7 +404,7 @@ function getVideosDetails(datas,engine) {
         }
         // load videos
         for(var i=0; i<items.length; i++) {
-            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas)});
+            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist)});
         }
     }
     // youtube
@@ -491,7 +434,7 @@ function getVideosDetails(datas,engine) {
         }
         // load videos
         for(var i=0; i<items.length; i++) {
-            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas)});
+            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid)});
         }
     }
 }
@@ -644,14 +587,14 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
     }
 }
 
-function fillPlaylist(items) {
+function fillPlaylist(items,sublist,sublist_id) {
     for(var i=0; i<items.length; i++) {
         if (items.length === 1) {
-			printVideoInfos(items[i], true);
+			printVideoInfos(items[i], true, false);
 			var pos = $('#items_container .youtube_item').first().position()['top'];
 			$(window).scrollTop(pos);
 		} else {
-			printVideoInfos(items[i],false);
+			printVideoInfos(items[i],false, sublist,sublist_id);
 		}
     }
     $('#items_container').show();
@@ -667,7 +610,7 @@ function fillPlaylist(items) {
     }
 }
 
-function printVideoInfos(infos,solo){
+function printVideoInfos(infos,solo,sublist,sublist_id){
     try{
         var title = infos.title.replace(/\"/g,'');
         var thumb = infos.thumb;
@@ -676,10 +619,14 @@ function printVideoInfos(infos,solo){
         var views = infos.views;
         var author = infos.author;
         if (solo === true) {
-			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'">Open related</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div></div></div></div>');
 		} else {
-			$('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
-		}
+            if (sublist === false) {
+                $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'">Open related</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div></div></div></div>');
+            } else {
+                $('#sublist_'+sublist_id).append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'">Open related</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div></div></div></div>');
+            }
+        }
         var resolutions_string = ['1080p','720p','480p','360p'];
         var resolutions = infos.resolutions;
         for(var i=0; i<resolutions_string.length; i++) {
@@ -703,7 +650,7 @@ function printVideoInfos(infos,solo){
             $('#youtube_entry_res_'+vid).parent().parent().remove();
         }
         if (search_engine === 'youtube') {
-            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
+            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" />');
         } else if (search_engine === 'dailymotion') {
             $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in dailymotion")+'" href="http://www.dailymotion.com/video/'+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
         }
