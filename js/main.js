@@ -36,6 +36,7 @@ var prev_vid;
 var isDownloading = false;
 var valid_vid=0;
 var search_filters='';
+var current_download={};
 
 // global var
 var search_engine = '';
@@ -259,6 +260,10 @@ $(document).ready(function(){
 			downloadFile(link,title);
 		}
     });
+    //cancel download
+    $(document).on('click','.cancel',function(e) {
+		current_download.abort();
+	});
     //engine select
     $("select#engines_select").change(function () {
         $("select#engines_select option:selected").each(function () {
@@ -669,9 +674,9 @@ function printVideoInfos(infos,solo){
         var views = infos.views;
         var author = infos.author;
         if (solo === true) {
-			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
 		} else {
-			$('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
+			$('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></div>');
 		}
         var resolutions_string = ['1080p','720p','480p','360p'];
         var resolutions = infos.resolutions;
@@ -786,8 +791,9 @@ function downloadFile(link,title){
     var startTime = (new Date()).getTime();
     var target = download_dir+'/ht5_download.'+startTime;
     
-	var request = http.request(link,
+	current_download = http.request(link,
 		function (response) {
+			$('#progress_'+vid+' a.cancel').show();
 			var contentLength = response.headers["content-length"];
 			var file = fs.createWriteStream(target);
 			response.on('data',function (chunk) {
@@ -800,7 +806,17 @@ function downloadFile(link,title){
 				$('#progress_'+vid+' progress').attr('value',newVal).text(txt);
 				$('#progress_'+vid+' strong').html(txt);
 			});
-			response.on('end', function() {
+			response.on('close', function() {
+				fs.unlink(target, function (err) {
+					if (err) {
+					} else {
+						console.log('successfully deleted '+target);
+					}
+				});
+				$('#progress_'+vid+' strong').html(myLocalize.translate("Download canceled!"));
+				setTimeout(function(){pbar.hide()},5000);
+			});
+			response.on('finish', function() {
 				file.end();
 				fs.rename(target,download_dir+'/'+title, function (err) {
 					if (err) {
@@ -812,9 +828,10 @@ function downloadFile(link,title){
 				isDownloading = false;
 				$('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
 				$('#progress_'+vid+' a.hide_bar').show();
+				$('#progress_'+vid+' a.cancel').hide();
 			});
 		});
-		request.end();
+		current_download.end();
 }
 
 function convertTomp3Win(file){

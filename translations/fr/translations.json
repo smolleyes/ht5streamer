@@ -106,6 +106,12 @@
     },
     "Download": {
         "fr": "Télécharger"
+    },
+    "Cancel": {
+        "fr": "Annuler"
+    },
+    "Download canceled!": {
+        "fr": "Téléchargement annulé!"
     }
 }
 
