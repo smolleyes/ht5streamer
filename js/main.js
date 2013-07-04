@@ -131,8 +131,7 @@ $(document).ready(function(){
     
     $('#resolutions_select').val(selected_resolution);
     $("select#engines_select option:selected").each(function () {
-                search_engine = $(this).val();
-                console.log(search_engine);
+		search_engine = $(this).val();
     });
     
      var player = $('video').mediaelementplayer()[0].player;
@@ -244,13 +243,21 @@ $(document).ready(function(){
     // download file signal and callback
     $(document).on('click','.download_file',function(e) {
         e.preventDefault();
-        downloadFile($(this).attr('href'),$(this).attr('alt'));
-    });
-    $('#player').on('download_file',function(e,link,title){
-        var a = document.createElement("a");
-        a.href = link;
-        a.setAttribute("download",title);
-        a.click();
+        var link = $(this).attr('href');
+        var title= $(this).attr('alt');
+        if (search_engine === 'dailymotion') {
+			var req = request($(this).attr('href'), function (error, response, body) {
+				if (!error) {
+					link = response.request.href;
+					downloadFile(link,title);
+				} else {
+					console.log('can\'t get dailymotion download link');
+					return;
+				}
+			});
+		} else {
+			downloadFile(link,title);
+		}
     });
     //engine select
     $("select#engines_select").change(function () {
@@ -372,21 +379,11 @@ $(document).ready(function(){
 function onKeyPress(key) {
     if (key.key === 'Esc') {
         if (win.isFullscreen === true) {
-            $('#mep_0').attr('style','height:calc(100% - 50px) !important');
-            win.toggleFullscreen();
+           $('#fullscreen_btn').click();
         }
     } else if (key.key === 'f') {
-        if (win.isFullscreen === true) {
-            $('#fullscreen_btn').click();
-        } else {
-            $('#menu').click();
-            $('#fullscreen_btn').click();
-        }
+      $('#fullscreen_btn').click();
     }
-}
-
-function copyVideoLink() {
-    
 }
 
 //search
@@ -665,7 +662,7 @@ function fillPlaylist(items) {
 
 function printVideoInfos(infos,solo){
     try{
-        var title = infos.title.replace(/"/g,'');
+        var title = infos.title.replace(/\"/g,'');
         var thumb = infos.thumb;
         var vid = infos.id;
         var seconds = secondstotime(parseInt(infos.duration));
@@ -789,45 +786,35 @@ function downloadFile(link,title){
     var startTime = (new Date()).getTime();
     var target = download_dir+'/ht5_download.'+startTime;
     
-    var req = request(link, function (error, response, body) {
-        if (!error) {
-            link = response.request.href;
-            var request = http.request(link,
-                function (response) {
-                    var contentLength = response.headers["content-length"];
-                    var file = fs.createWriteStream(target);
-                    response.on('data',function (chunk) {
-                        file.write(chunk);
-                        var bytesDone = file.bytesWritten;
-                        currentTime = (new Date()).getTime();
-                        var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
-                        var newVal= bytesDone*100/contentLength;
-                        var txt = Math.floor(newVal)+'% '+ myLocalize.translate('done at')+' '+transfer_speed+' kb/s';
-                        $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
-                        $('#progress_'+vid+' strong').html(txt);
-                    });
-                    response.on('end', function() {
-                        file.end();
-                        fs.rename(target,download_dir+'/'+title, function (err) {
-                            if (err) {
-                            } else {
-                                console.log('successfully renamed '+download_dir+'/'+title);
-                            }
-                        });
-                        $('#progress_'+vid+' strong').html(myLocalize.translate('Download ended !'));
-                        isDownloading = false;
-                        $('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
-                        $('#progress_'+vid+' a.hide_bar').show();
-                    });
-                });
-            request.end();
-            //startDownload(datas.link,datas.title);
-        } else {
-            console.log('can\'t get dailymotion download link');
-            pbar.hide();
-            return;
-        }
-    });
+	var request = http.request(link,
+		function (response) {
+			var contentLength = response.headers["content-length"];
+			var file = fs.createWriteStream(target);
+			response.on('data',function (chunk) {
+				file.write(chunk);
+				var bytesDone = file.bytesWritten;
+				currentTime = (new Date()).getTime();
+				var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
+				var newVal= bytesDone*100/contentLength;
+				var txt = Math.floor(newVal)+'% '+ myLocalize.translate('done at')+' '+transfer_speed+' kb/s';
+				$('#progress_'+vid+' progress').attr('value',newVal).text(txt);
+				$('#progress_'+vid+' strong').html(txt);
+			});
+			response.on('end', function() {
+				file.end();
+				fs.rename(target,download_dir+'/'+title, function (err) {
+					if (err) {
+					} else {
+						console.log('successfully renamed '+download_dir+'/'+title);
+					}
+				});
+				$('#progress_'+vid+' strong').html(myLocalize.translate('Download ended !'));
+				isDownloading = false;
+				$('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
+				$('#progress_'+vid+' a.hide_bar').show();
+			});
+		});
+		request.end();
 }
 
 function convertTomp3Win(file){
