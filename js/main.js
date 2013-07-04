@@ -37,6 +37,7 @@ var isDownloading = false;
 var valid_vid=0;
 var search_filters='';
 var current_download={};
+var canceled = false;
 
 // global var
 var search_engine = '';
@@ -262,6 +263,7 @@ $(document).ready(function(){
     });
     //cancel download
     $(document).on('click','.cancel',function(e) {
+		canceled=true;
 		current_download.abort();
 	});
     //engine select
@@ -780,6 +782,7 @@ function downloadFile(link,title){
     });
     // start download
     pbar.show();
+    canceled=false;
     $('#progress_'+vid+' strong').html(myLocalize.translate('Waiting for connection...'));
     isDownloading = true;
     var opt = {};
@@ -806,29 +809,31 @@ function downloadFile(link,title){
 				$('#progress_'+vid+' progress').attr('value',newVal).text(txt);
 				$('#progress_'+vid+' strong').html(txt);
 			});
-			response.on('close', function() {
-				fs.unlink(target, function (err) {
-					if (err) {
-					} else {
-						console.log('successfully deleted '+target);
-					}
-				});
-				$('#progress_'+vid+' strong').html(myLocalize.translate("Download canceled!"));
-				setTimeout(function(){pbar.hide()},5000);
-			});
-			response.on('finish', function() {
+			response.on('end', function() {
 				file.end();
-				fs.rename(target,download_dir+'/'+title, function (err) {
-					if (err) {
-					} else {
-						console.log('successfully renamed '+download_dir+'/'+title);
-					}
-				});
-				$('#progress_'+vid+' strong').html(myLocalize.translate('Download ended !'));
 				isDownloading = false;
-				$('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
-				$('#progress_'+vid+' a.hide_bar').show();
-				$('#progress_'+vid+' a.cancel').hide();
+				if (canceled === true) {
+					fs.unlink(target, function (err) {
+						if (err) {
+						} else {
+							console.log('successfully deleted '+target);
+						}
+					});
+					$('#progress_'+vid+' a.cancel').hide();
+					$('#progress_'+vid+' strong').html(myLocalize.translate("Download canceled!"));
+					setTimeout(function(){pbar.hide()},5000);
+				} else {
+					fs.rename(target,download_dir+'/'+title, function (err) {
+						if (err) {
+						} else {
+							console.log('successfully renamed '+download_dir+'/'+title);
+						}
+					});
+					$('#progress_'+vid+' strong').html(myLocalize.translate('Download ended !'));
+					$('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
+					$('#progress_'+vid+' a.hide_bar').show();
+					$('#progress_'+vid+' a.cancel').hide();
+				}
 			});
 		});
 		current_download.end();
