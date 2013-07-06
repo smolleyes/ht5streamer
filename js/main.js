@@ -349,7 +349,8 @@ $(document).ready(function(){
 function onKeyPress(key) {
     if (key.key === 'Esc') {
         if (win.isFullscreen === true) {
-           $('#fullscreen_btn').click();
+           $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+           win.toggleFullscreen();
         }
     } else if (key.key === 'f') {
       $('#fullscreen_btn').click();
