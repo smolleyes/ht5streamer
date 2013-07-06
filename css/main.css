@@ -140,7 +140,7 @@ height:calc(100% - 50px) !important;
 }
 
 .highlight a:hover {
-    color:white;
+    color:red;
 }
 
 #config_btn {
@@ -385,4 +385,19 @@ padding: 0px 5px;
 #custom-menu ol li a:active
 {
 color: White;
+}
+
+/* toggle control*/
+
+.toggle-control {
+    padding: 5px 10px 10px 10px;
+}
+
+.toggle-control-link {
+    background: black;
+    width: calc(100% + 21px);
+    display: block;
+    margin: 0px 0px 0px -10px;
+    color: white !important;
+    padding: 5px;
 }

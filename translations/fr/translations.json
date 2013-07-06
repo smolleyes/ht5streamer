@@ -78,7 +78,7 @@
         "fr": "Langage:"
     },
     "verified videos in this playlist": {
-        "fr": "vidéos vérifiées dans cette playlist"
+        "fr": " vidéos vérifiées dans cette playlist"
     },
     "Download directory:": {
         "fr": "Dossier de téléchargements:"
@@ -112,6 +112,30 @@
     },
     "Download canceled!": {
         "fr": "Téléchargement annulé!"
+    },
+    "Open related videos": {
+        "fr": "Vidéos suggérées"
+    },
+    "Videos found": {
+        "fr": "Vidéos trouvées"
+    },
+    "Load more videos": {
+        "fr": "Charger plus de vidéos"
+    },
+    "Order by:": {
+        "fr": "Triées par:"
+    },
+    "Relevance": {
+        "fr": "Pertinence"
+    },
+    "Published": {
+        "fr": "Date"
+    },
+    "Views": {
+        "fr": "Vues"
+    },
+    "Rating": {
+        "fr": "Votes"
     }
 }
 
