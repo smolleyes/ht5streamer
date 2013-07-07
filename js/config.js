@@ -20,6 +20,7 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var win = gui.Window.get();
+var version = "0.1";
 
 //localize
 var Localize = require('localize');
@@ -75,6 +76,8 @@ var htmlConfig='<div style="height:36px;"> \
 
 $(document).ready(function() {
     $('#main_config').empty().append(htmlConfig);
+    $('#version').empty().append("Version: "+version);
+    $('#config_title').empty().append(myLocalize.translate("Ht5streamer configuration:"));
     // start flags
     $('#countries').val(settings.locale);
     $('#download_path').val(settings.download_dir);

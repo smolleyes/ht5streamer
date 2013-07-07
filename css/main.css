@@ -426,3 +426,11 @@ color: White;
     color: white !important;
     padding: 5px;
 }
+
+/* others */
+
+#version {
+    background: black;
+    color: white;
+    padding:5px;
+}
