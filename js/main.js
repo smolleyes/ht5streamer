@@ -42,7 +42,8 @@ var canceled = false;
 
 // global var
 var search_engine = '';
-
+var total_pages = 0;
+var pagination_init = false;
 
 // settings
 var confDir;
@@ -68,8 +69,6 @@ var htmlStr = '<div id="menu"> \
     <form id="video_search"> \
         <label class="space">'+myLocalize.translate("Search:")+'</label> \
         <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" required /> \
-        <input type="submit" value="'+myLocalize.translate("Send")+'" />  \
-    </form> \
         <label>'+myLocalize.translate("Search type:")+'</label> \
         <select id="search_type_select"> \
             <option value = "videos">Videos</option> \
@@ -88,6 +87,8 @@ var htmlStr = '<div id="menu"> \
             <option value = "hd">HD</option> \
             <option id="3dopt" value = "3d">3D</option> \
         </select> \
+        <input id="video_search_btn" type="submit" class="space" value="'+myLocalize.translate("Send")+'" />  \
+        </form> \
         <a id="config_btn" href="#" title="'+myLocalize.translate("Settings")+'"> \
             <img src="images/config.png" height="28" width="28" /> \
         </a> \
@@ -104,9 +105,8 @@ var htmlStr = '<div id="menu"> \
     <div id="left"> \
         <div id="loading" style="display:None;"><img style="width:28px;height:28px;"src="images/spinner.gif" />'+myLocalize.translate(" Loading videos...")+'</div> \
          <div id="search"> \
-            <a class="back" title="'+myLocalize.translate("Previous page")+'"><img id="next" src="images/back.png" /></a> \
-            <a title="'+myLocalize.translate("Next page")+'" class="next"><img id="back" src="images/next.png" /></a> \
             <div id="search_results"></div> \
+            <div id="pagination"></div> \
         </div> \
         <div id="items_container"></div> \
     </div> \
@@ -145,6 +145,7 @@ $(document).ready(function(){
     });
     
      var player = $('video').mediaelementplayer()[0].player;
+     // search form
      $('#video_search').bind('submit', function(e){
         e.preventDefault();
         query=$('#video_search_query').val();
@@ -222,7 +223,7 @@ $(document).ready(function(){
             if ( load_first_song_next === true ) {
                 //try to load a new page if available
                     try {
-                        if ($('.next').is(":visible")){
+                        if (total_pages > current_page){
                             $('.next').click();
                         } else {
                             console.log('No more videos to plays...');
@@ -232,8 +233,8 @@ $(document).ready(function(){
                     }
             } else if ( load_first_song_prev === true ) {
                 try {
-                    if ($('.back').is(":visible")){
-                        $('.back').click();
+                    if (current_page > 1){
+                        $('.prev').click();
                     } else {
                         console.log('No more videos to plays...');
                     }
@@ -307,22 +308,14 @@ $(document).ready(function(){
     //search filters
     $("select#search_filters").change(function () {
         $("select#search_filters option:selected").each(function () {
-                search_filters = $(this).val();
+            search_filters = $(this).val();
         });
     });
     $("select#search_type_select").change(function () {
         $("select#search_type_select option:selected").each(function () {
-                search_type = $(this).val();
+            search_type = $(this).val();
+            pagination_init = false;
         });
-    });
-    // pagination
-    $('.back').click(function() {
-        current_page-=1;
-        startSearch(current_search);
-    });
-    $('.next').click(function() {
-        current_page+=1;
-        startSearch(current_search);
     });
     // convert to mp3
     $(document).on('click','.convert',function(e) {
@@ -342,9 +335,13 @@ $(document).ready(function(){
     $('#config_btn').click(function() {
         editSettings();
     });
-    
     startSearch('wu tang clan');
 });
+
+function changePage() {
+    current_page = $("#pagination").pagination('getCurrentPage');
+    startSearch(current_search);
+}
 
 function onKeyPress(key) {
     if (key.key === 'Esc') {
@@ -367,6 +364,7 @@ function startSearch(query){
         current_page =1;
         current_search_page=1;
         current_start_index=1;
+        var pagination_init = false;
     }
     current_search=query;
     if (search_engine === 'dailymotion') {
@@ -392,16 +390,6 @@ function searchRelated(vid,page) {
 
 
 function getVideosDetails(datas,engine,sublist,vid) {
-    // show next or hide back button if necessary
-    if (sublist === false) {
-        if (current_page == 1){
-            $('.back').css({'display':'None'});
-            $('.next').css({'display':'block'});
-        } else {
-            $('.back').css({'display':'block'});
-            $('.next').css({'display':'block'});
-        }
-    }
     //dailymotion
     if (engine === 'dailymotion') {
         var items = datas.list;
@@ -411,17 +399,12 @@ function getVideosDetails(datas,engine,sublist,vid) {
                 $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
                 $('#search').show();
                 $('#loading').hide();
-                $('.next').css({'display':'None'});
-                $('.back').css({'display':'None'});
                 return;
             }
         }
-        if ((datas.has_more === 'true') && (sublist === false)) {
-            $('.next').css({'display':'None'});
-        }
         // print total results
         if (sublist === false) {
-            $('#search_results').html('<p><strong>'+totalResults+'</strong>'+myLocalize.translate("videos found, page")+' '+current_page+'</p>');
+            $('#search_results').html('<p><strong>'+totalResults+'</strong>'+myLocalize.translate("videos found")+'</p>');
         }
         try {
             p = items.length;
@@ -430,10 +413,22 @@ function getVideosDetails(datas,engine,sublist,vid) {
                 $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
                 $('#search').show();
                 $('#loading').hide();
-                $('.next').css({'display':'None'});
-                $('.back').css({'display':'None'});
                 return;
             }
+        }
+        if ((sublist === false) && (pagination_init === false)) {
+            $("#pagination").pagination({
+                    items: totalResults,
+                    itemsOnPage: 25,
+                    displayedPages:5,
+                    cssStyle: 'compact-theme',
+                    edges:1,
+                    prevText : ''+myLocalize.translate("Prev")+'',
+                    nextText : ''+myLocalize.translate("Next")+'',
+                    onPageClick : changePage
+            });
+            pagination_init = true;
+            total_pages=$("#pagination").pagination('getPagesCount');
         }
         // load videos
         for(var i=0; i<items.length; i++) {
@@ -448,13 +443,11 @@ function getVideosDetails(datas,engine,sublist,vid) {
                 $('#search_results').html(myLocalize.translate(myLocalize.translate("<p><strong>No videos</strong> found...</p>")));
                 $('#search').show();
                 $('#loading').hide();
-                $('.next').css({'display':'None'});
-                $('.back').css({'display':'None'});
                 return;
             }
         }
         if (sublist === false) {
-            $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found, page")+' '+current_page+'</p>');
+            $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
         } else {
             var pages = totalResults / 10;
             try {
@@ -476,18 +469,28 @@ function getVideosDetails(datas,engine,sublist,vid) {
         }
         var items=datas.items;
         try {
-            if ((items.length < 25) && (sublist === false)) {
-                $('.next').css({'display':'None'});
-            }
+            p=items.length;
         } catch(err) {
             if (sublist === false) {
                 $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
                 $('#search').show();
                 $('#loading').hide();
-                $('.next').css({'display':'None'});
-                $('.back').css({'display':'None'});
                 return;
             }
+        }
+        if ((sublist === false) && (pagination_init === false)) {
+            $("#pagination").pagination({
+                    items: totalResults,
+                    itemsOnPage: 25,
+                    displayedPages:5,
+                    cssStyle: 'compact-theme',
+                    edges:1,
+                    prevText : ''+myLocalize.translate("Prev")+'',
+                    nextText : ''+myLocalize.translate("Next")+'',
+                    onPageClick : changePage
+            });
+            pagination_init = true;
+            total_pages=$("#pagination").pagination('getPagesCount');
         }
         // load videos
         for(var i=0; i<items.length; i++) {
@@ -497,13 +500,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
 }
 
 function getPlaylistInfos(datas, engine){
-    if (current_page == 1){
-        $('.back').css({'display':'None'});
-        $('.next').css({'display':'block'});
-    } else {
-        $('.back').css({'display':'block'});
-        $('.next').css({'display':'block'});
-    }
+    sublist=false;
     //dailymotion
     if (engine === 'dailymotion') {
         var items=datas.list;
@@ -512,24 +509,31 @@ function getPlaylistInfos(datas, engine){
             $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
-            $('.next').css({'display':'None'});
-            $('.back').css({'display':'None'});
             return;
         }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found, page")+' '+current_search_page+'</p>');
-        if (datas.has_more === 'true') {
-            $('.next').css({'display':'None'});
-        }
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found")+'</p>');
         try {
             for(var i=0; i<items.length; i++) {
                 loadPlaylistItems(items[i], 'dailymotion');
+            }
+            if ((sublist === false) && (pagination_init === false)) {
+                $("#pagination").pagination({
+                        items: totalResults,
+                        itemsOnPage: 25,
+                        displayedPages:5,
+                        cssStyle: 'compact-theme',
+                        edges:1,
+                        prevText : ''+myLocalize.translate("Prev")+'',
+                        nextText : ''+myLocalize.translate("Next")+'',
+                        onPageClick : changePage
+                });
+                pagination_init = true;
+                total_pages=$("#pagination").pagination('getPagesCount');
             }
         } catch(err) {
             $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
-            $('.next').css({'display':'None'});
-            $('.back').css({'display':'None'});
         }
     }
     // youtube
@@ -541,23 +545,33 @@ function getPlaylistInfos(datas, engine){
             $('#loading').hide();
             return;
         }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found, page")+' '+current_page+'</p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found")+'</p>');
         var items=datas.items;
         try {
-            if (items.length < 25) {
-                $('.next').css({'display':'None'});
-            }
+            p=items.length;
         } catch(err) {
             $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
-            $('.next').css({'display':'None'});
-            $('.back').css({'display':'None'});
             return;
         }
         // load videos
         for(var i=0; i<items.length; i++) {
            loadPlaylistItems(items[i], 'youtube');
+        }
+        if ((sublist === false) && (pagination_init === false)) {
+            $("#pagination").pagination({
+                    items: totalResults,
+                    itemsOnPage: 25,
+                    displayedPages:5,
+                    cssStyle: 'compact-theme',
+                    edges:1,
+                    prevText : ''+myLocalize.translate("Prev")+'',
+                    nextText : ''+myLocalize.translate("Next")+'',
+                    onPageClick : changePage
+            });
+            pagination_init = true;
+            total_pages=$("#pagination").pagination('getPagesCount');
         }
     }
     $('#items_container').show();
@@ -603,13 +617,10 @@ function loadPlaylistSongs(pid){
     else if ( engine === 'youtube') {
         youtube.loadSongs(plid,length,current_start_index, function(datas, length, pid, engine) { fillPlaylistFromPlaylist(datas, length, pid, engine); });
     }
-    $('.next .back').css({'display':'None'});
 }
 
 function fillPlaylistFromPlaylist(datas, length, pid, engine) {
     var sublist=false;
-    $('.next').css({'display':'None'});
-    $('.back').css({'display':'None'});
     if (engine === 'dailymotion') {
         var items=datas.list;
         for(var i=0; i<items.length; i++) {
@@ -664,6 +675,7 @@ function fillPlaylist(items,sublist,sublist_id) {
     $('#search').show();
     $('#loading').hide();
     if (search_type === 'playlists') {
+        $('#pagination').hide();
         if (sublist === false) {
             var valid_vid = $('.youtube_item').length
             $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');

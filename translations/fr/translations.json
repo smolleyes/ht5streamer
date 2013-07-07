@@ -26,23 +26,17 @@
     " Loading videos...": {
         "fr": " Chargement des vidéos..."
     },
-    "Previous page": {
-        "fr": "Page précédente"
-    },
-    "Next page": {
-        "fr": "Page suivante"
-    },
     "<p><strong>No videos</strong> found...</p>": {
         "fr": "<p><strong>Aucune vidéo</strong> trouvée...</p>"
     },
     "<p><strong>No playlist</strong> found...</p>": {
         "fr": "<p><strong>Aucune playlist</strong> trouvée...</p>"
     },
-    "videos found, page": {
-        "fr": "vidéos trouvées, page"
+    "videos found": {
+        "fr": "vidéos trouvées"
     },
-    "playlists found, page": {
-        "fr": "playlists trouvées, page"
+    "playlists found": {
+        "fr": "playlists trouvées"
     },
     "Converting video to mp3, please wait...": {
         "fr": "Conversion de la vidéo en mp3..."
@@ -136,6 +130,12 @@
     },
     "Rating": {
         "fr": "Votes"
+    },
+    "Prev": {
+        "fr": "Préc"
+    },
+    "Next": {
+        "fr": "Suiv"
     }
 }
 
