@@ -1,3 +1,19 @@
+//~ Copyright (C) Laguillaumie sylvain
+//
+//~ This program is free software; you can redistribute it and/or
+//~ modify it under the terms of the GNU General Public License
+//~ as published by the Free Software Foundation; either version 2
+//~ of the License, or (at your option) any later version.
+//~ 
+//~ This program is distributed in the hope that it will be useful,
+//~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+//~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//~ GNU General Public License for more details.
+//~ 
+//~ You should have received a copy of the GNU General Public License
+//~ along with this program; if not, write to the Free Software
+//~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 var gui = require('nw.gui');
 var win = gui.Window.get();
 var fs = require('fs');
@@ -315,6 +331,10 @@ $(document).ready(function(){
         $("select#search_type_select option:selected").each(function () {
             search_type = $(this).val();
             pagination_init = false;
+            current_start_index = 1;
+            current_prev_start_index = 1;
+            current_page=1;
+            current_search_page=1;
         });
     });
     // convert to mp3
