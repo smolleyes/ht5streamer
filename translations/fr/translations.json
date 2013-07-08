@@ -139,6 +139,12 @@
     },
     "Ht5streamer configuration:": {
         "fr": "Configuration de ht5streamer:"
+    },
+    "Copy youtube link": {
+        "fr": "Copier le lien youtube"
+    },
+    "Copy dailymotion link": {
+        "fr": "Copier le lien dailymotion"
     }
 }
 

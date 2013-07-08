@@ -23,7 +23,6 @@ var https = require('https');
 var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
-var clipboard = gui.Clipboard.get();
 
 //localize
 var Localize = require('localize');
@@ -131,12 +130,6 @@ var htmlStr = '<div id="menu"> \
     </div> \
     <div id="custom-menu"> \
 <ol> \
-<li><a id="copy" href="#">'+myLocalize.translate("Copy")+'</a> </li> \
-<!-- <li><a id="paste" href="#">Paste</a> </li> -->\
-<!--<li class="list-devider"> \
-<hr /> \
-</li> \
-<li><a href="#">Mark as unread</a> </li> -->\
 </ol> \
 </div> \
 </div>';
