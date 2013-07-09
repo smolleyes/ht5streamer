@@ -25,16 +25,16 @@ bongo.db({
 
 });
 
-function insertToDb(title,ext,vid,flink,engine) {
+function insertToDb(title,vid,flink,engine) {
 	bongo.db('ht5').collection('videos').insert({
 	  title : title,
-	  ext : ext,
 	  vid: vid,
 	  flink: flink,
 	  engine: engine
 	},function(error,id) {
 	  if(!error) {
 		console.log(title + ' inserted successfully in database');
+		getAllItems(function(results) { showItems(results); });
 	  }
 	});
 }
@@ -51,16 +51,13 @@ function findInDb(title) {
 	});
 }
 
-function removeFromDb (title) {
-	bongo.db('ht5').collection('videos').remove({
-		title : title
-	}, function(error, data) {
+function removeFromDb(id) {
+	bongo.db('ht5').collection('videos').remove(id, function(error, data) {
 		if(!error) {
-			console.log(data);
-		} else {
-			console.log(error);
+			console.log('id: '+id+', successfully removed from db');
+			getAllItems(function(results) { showItems(results); });
 		}
-})
+	});
 }
 
 function getAllItems(cb) {

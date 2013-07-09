@@ -80,14 +80,14 @@ height:calc(100% - 50px) !important;
 #loading {
     position: fixed;
     z-index: 500;
-    top: 61px;
+    top: 85px;
     left: 9px;
 }
 
 #search {
     position: fixed;
     z-index: 500;
-    top: 46px;
+    top: 77px;
     width: 46%;
     background:white;
     overflow:auto;
@@ -95,15 +95,12 @@ height:calc(100% - 50px) !important;
 }
 
 #pagination {
-    margin-left:10px;
+    margin-left:8px;
     width:600px;
 }
 
-#search_results {
-}
-
 #search p {
-    margin:10px;
+    margin:8px;
 }
 
 #search a {
@@ -433,4 +430,9 @@ color: White;
     background: black;
     color: white;
     padding:5px;
+}
+
+#treeview {
+    position: relative;
+    top:40px;
 }

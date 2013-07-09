@@ -22,9 +22,9 @@ $(document).ready(function() {
 		delegateType: "contextmenu"
 	};
 	$(document).on("rightclick", ".start_video", function(e) {
-		var link = '';
 		var evid = $(this).parent().closest('.youtube_item').find('div')[5].id;
 		var vid = '';
+		var title = $(this)[0].text;
 		if (evid.match('_sub') === null) {
 			vid = evid.replace('youtube_entry_res_','');
 		} else {
@@ -32,12 +32,17 @@ $(document).ready(function() {
 		}
 		try {
 			$('#copy_link').parent().remove();
+			$('#save_link').parent().remove();
 			if (search_engine === 'youtube') {
-				link = "http://www.youtube.com/watch?v="+vid;
-				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+link+'">'+myLocalize.translate("Copy youtube link")+'</a></li>');
+				var link = "http://www.youtube.com/watch?v="+vid;
+				var engine='youtube';
+				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy youtube link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
 			} else if (search_engine === 'dailymotion') {
-				link="http://www.dailymotion.com/video/"+vid;
-				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+link+'">'+myLocalize.translate("Copy dailymotion link")+'</a></li>');
+				var link = "http://www.dailymotion.com/video/"+vid;
+				var engine='dailymotion';
+				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy dailymotion link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
 			}
 		} catch(err) {
 			console.log("can't detect link to copy..." + err);
@@ -88,15 +93,27 @@ $(document).ready(function() {
     });
     // paste yt link
     $(document).on('click','#paste_ytlink',function(e) {
+		e.preventDefault();
 		var ytlink = getYtlinkFromClipboard();
 		youtube.getVideoInfos(ytlink,0,1,function(datas) {fillPlaylist(datas)});
 		$('#custom-menu').hide();
 	});
 	// copy link
 	$(document).on('click','#copy_link',function(e) {
+		e.preventDefault();
 		clipboard.clear();
-		var link = $(this).attr('alt');
-		clipboard.set(''+link+'','text');
+		var text = $(this).attr('alt').split('::')[2];
+		clipboard.set(''+text+'','text');
+		$('#custom-menu').hide();
+	});
+	// save link
+	$(document).on('click','#save_link',function(e) {
+		e.preventDefault();
+		var vid = $(this).attr('alt').split('::')[0];
+		var title= $(this).attr('alt').split('::')[1];
+		var link = $(this).attr('alt').split('::')[2];
+		var engine = $(this).attr('alt').split('::')[3];
+		insertToDb(title,vid,link,engine);
 		$('#custom-menu').hide();
 	});
 });

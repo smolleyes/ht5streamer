@@ -118,12 +118,30 @@ var htmlStr = '<div id="menu"> \
 </div> \
 <div id="content"> \
     <div id="left"> \
-        <div id="loading" style="display:None;"><img style="width:28px;height:28px;"src="images/spinner.gif" />'+myLocalize.translate(" Loading videos...")+'</div> \
-         <div id="search"> \
-            <div id="search_results"></div> \
-            <div id="pagination"></div> \
+        <div id="wrapper"> \
+            <div id="tabContainer"> \
+                <div class="tabs"> \
+                    <ul> \
+                        <li id="tabHeader_1">Results</li> \
+                        <li id="tabHeader_2">Playlist</li> \
+                    </ul> \
+                </div> \
+                <div class="tabscontent"> \
+                    <div class="tabpage" id="tabpage_1"> \
+                        <div id="loading" style="display:None;"><img style="width:28px;height:28px;"src="images/spinner.gif" />'+myLocalize.translate(" Loading videos...")+'</div> \
+                         <div id="search"> \
+                            <div id="search_results"></div> \
+                            <div id="pagination"></div> \
+                        </div> \
+                        <div id="items_container"></div> \
+                    </div> \
+                    <div class="tabpage" id="tabpage_2"> \
+                        <div id="treeview"> \
+                        </div> \
+                    </div> \
+                </div> \
+            </div> \
         </div> \
-        <div id="items_container"></div> \
     </div> \
     <div id="right"> \
             <video width="100%" height="100%" src="t.mp4"></video> \
