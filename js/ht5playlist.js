@@ -50,7 +50,7 @@ function showItems(results) {
 				{ 
 					"data" : "Youtube",
 					"icon" : { 
-						"image" : "jstree/_docs/_drive.png" 
+						"image" : "_docs/_drive.png" 
 					},
 					"metadata" : { id : 'youtube_rootnode' },
 					"children" : ytchilds
@@ -63,6 +63,10 @@ function showItems(results) {
 			
 			]
 			},
+				"themes" : {
+				"theme" : "default"
+			},
+
 			"plugins" : [ "themes", "json_data", "ui", "contextmenu" ]
 		}).bind("select_node.jstree", function (e, data) { onSelectedItem(data.rslt.obj.prevObject[0].attributes); });
 	});
