@@ -1,0 +1,153 @@
+{
+    "Search:": {
+        "fr": "Recherche:"
+    },
+    "Enter your search...": {
+        "fr": "Entrez votre recherche..."
+    },
+    "Send": {
+        "fr": "Envoyer"
+    },
+    "Search type:": {
+        "fr": "Type de recherche:"
+    },
+    "Engine:": {
+        "fr": "Moteur:"
+    },
+    "Views:": {
+        "fr": "Vues:"
+    },
+    "Posted by:": {
+        "fr": "Posté par:"
+    },
+    "Maximum resolution:": {
+        "fr": "Résolution maximum:"
+    },
+    " Loading videos...": {
+        "fr": " Chargement des vidéos..."
+    },
+    "<p><strong>No videos</strong> found...</p>": {
+        "fr": "<p><strong>Aucune vidéo</strong> trouvée...</p>"
+    },
+    "<p><strong>No playlist</strong> found...</p>": {
+        "fr": "<p><strong>Aucune playlist</strong> trouvée...</p>"
+    },
+    "videos found": {
+        "fr": "vidéos trouvées"
+    },
+    "playlists found": {
+        "fr": "playlists trouvées"
+    },
+    "Converting video to mp3, please wait...": {
+        "fr": "Conversion de la vidéo en mp3..."
+    },
+    "video converted successfully !": {
+        "fr": "vidéo convertie avec succès !"
+    },
+    "A download is already running, please wait...": {
+        "fr": "Un téléchargement est déjà en cours..."
+    },
+    "Waiting for connection...": {
+        "fr": "En attente de connexion..."
+    },
+    "done at": {
+        "fr": "effectué à"
+    },
+    "Download ended !": {
+        "fr": "Téléchargement terminé !"
+    },
+    "Downloading": {
+        "fr": "Téléchargement"
+    },
+    "Convert to mp3": {
+        "fr": "Convertir en mp3"
+    },
+    "Close": {
+        "fr": "Fermer"
+    },
+    "Settings": {
+        "fr": "Paramètres"
+    },
+    "Language:": {
+        "fr": "Langage:"
+    },
+    "verified videos in this playlist": {
+        "fr": " vidéos vérifiées dans cette playlist"
+    },
+    "Download directory:": {
+        "fr": "Dossier de téléchargements:"
+    },
+    "Select": {
+        "fr": "Sélectionner"
+    },
+    "Copy": {
+        "fr": "Copier"
+    },
+    "Save": {
+        "fr": "Sauvegarder"
+    },
+    "Paste/Open youtube link": {
+        "fr": "Coller/ouvrir lien youtube"
+    },
+    "Filters:": {
+        "fr": "Filtres:"
+    },
+    "Open in youtube": {
+        "fr": "Ouvrir dans youtube"
+    },
+    "Open in dailymotion": {
+        "fr": "Ouvrir dans dailymotion"
+    },
+    "Download": {
+        "fr": "Télécharger"
+    },
+    "Cancel": {
+        "fr": "Annuler"
+    },
+    "Download canceled!": {
+        "fr": "Téléchargement annulé!"
+    },
+    "Open related videos": {
+        "fr": "Vidéos suggérées"
+    },
+    "Videos found": {
+        "fr": "Vidéos trouvées"
+    },
+    "Load more videos": {
+        "fr": "Charger plus de vidéos"
+    },
+    "Order by:": {
+        "fr": "Triées par:"
+    },
+    "Relevance": {
+        "fr": "Pertinence"
+    },
+    "Published": {
+        "fr": "Date"
+    },
+    "Views": {
+        "fr": "Vues"
+    },
+    "Rating": {
+        "fr": "Votes"
+    },
+    "Prev": {
+        "fr": "Préc"
+    },
+    "Next": {
+        "fr": "Suiv"
+    },
+    "Ht5streamer configuration:": {
+        "fr": "Configuration de ht5streamer:"
+    },
+    "Copy youtube link": {
+        "fr": "Copier le lien youtube"
+    },
+    "Copy dailymotion link": {
+        "fr": "Copier le lien dailymotion"
+    },
+    "Save to playlist": {
+        "fr": "Sauvegarder dans la playlist"
+    }
+}
+
