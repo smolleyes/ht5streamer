@@ -3,7 +3,7 @@ Maintainer: Laguillaumie sylvain <s.lagui@free.fr>
 Section: sound
 Version: 0.1.1
 Priority: optional
-Build-Depends: debhelper (>= 7), python-support (>= 0.8.4), python-distutils-extra, python-setuptools, python-xlib,libx11-6,libxrandr2,libgtk2.0-0,libatk1.0-0,libgdk-pixbuf2.0-0,libpango1.0-0,libcairo2,libfreetype6,libfontconfig1,libxcomposite1,libasound2,libxdamage1,libxext6,libxfixes3,libxrender1,libgconf-2-4,libnss3,libnspr4
+Build-Depends: debhelper (>= 7), python-support (>= 0.8.4), python-distutils-extra, python-setuptools, python-xlib,libx11-6,libxrandr2,libgtk2.0-0,libatk1.0-0,libgdk-pixbuf2.0-0,libpango1.0-0,libcairo2,libfreetype6,libfontconfig1,libxcomposite1,libasound2,libxdamage1,libxext6,libxfixes3,libxrender1,libgconf-2-4,libnss3,libnspr4,libudev0
 Standards-Version: 3.8.4
 XS-Python-Version: current
 
