@@ -1,4 +1,4 @@
-ht5streamer (0.1.1ppa1~raring) raring; urgency=high
+ht5streamer (0.1.1ppa1~precise) precise; urgency=high
 
   * add dailymotion suggested videos
   * add playslist system with db storage
