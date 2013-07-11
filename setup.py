@@ -54,8 +54,8 @@ version = open('VERSION', 'r').read().strip()
 
 data_files = [
 	('bin',['ht5streamer','nw.pak','libffmpegsumo.so']),
-	('share/icons/hicolor/24x24/apps',['images/24x24/ht5streamer.png']),
-	('share/icons/hicolor/48x48/apps',['images/48x48/ht5streamer.png']),
+	('share/icons/hicolor/24x24/apps',['setup-images/24x24/ht5streamer.png']),
+	('share/icons/hicolor/48x48/apps',['setup-images/48x48/ht5streamer.png']),
 	('share/applications',['ht5streamer.desktop']),
 ]
 
