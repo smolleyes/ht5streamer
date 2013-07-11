@@ -1,0 +1,18 @@
+Source: ht5streamer
+Maintainer: Laguillaumie sylvain <s.lagui@free.fr>
+Section: sound
+Version: 0.1.1
+Priority: optional
+Build-Depends: debhelper (>= 7), python-support (>= 0.8.4), python-distutils-extra, python-setuptools, python-xlib
+Standards-Version: 3.8.4
+XS-Python-Version: current
+
+Package: gmediafinder
+Architecture: all
+Depends: ${misc:Depends}, ffmpeg, chromium-codecs-ffmpeg-extra
+Recommends:
+XB-Python-Version: ${python:Versions}
+Provides: ${python:Provides}
+Description: Stream videos for youtube or dailymotion without flashplugin, watch videos in fullscreen, download, convert videos
+to mp3 and more...
+

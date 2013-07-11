@@ -1,0 +1,6 @@
+gmediafinder (0.1.1ppa1~raring) raring; urgency=high
+
+  * add dailymotion suggested videos
+  * add playslist system with db storage
+
+ -- Laguillaumie sylvain <s.lagui@free.fr>  Tue, 2 May 2013 19:20:50 +0100
