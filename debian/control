@@ -7,12 +7,11 @@ Build-Depends: debhelper (>= 7), python-support (>= 0.8.4), python-distutils-ext
 Standards-Version: 3.8.4
 XS-Python-Version: current
 
-Package: gmediafinder
-Architecture: all
+Package: ht5streamer
+Architecture: amd64
 Depends: ${misc:Depends}, ffmpeg, chromium-codecs-ffmpeg-extra
 Recommends:
 XB-Python-Version: ${python:Versions}
 Provides: ${python:Provides}
-Description: Stream videos for youtube or dailymotion without flashplugin, watch videos in fullscreen, download, convert videos
-to mp3 and more...
+Description: Stream videos for youtube or dailymotion without flashplugin, watch videos in fullscreen, download, convert videos to mp3 and more
 
