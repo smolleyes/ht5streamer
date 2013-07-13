@@ -243,9 +243,10 @@ $(document).ready(function(){
     });
     $('video').on('loadPlayer',function(e,link,next_vid){
         var playlist = false;
+        var pnext_vid = '';
         try {
             elink = link.link;
-            next_vid = link.next;
+            pnext_vid = link.next;
             player.pause();
             player.setSrc(elink);
             player.play();
@@ -281,8 +282,8 @@ $(document).ready(function(){
             } else  {
                 if (playlist === true) {
                     try {
-                        $('#'+next_vid).next().find('a').click();
-                        next_vid = '';
+                        $('#'+pnext_vid).next().find('a').click();
+                        pnext_vid = '';
                     } catch(err) {
                         console.log("no more videos to play in this playlist");
                     }
