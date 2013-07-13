@@ -20,7 +20,7 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var win = gui.Window.get();
-var version = "0.1";
+var version = "0.2";
 
 //localize
 var Localize = require('localize');
@@ -82,7 +82,6 @@ $(document).ready(function() {
     $('#countries').val(settings.locale);
     $('#download_path').val(settings.download_dir);
     $("#countries").msDropdown();
-    //
     $("select#countries").change(function () {
 	$("select#countries option:selected").each(function () {
 	    settings.locale = $(this).val();
@@ -126,7 +125,7 @@ function makeConfdir(confdir) {
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{"resolution":"1080p","download_dir":"","locale":"en","edit":true}', function(err) {
+    fs.writeFile(confdir+'/ht5conf.json', '{"resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":""}', function(err) {
         if(err) {
             console.log(err);
 	    return;

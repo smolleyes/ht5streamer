@@ -1,8 +1,3 @@
-/*
- * jsTree default theme 1.0
- * Supported features: dots/no-dots, icons/no-icons, focused, loading
- * Supported plugins: ui (hovered, clicked), checkbox, contextmenu, search
- */
 
 .jstree-default li, 
 .jstree-default ins { background-image:url("d.png"); background-repeat:no-repeat; background-color:transparent; }

@@ -122,8 +122,8 @@ var htmlStr = '<div id="menu"> \
             <div id="tabContainer"> \
                 <div class="tabs"> \
                     <ul> \
-                        <li id="tabHeader_1">Results</li> \
-                        <li id="tabHeader_2">Playlist</li> \
+                        <li id="tabHeader_1">'+myLocalize.translate("Results")+'</li> \
+                        <li id="tabHeader_2">'+myLocalize.translate("Library")+'</li> \
                     </ul> \
                 </div> \
                 <div class="tabscontent"> \
@@ -242,9 +242,19 @@ $(document).ready(function(){
         $('video').trigger('loadPlayer',[$(this).attr('href'),next_vid]);
     });
     $('video').on('loadPlayer',function(e,link,next_vid){
-        player.pause();
-        player.setSrc(link);
-        player.play();
+        var playlist = false;
+        try {
+            elink = link.link;
+            next_vid = link.next;
+            player.pause();
+            player.setSrc(elink);
+            player.play();
+            playlist = true;
+        } catch (err) {    
+            player.pause();
+            player.setSrc(link);
+            player.play();
+        }
         player.media.addEventListener('ended', function () {
             // if previous page ended while playing continue with the first video on the new page
             if ( load_first_song_next === true ) {
@@ -269,7 +279,16 @@ $(document).ready(function(){
                     console.log(err + " : can't play next video...");
                 }
             } else  {
-                playNextVideo(next_vid);
+                if (playlist === true) {
+                    try {
+                        $('#'+next_vid).next().find('a').click();
+                        next_vid = '';
+                    } catch(err) {
+                        console.log("no more videos to play in this playlist");
+                    }
+                } else {
+                    playNextVideo(next_vid);
+                }
             }
         });
     });
@@ -443,7 +462,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var pages = totalResults / 10;
             try {
                 var p = $('#loadmore_'+vid).attr('alt').split('::')[1];
-                if (parseInt(p) === 0) {
+                if (parseInt(p) === 1) {
                     var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
                     $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
                 }

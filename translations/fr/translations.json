@@ -148,6 +148,27 @@
     },
     "Save to playlist": {
         "fr": "Sauvegarder dans la playlist"
+    },
+    "Remove": {
+        "fr": "Supprimer"
+    },
+    "Add folder": {
+        "fr": "Ajouter un dossier"
+    },
+    "Rename": {
+        "fr": "Renommer"
+    },
+    "Library": {
+        "fr": "Librairie"
+    },
+    "Results": {
+        "fr": "Résultats"
+    },
+    "Select or create a folder (right click) to save your video and close the window to validate.": {
+        "fr": "Sélectionnez ou créez un dossier (click droit) dans lequel sauvegarder votre vidéo puis fermez la fenêtre pour valider."
+    },
+    "Please do not use spaces or special characters in your playlist name!": {
+        "fr": "Merci de ne pas utiliser d'espaces ou de caractères spéciaux dans vos noms de playlist!"
     }
 }
 

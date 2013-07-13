@@ -30,6 +30,7 @@ $(document).ready(function() {
 		} else {
 			vid = evid.replace('youtube_entry_res_sub_','');
 		}
+		if (vid === '') {return;}
 		try {
 			$('#copy_link').parent().remove();
 			$('#save_link').parent().remove();
@@ -113,8 +114,26 @@ $(document).ready(function() {
 		var title= $(this).attr('alt').split('::')[1];
 		var link = $(this).attr('alt').split('::')[2];
 		var engine = $(this).attr('alt').split('::')[3];
-		insertToDb(title,vid,link,engine);
+		var new_win = gui.Window.open('selectdir.html', {
+              "position": 'center',
+              "width": 400,
+              "height": 400,
+              "toolbar": true
+            });
+            new_win.on('close', function() {
+				settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+				if ((settings.selectedDir === '') || (settings.selectedDir === undefined)) {
+					this.hide();
+					this.close(true);
+					return;
+				}
+				var name = settings.selectedDir;
+				insertToDb('media',name,title,vid,link,engine,false);
+				this.hide();
+				this.close(true);
+            });
 		$('#custom-menu').hide();
+		$('#save_link').parent().remove();
 	});
 });
 

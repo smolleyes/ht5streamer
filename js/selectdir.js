@@ -15,116 +15,27 @@
 //~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 var fs = require('fs');
+var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+
 //localize
 var Localize = require('localize');
 var myLocalize = new Localize('./translations/');
-var db;
-// settings
-
-var confDir;
-if (process.platform === 'win32') {
-    confDir = process.env.APPDATA+'/ht5streamer';
-} else {
-    confDir = getUserHome()+'/.config/ht5streamer';
-}
-var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-var download_dir = settings.download_dir;
-var selected_resolution = settings.resolution;
-var locale = settings.locale;
-myLocalize.setLocale(locale);
-var db;
 
 $(document).ready(function() {
-	settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-	locale = settings.locale;
+	var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+	var locale = settings.locale;
 	myLocalize.setLocale(locale);
-// load/create db
-loadDb(function() {createRootNodes()});
-
+	$('body').css({"font" :"12px Verdana,Arial,Helvetica,sans-serif"});
+	createNodes();
+	var infos = myLocalize.translate("Select or create a folder (right click) to save your video and close the window to validate.");
+	$('#infos').html(infos);
 });
 
-function getUserHome() {
-  return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
-}
-
-function loadDb() {
-	bongo.db({
-		name: 'ht5',
-		collections: ["Library"]
-	});
-}
-
-function insertToDb(type,parent,title,vid,flink,engine) {
-	bongo.db('ht5').collection('Library').insert({
-	  type : type,
-	  parent : parent,
-	  title : title,
-	  vid: vid,
-	  flink: flink,
-	  engine: engine
-	},function(error,id) {
-	  if(!error) {
-		if (type === 'media') {
-			console.log(title + ' inserted successfully in database');
-			var obj = {
-				"attr" : { "id" : id },
-				"icon" : "js/jstree/themes/default/movie_file.png",
-				"data" : {
-					"title" : title, 
-					"attr" : { "id": id, "vid" : vid, "flink" : flink, "engine" : engine, "parent" : parent  } 
-				}
-			}
-			$("#treeview").jstree("create", $("#"+parent+"_rootnode"), "inside",  obj, function() { }, true);
-			var tree = $.jstree._reference("#treeview");
-			tree.refresh();
-			createRootNodes();
-		} else {
-			console.log(type + ' inserted successfully in database');
-			createRootNodes();
-		}
-	  }
-	});
-}
-
-function findInDb(title) {
-	bongo.db('ht5').collection('Library').find({
-		title: title
-	}).toArray(function(error,results) {
-		if(!error) {
-			return true;
-			console.log(results);
-		} else {
-			return false;
-		}
-	});
-}
-
-function removeFromDb(id) {
-	bongo.db('ht5').collection('Library').remove(id, function(error, data) {
-		if(!error) {
-			console.log('id: '+id+', successfully removed from db');
-		}
-	});
-}
-
-function getAllItems(cb) {
-	bongo.db('ht5').collection('Library').find({}).limit(10000).toArray(function(error,results) {
-		if(!error) {
-			cb(results);
-		}
-	});
-}
-
-function addCollection(name,parent,selected) {
-	insertToDb('folder',parent,name);
-}
-
-
-
-function createRootNodes(cb) {
+function createNodes() {
+	settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 	
 	$(function () {
-		$("#treeview").jstree({
+		$("#selector").jstree({
 			"plugins" : [ "themes", "json_data", "ui", "contextmenu","types","crrm" ],
 			"json_data" : {
 			"data" : { 
@@ -181,7 +92,7 @@ function createRootNodes(cb) {
 				}
 			},
 		}).bind("select_node.jstree", function (e, data) { 
-				onSelectedItem(data); 
+				onSelectedItemPopup(data.rslt.obj.prevObject[0].attributes); 
 		}).bind("rename.jstree", function (e, data) { 
 				renameItem(data);
 		}).bind("remove.jstree", function (e, data) { 
@@ -203,7 +114,6 @@ function createRootNodes(cb) {
 			} 
 		}).bind("loaded.jstree", function (event, data) {
 			getAllItems(function(results) { loadNodes(results); });
-			getAllItems(function(results) { showItems(results); });
 		});
 	});
 }
@@ -218,7 +128,43 @@ function loadNodes(results){
 					"data" : results[i].title,
 					"children" : []
 			}
-			$("#treeview").jstree("create", $("#"+parent+"_rootnode"), "inside", obj, function() {}, true);
+			$("#selector").jstree("create", $("#"+parent+"_rootnode"), "inside", obj, function() {}, true);
+		}
+	}
+}
+
+function onSelectedItemPopup(item) {
+	try {
+		settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+		settings.selectedDir = $.trim(item[0].ownerElement.innerText);
+		fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+			if(err) {
+				console.log(err);
+				return;
+			}
+		});
+	} catch(err) {
+		console.log(err);
+	}
+}
+
+function onCreateItem(item) {
+	if (item.args.length === 1) {
+		var name = item.rslt.name;
+		if (name.match(' ') !== null) {
+			alert(myLocalize.translate("Please do not use spaces or special characters in your playlist name!"));
+			item.rslt.obj.remove();
+			settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+			settings.selectedDir="";
+			fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+				if(err) {
+					console.log(err);
+					return;
+				}
+			});
+		} else {
+			var parent = $.trim(item.args[0].prevObject[0].innerText);
+			addCollection(name,parent,'');
 		}
 	}
 }
