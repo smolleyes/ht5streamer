@@ -21,7 +21,7 @@ $(document).ready(function() {
 		var vid = $(this).attr('alt').split('::')[2];
 		var page = $(this).attr('alt').split('::')[1];
 		var engine = $(this).attr('alt').split('::')[3];
-		searchRelated(vid,page,eng);
+		searchRelated(vid,page,engine);
 	});
 	
 	$(document).on('click','.toggle-control-link', function(e) {
