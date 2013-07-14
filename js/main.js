@@ -244,6 +244,7 @@ $(document).ready(function(){
     $('video').on('loadPlayer',function(e,link,next_vid){
         var playlist = false;
         var pnext_vid = '';
+        var elink = '';
         try {
             elink = link.link;
             pnext_vid = link.next;
@@ -284,6 +285,7 @@ $(document).ready(function(){
                     try {
                         $('#'+pnext_vid).next().find('a').click();
                         pnext_vid = '';
+                        elink='';
                     } catch(err) {
                         console.log("no more videos to play in this playlist");
                     }

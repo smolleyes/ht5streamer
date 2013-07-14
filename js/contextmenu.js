@@ -110,6 +110,8 @@ $(document).ready(function() {
 	// save link
 	$(document).on('click','#save_link',function(e) {
 		e.preventDefault();
+		settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+		settings.selectedDir = '';
 		var vid = $(this).attr('alt').split('::')[0];
 		var title= $(this).attr('alt').split('::')[1];
 		var link = $(this).attr('alt').split('::')[2];
