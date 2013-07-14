@@ -242,7 +242,7 @@ $(document).ready(function(){
         $('video').trigger('loadPlayer',[$(this).attr('href'),next_vid]);
     });
     $('video').on('loadPlayer',function(e,link,next_vid){
-        var playlist = false;
+        var playlist;
         var pnext_vid = '';
         var elink = '';
         try {
@@ -286,6 +286,7 @@ $(document).ready(function(){
                         $('#'+pnext_vid).next().find('a').click();
                         pnext_vid = '';
                         elink='';
+                        playlist=false;
                     } catch(err) {
                         console.log("no more videos to play in this playlist");
                     }

@@ -61,17 +61,18 @@ function onSelectedItem(data) {
 		var engine = item.engine.value;
 		var id = item.id.value;
 		var next_vid = '';
+		var next= '';
 		try {
-			var next = data.inst._get_next()[0].id;
+			next = data.inst._get_next()[0].id;
 			next_vid = $('#'+id+' a')[0].id;
 		} catch(err) {
 			next_vid = '';
 			console.log("no more videos to play in this playlist");
 		}
 		if (engine === 'youtube') {
-			youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {showInfos(datas,next_vid)});
+			youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine)});
 		} else if (engine === 'dailymotion'){
-			dailymotion.getVideoInfos(vid,0,1,function(datas) {showInfos(datas,next_vid)});
+			dailymotion.getVideoInfos(vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine)});
 		}
 	} catch(err) {
 		console.log(err);
@@ -114,7 +115,7 @@ function onCreateItem(item) {
 	}
 }
 
-function showInfos(datas,next_vid) {
+function showInfos(datas,next_vid,vid,flink,engine) {
 	var link = {};
 	link.link= '';
 	link.next = next_vid;
@@ -129,6 +130,7 @@ function showInfos(datas,next_vid) {
 			if ( i === 3) {
 				link.link = arr[0];
 				$('video').trigger('loadPlayer',link,'');
+				break;
 			} else {
 				continue;
 			}
@@ -144,7 +146,14 @@ function showInfos(datas,next_vid) {
 			if ( i === 3) {
 				link.link = arr[0];
 				$('video').trigger('loadPlayer',link,'');
+				break;
 			}
 		}
+	}
+	// show the video in the playlist
+	if (engine === 'youtube') {
+		youtube.getVideoInfos(flink,0,1,function(datas) {fillPlaylist(datas)});
+	} else if (engine === 'dailymotion'){
+		dailymotion.getVideoInfos(vid,0,1,function(datas) {fillPlaylist(datas)});
 	}
 }
