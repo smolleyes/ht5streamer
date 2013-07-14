@@ -96,7 +96,7 @@ $(document).ready(function() {
     $(document).on('click','#paste_ytlink',function(e) {
 		e.preventDefault();
 		var ytlink = getYtlinkFromClipboard();
-		youtube.getVideoInfos(ytlink,0,1,function(datas) {fillPlaylist(datas)});
+		youtube.getVideoInfos(ytlink,0,1,function(datas) {fillPlaylist(datas,false,'','youtube')});
 		$('#custom-menu').hide();
 	});
 	// copy link

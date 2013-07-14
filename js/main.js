@@ -507,7 +507,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
         }
         // load videos
         for(var i=0; i<items.length; i++) {
-            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid)});
+            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'dailymotion')});
         }
     }
     // youtube
@@ -569,7 +569,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
         }
         // load videos
         for(var i=0; i<items.length; i++) {
-            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid)});
+            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'youtube')});
         }
     }
 }
@@ -699,7 +699,7 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
     if (engine === 'dailymotion') {
         var items=datas.list;
         for(var i=0; i<items.length; i++) {
-            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,false);});
+            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,false,'','dailymotion');});
         }
         if (datas.has_more === true) {
             current_search_page+=1;
@@ -718,7 +718,7 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
         }
         try {
             for(var i=0; i<items.length; i++) {
-                youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].video.id,i,items.length,function(datas) {fillPlaylist(datas,false);});
+                youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].video.id,i,items.length,function(datas) {fillPlaylist(datas,false,'','youtube');});
             }
         } catch(err) {
             if (sublist === false) {
@@ -735,14 +735,14 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
     }
 }
 
-function fillPlaylist(items,sublist,sublist_id) {
+function fillPlaylist(items,sublist,sublist_id,engine) {
     for(var i=0; i<items.length; i++) {
         if (items.length === 1) {
-			printVideoInfos(items[i], true, false);
+			printVideoInfos(items[i], true, sublist, sublist_id,engine);
 			var pos = $('#items_container .youtube_item').first().position()['top'];
 			$(window).scrollTop(pos);
 		} else {
-			printVideoInfos(items[i],false, sublist,sublist_id);
+			printVideoInfos(items[i],false, sublist,sublist_id,engine);
 		}
     }
     $('#items_container').show();
@@ -761,9 +761,10 @@ function fillPlaylist(items,sublist,sublist_id) {
     }
 }
 
-function printVideoInfos(infos,solo,sublist,sublist_id){
+function printVideoInfos(infos,solo,sublist,sublist_id,engine){
+    console.log(infos,solo,sublist,sublist_id,engine);
     try{
-        var title = infos.title.replace(/\"/g,'');
+        var title = infos.title.replace(/[\"\[\]\.\)\(\'']/g,'');
         var thumb = infos.thumb;
         var vid = infos.id;
         var seconds = secondstotime(parseInt(infos.duration));
@@ -772,7 +773,7 @@ function printVideoInfos(infos,solo,sublist,sublist_id){
         if ($('#youtube_entry_res_'+vid).length === 1) {return;}
         if ($('#youtube_entry_res_sub'+vid).length === 1) {return;}
         var page=0;
-        if (search_engine === 'dailymotion') {
+        if (engine === 'dailymotion') {
 			page = 1;
 		}
         if (solo === true) {
@@ -810,13 +811,13 @@ function printVideoInfos(infos,solo,sublist,sublist_id){
         if ($('#youtube_entry_res_'+vid+' a.video_link').length === 0){
             $('#youtube_entry_res_'+vid).parent().parent().remove();
         }
-        if (search_engine === 'youtube') {
+        if (engine === 'youtube') {
             if (sublist === false) {
                 $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" />');
             } else {
                 $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" />');
             }
-        } else if (search_engine === 'dailymotion') {
+        } else if (engine === 'dailymotion') {
              if (sublist === false) {
                 $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in dailymotion")+'" href="http://www.dailymotion.com/video/'+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
              } else  {

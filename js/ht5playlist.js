@@ -152,8 +152,8 @@ function showInfos(datas,next_vid,vid,flink,engine) {
 	}
 	// show the video in the playlist
 	if (engine === 'youtube') {
-		youtube.getVideoInfos(flink,0,1,function(datas) {fillPlaylist(datas)});
+		youtube.getVideoInfos(flink,0,1,function(datas) {fillPlaylist(datas,false,'','youtube')});
 	} else if (engine === 'dailymotion'){
-		dailymotion.getVideoInfos(vid,0,1,function(datas) {fillPlaylist(datas)});
+		dailymotion.getVideoInfos(vid,0,1,function(datas) {fillPlaylist(datas,false,'','dailymotion')});
 	}
 }
