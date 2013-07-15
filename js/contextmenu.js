@@ -120,7 +120,7 @@ $(document).ready(function() {
               "position": 'center',
               "width": 400,
               "height": 400,
-              "toolbar": true
+              "toolbar": false
             });
             new_win.on('close', function() {
 				settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
