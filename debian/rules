@@ -14,6 +14,7 @@ unexport LDFLAGS
 
 #exports specified using stdeb Setup-Env-Vars:
 export DH_OPTIONS=--buildsystem=python_distutils
+export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/:/lib:/lib/x86_64-linux-gnu
 
 %:
 	dh $@

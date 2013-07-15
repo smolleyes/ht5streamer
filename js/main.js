@@ -421,7 +421,7 @@ $(document).ready(function(){
 
 function getCategories() {
     if (search_engine === 'youtube') {
-        http.get('http://gdata.youtube.com/schemas/2007/categories.cat?hl='+locale+'-'+locale.toUpperCase()+'', function(resp){ 
+        http.get('http://gdata.youtube.com/schemas/2007/categories.cat?hl='+locale, function(resp){ 
             var datas=[];
             resp.on('data', function(chunk){
                 datas.push(chunk);
