@@ -36,6 +36,7 @@ var youtube = require('yt-streamer');
 var exec_path=path.dirname(process.execPath);
 var search_type = 'videos';
 var selected_resolution='1080p';
+var selected_category = '';
 var current_video = NaN;
 var current_search = '';
 var current_start_index = 1;
@@ -56,7 +57,7 @@ var current_download={};
 var canceled = false;
 
 // global var
-var search_engine = '';
+var search_engine = 'youtube';
 var total_pages = 0;
 var pagination_init = false;
 
@@ -82,21 +83,25 @@ var htmlStr = '<div id="menu"> \
         </select> \
     </div> \
     <form id="video_search"> \
-        <label class="space">'+myLocalize.translate("Search:")+'</label> \
-        <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" required /> \
+        <label>'+myLocalize.translate("Search:")+'</label> \
+        <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" /> \
         <label>'+myLocalize.translate("Search type:")+'</label> \
         <select id="search_type_select"> \
             <option value = "videos">Videos</option> \
             <option value = "playlists">Playlists</option> \
+            <option value = "category">'+myLocalize.translate("Categories")+'</option> \
         </select> \
-        <label>'+myLocalize.translate("Order by:")+'</label> \
+        <label id="category_label">'+myLocalize.translate("Category:")+'</label> \
+        <select id="category_select"> \
+        </select> \
+        <label id="orderby_label">'+myLocalize.translate("Order by:")+'</label> \
         <select id="orderby_select"> \
             <option value = "relevance">'+myLocalize.translate("Relevance")+'</option> \
             <option value = "published">'+myLocalize.translate("Published")+'</option> \
             <option value = "viewCount">'+myLocalize.translate("Views")+'</option> \
             <option value = "rating">'+myLocalize.translate("Rating")+'</option> \
         </select> \
-        <label>'+myLocalize.translate("Filters:")+'</label> \
+        <label >'+myLocalize.translate("Filters:")+'</label> \
         <select id="search_filters"> \
             <option value = ""></option> \
             <option value = "hd">HD</option> \
@@ -155,6 +160,10 @@ var htmlStr = '<div id="menu"> \
 
 $(document).ready(function(){
     $('#main').append(htmlStr);
+    // load and hide catgories
+    getCategories();
+    $('#category_label').hide();
+    $('#category_select').hide();
     // start keyevent listener
     var fn = function(e){ onKeyPress(e); };
     document.addEventListener("keydown", fn, false );
@@ -329,6 +338,7 @@ $(document).ready(function(){
     $("select#engines_select").change(function () {
         $("select#engines_select option:selected").each(function () {
                 search_engine = $(this).val();
+                getCategories();
                 pagination_init = false;
                 current_page=1;
                 current_search_page=1;
@@ -354,12 +364,19 @@ $(document).ready(function(){
             search_order = $(this).val();
         });
     });
+    // categories 
+    $("select#category_select").change(function () {
+        $("select#category_select option:selected").each(function () {
+            selected_category = $(this).val();
+        });
+    });
     //search filters
     $("select#search_filters").change(function () {
         $("select#search_filters option:selected").each(function () {
             search_filters = $(this).val();
         });
     });
+    // search types
     $("select#search_type_select").change(function () {
         $("select#search_type_select option:selected").each(function () {
             search_type = $(this).val();
@@ -368,6 +385,17 @@ $(document).ready(function(){
             current_prev_start_index = 1;
             current_page=1;
             current_search_page=1;
+            if (search_type === 'category') {
+                $('#category_label').show();
+                $('#category_select').show();
+                $('#orderby_label').hide();
+                $('#orderby_select').hide();
+            } else {
+                $('#category_label').hide();
+                $('#category_select').hide();
+                $('#orderby_label').show();
+                $('#orderby_select').show();
+            }
         });
     });
     // convert to mp3
@@ -391,6 +419,46 @@ $(document).ready(function(){
     startSearch('wu tang clan');
 });
 
+function getCategories() {
+    if (search_engine === 'youtube') {
+        http.get('http://gdata.youtube.com/schemas/2007/categories.cat?hl='+locale+'-'+locale.toUpperCase()+'', function(resp){ 
+            var datas=[];
+            resp.on('data', function(chunk){
+                datas.push(chunk);
+            }).on("end", function(e) {
+                var xml = datas.join('');
+                var xjs = new X2JS();
+                var obj = xjs.xml_str2json(xml);
+                var arr = obj.categories.category_asArray;
+                selected_category = arr[0]._term;
+                $('#category_select').empty();
+                for (var i= 0; i<arr.length; i++) {
+                    $('#category_select').append('<option value = "'+arr[i]._term+'">'+arr[i]._label+'</option>')
+                }
+            });
+        }).on("error", function(e){
+            console.log("Got error: " + e.message);
+        });
+    } else if (search_engine === 'dailymotion'){
+        https.get('https://api.dailymotion.com/channels', function(resp){ 
+            var datas=[];
+            resp.on('data', function(chunk){
+                datas.push(chunk);
+            }).on("end", function(e) {
+                var obj = JSON.parse(datas.join(''));
+                var arr = obj.list;
+                selected_category = arr[0].id;
+                $('#category_select').empty();
+                for (var i= 0; i<arr.length; i++) {
+                    $('#category_select').append('<option value = "'+arr[i].id+'">'+arr[i].name+'</option>')
+                }
+            });
+        }).on("error", function(e){
+            console.log("Got error: " + e.message);
+        });
+    }
+}
+
 function changePage() {
     current_page = $("#pagination").pagination('getCurrentPage');
     startSearch(current_search);
@@ -409,6 +477,12 @@ function onKeyPress(key) {
 
 //search
 function startSearch(query){
+    if (query === '') {
+        if (search_type !== 'category') {
+            $('#video_search_query').attr('placeholder','').focus();
+            return;
+        }
+    }
     $('#items_container').empty().hide();
     $('#pagination').hide();
     $('#search').hide();
@@ -423,15 +497,19 @@ function startSearch(query){
     if (search_engine === 'dailymotion') {
         if (search_type === 'videos') {
             dailymotion.searchVideos(query,current_page,search_filters,search_order,function(datas){ getVideosDetails(datas,'dailymotion',false); });
-        } else {
+        } else if (search_type === 'playlists') {
             dailymotion.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'dailymotion'); });
+        } else if (search_type === 'category') {
+            dailymotion.categories(query,current_page,search_filters,selected_category,function(datas){ getVideosDetails(datas,'dailymotion',false); });
         }
     }
     else if (search_engine === 'youtube') {
         if (search_type === 'videos') {
             youtube.searchVideos(query,current_page,search_filters, search_order,function(datas){ getVideosDetails(datas,'youtube',false); });
-        } else {
+        } else if (search_type === 'playlists') {
             youtube.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'youtube'); });
+        } else if (search_type === 'category') {
+            youtube.categories(query,current_page,search_filters,selected_category,function(datas){ getVideosDetails(datas,'youtube',false); });
         }
     }
     
@@ -448,6 +526,7 @@ function searchRelated(vid,page,engine) {
 
 function getVideosDetails(datas,engine,sublist,vid) {
     //dailymotion
+    var browse = false;
     if (engine === 'dailymotion') {
         var items = datas.list;
         var totalResults = datas.total;
@@ -458,10 +537,34 @@ function getVideosDetails(datas,engine,sublist,vid) {
                 $('#loading').hide();
                 return;
             }
+        } else if (totalResults === undefined ) {
+            $('#search_results').html('<p>'+myLocalize.translate("Browsing mode, use the pagination bar to navigate")+'</p>');
+            browse = true;
+            if ((sublist === false) && (pagination_init === false)) {
+                $("#pagination").pagination({
+                        itemsOnPage : 25,
+                        pages: current_page+1,
+                        currentPage : current_page,
+                        displayedPages:5,
+                        cssStyle: 'compact-theme',
+                        edges:1,
+                        prevText : ''+myLocalize.translate("Prev")+'',
+                        nextText : ''+myLocalize.translate("Next")+'',
+                        onPageClick : changePage
+                });
+                if (datas.has_more === true) {
+                    pagination_init = false;
+                } else {
+                    pagination_init = true;
+                }
+                total_pages=$("#pagination").pagination('getPagesCount');
+            }
         }
         // print total results
         if (sublist === false) {
-            $('#search_results').html('<p><strong>'+totalResults+'</strong>'+myLocalize.translate("videos found")+'</p>');
+            if (totalResults !== undefined ) {
+                $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
+            }
         } else {
             var pages = totalResults / 10;
             try {
@@ -491,7 +594,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
                 return;
             }
         }
-        if ((sublist === false) && (pagination_init === false)) {
+        if ((sublist === false) && (pagination_init === false) && (browse === false)) {
             $("#pagination").pagination({
                     items: totalResults,
                     itemsOnPage: 25,
@@ -568,12 +671,8 @@ function getVideosDetails(datas,engine,sublist,vid) {
             total_pages=$("#pagination").pagination('getPagesCount');
         }
         // load videos
-        try {
-            for(var i=0; i<items.length; i++) {
-                youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'youtube')});
-            }
-        } catch(err) {
-            console.log(err);
+        for(var i=0; i<items.length; i++) {
+            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'youtube')});
         }
     }
 }
@@ -1062,3 +1161,19 @@ function editSettings() {
         }
     });
 }
+
+//SET CURSOR POSITION
+$.fn.setCursorPosition = function(pos) {
+  this.each(function(index, elem) {
+    if (elem.setSelectionRange) {
+      elem.setSelectionRange(pos, pos);
+    } else if (elem.createTextRange) {
+      var range = elem.createTextRange();
+      range.collapse(true);
+      range.moveEnd('character', pos);
+      range.moveStart('character', pos);
+      range.select();
+    }
+  });
+  return this;
+};

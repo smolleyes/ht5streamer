@@ -169,6 +169,15 @@
     },
     "Please do not use spaces or special characters in your playlist name!": {
         "fr": "Merci de ne pas utiliser d'espaces ou de caractères spéciaux dans vos noms de playlist!"
+    },
+    "Categories": {
+        "fr": "Catégories"
+    },
+    "Category:": {
+        "fr": "Catégorie:"
+    },
+    "Browsing mode, use the pagination bar to navigate": {
+        "fr": "Mode navigation, utilisez la barre de pagination..."
     }
 }
 
