@@ -55,6 +55,7 @@ var search_filters='';
 var search_order='relevance';
 var current_download={};
 var canceled = false;
+var previousLink;
 
 // global var
 var search_engine = 'youtube';
@@ -251,59 +252,54 @@ $(document).ready(function(){
         $('video').trigger('loadPlayer',[$(this).attr('href'),next_vid]);
     });
     $('video').on('loadPlayer',function(e,link,next_vid){
-        var playlist;
-        var pnext_vid = '';
-        var elink = '';
-        try {
-            elink = link.link;
-            pnext_vid = link.next;
+         if (typeof(link) === 'object') {
+            next_vid = link.next;
+            link = link.link
             player.pause();
-            player.setSrc(elink);
+            player.setSrc(link);
             player.play();
-            playlist = true;
-        } catch (err) {    
+        } else {    
             player.pause();
             player.setSrc(link);
             player.play();
         }
-        player.media.addEventListener('ended', function () {
-            // if previous page ended while playing continue with the first video on the new page
-            if ( load_first_song_next === true ) {
-                //try to load a new page if available
-                    try {
-                        if (total_pages > current_page){
-                            $('.next').click();
-                        } else {
-                            console.log('No more videos to plays...');
-                        }
-                    } catch(err) {
-                        console.log(err + " : can't play next video...");
-                    }
-            } else if ( load_first_song_prev === true ) {
+    });
+    // next vid
+    player.media.addEventListener('ended', function () {
+        // if previous page ended while playing continue with the first video on the new page
+        if ( load_first_song_next === true ) {
+            //try to load a new page if available
                 try {
-                    if (current_page > 1){
-                        $('.prev').click();
+                    if (total_pages > current_page){
+                        $('.next').click();
                     } else {
                         console.log('No more videos to plays...');
                     }
                 } catch(err) {
                     console.log(err + " : can't play next video...");
                 }
-            } else  {
-                if (playlist === true) {
-                    try {
-                        $('#'+pnext_vid).next().find('a').click();
-                        pnext_vid = '';
-                        elink='';
-                        playlist=false;
-                    } catch(err) {
-                        console.log("no more videos to play in this playlist");
-                    }
+        } else if ( load_first_song_prev === true ) {
+            try {
+                if (current_page > 1){
+                    $('.prev').click();
                 } else {
-                    playNextVideo(next_vid);
+                    console.log('No more videos to plays...');
                 }
+            } catch(err) {
+                console.log(err + " : can't play next video...");
             }
-        });
+        } else  {
+            if ($('.tabActiveHeader').attr('id') === 'tabHeader_2') {
+                var vid = $('.jstree-clicked').attr('id');
+                if (vid === undefined) {
+                    console.log("no more videos to play in the playlists");
+                } else {
+                    $('#'+vid).next().find('a').click();
+                }
+            } else {
+                playNextVideo(next_vid);
+            }
+        }
     });
     //load playlist
     $(document).on('click','.load_playlist',function(e) {

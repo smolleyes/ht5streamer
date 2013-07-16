@@ -133,6 +133,13 @@ $(document).ready(function() {
 				insertToDb('media',name,title,vid,link,engine,false);
 				this.hide();
 				this.close(true);
+				settings.selectedDir = '';
+				fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+					if(err) {
+						console.log(err);
+						return;
+					}
+				});
             });
 		$('#custom-menu').hide();
 		$('#save_link').parent().remove();
