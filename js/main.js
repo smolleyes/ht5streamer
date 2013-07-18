@@ -522,141 +522,37 @@ function searchRelated(vid,page,engine) {
 
 
 function getVideosDetails(datas,engine,sublist,vid) {
-    //dailymotion
-    var browse = false;
-    if (engine === 'dailymotion') {
-        var items = datas.list;
-        var totalResults = datas.total;
-        if (totalResults === 0) {
-            if (sublist === false) {
-                $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
-                $('#search').show();
-                $('#loading').hide();
-                return;
-            }
-        } else if (totalResults === undefined ) {
-            $('#search_results').html('<p>'+myLocalize.translate("Browsing mode, use the pagination bar to navigate")+'</p>');
-            browse = true;
-            if ((sublist === false) && (pagination_init === false)) {
-                $("#pagination").pagination({
-                        itemsOnPage : 25,
-                        pages: current_page+1,
-                        currentPage : current_page,
-                        displayedPages:5,
-                        cssStyle: 'compact-theme',
-                        edges:1,
-                        prevText : ''+myLocalize.translate("Prev")+'',
-                        nextText : ''+myLocalize.translate("Next")+'',
-                        onPageClick : changePage
-                });
-                if (datas.has_more === true) {
-                    pagination_init = false;
-                } else {
-                    pagination_init = true;
-                }
-                total_pages=$("#pagination").pagination('getPagesCount');
-            }
-        }
-        // print total results
-        if (sublist === false) {
-            if (totalResults !== undefined ) {
-                $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
-            }
-        } else {
+    switch(engine) {
+        case 'youtube':
+            var items = datas.items;
+            var totalResults = datas.totalItems;
             var pages = totalResults / 10;
-            try {
-                var p = $('#loadmore_'+vid).attr('alt').split('::')[1];
-                if (parseInt(p) === 1) {
-                    var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
-                    $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
-                }
-            } catch(err) {
-                console.log(err);
-                return;
-            }
-            var page = parseInt(p) + 1;
-            if (page < pages) {
-                $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
-            } else {
-                $('#loadmore_'+vid).hide();
-            }
-        }
-        try {
-            p = items.length;
-        } catch(err) {
-            if (sublist === false) {
-                $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
-                $('#search').show();
-                $('#loading').hide();
-                return;
-            }
-        }
-        if ((sublist === false) && (pagination_init === false) && (browse === false)) {
-            $("#pagination").pagination({
-                    items: totalResults,
-                    itemsOnPage: 25,
-                    displayedPages:5,
-                    cssStyle: 'compact-theme',
-                    edges:1,
-                    prevText : ''+myLocalize.translate("Prev")+'',
-                    nextText : ''+myLocalize.translate("Next")+'',
-                    onPageClick : changePage
-            });
-            pagination_init = true;
-            total_pages=$("#pagination").pagination('getPagesCount');
-        }
-        // load videos
-        for(var i=0; i<items.length; i++) {
-            dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'dailymotion')});
-        }
+            var startPage = 0;
+            var browse = false;
+            var has_more = false;
+            break;
+        case 'dailymotion': 
+            var items = datas.list;
+            var totalResults = datas.total;
+            var pages = totalResults / 10;
+            var startPage = 1;
     }
-    // youtube
-    else if (engine === 'youtube') {
-        totalResults = datas.totalItems;
-        if (totalResults === 0) {
-            if (sublist === false) {
-                $('#search_results').html(myLocalize.translate(myLocalize.translate("<p><strong>No videos</strong> found...</p>")));
-                $('#search').show();
-                $('#loading').hide();
-                return;
-            }
-        }
+    if (totalResults === 0) {
         if (sublist === false) {
-            $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
-        } else {
-            var pages = totalResults / 10;
-            try {
-                var p = $('#loadmore_'+vid).attr('alt').split('::')[1];
-                if (parseInt(p) === 0) {
-                    var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
-                    $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
-                }
-            } catch(err) {
-                console.log(err);
-                return;
-            }
-            var page = parseInt(p) + 1;
-            if (page < pages) {
-                $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
-            } else {
-                $('#loadmore_'+vid).hide();
-            }
+            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+            $('#search').show();
+            $('#loading').hide();
+            return;
         }
-        var items=datas.items;
-        try {
-            p=items.length;
-        } catch(err) {
-            if (sublist === false) {
-                $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
-                $('#search').show();
-                $('#loading').hide();
-                return;
-            }
-        }
+    // for dailymotion
+    } else if (totalResults === undefined ) {
+        $('#search_results').html('<p>'+myLocalize.translate("Browsing mode, use the pagination bar to navigate")+'</p>');
+        browse = true;
         if ((sublist === false) && (pagination_init === false)) {
             $("#pagination").pagination({
-                    items: totalResults,
-                    itemsOnPage: 25,
+                    itemsOnPage : 25,
+                    pages: current_page+1,
+                    currentPage : current_page,
                     displayedPages:5,
                     cssStyle: 'compact-theme',
                     edges:1,
@@ -664,75 +560,99 @@ function getVideosDetails(datas,engine,sublist,vid) {
                     nextText : ''+myLocalize.translate("Next")+'',
                     onPageClick : changePage
             });
-            pagination_init = true;
+            if (datas.has_more === true) {
+                pagination_init = false;
+            } else {
+                pagination_init = true;
+            }
             total_pages=$("#pagination").pagination('getPagesCount');
         }
-        // load videos
-        for(var i=0; i<items.length; i++) {
-            youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'youtube')});
+    }
+    // print total results
+    if (sublist === false) {
+        if (totalResults !== undefined ) {
+            $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
         }
+    } else {
+        try {
+            var p = $('#loadmore_'+vid).attr('alt').split('::')[1];
+            if (parseInt(p) === startPage) {
+                var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
+                $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
+            }
+        } catch(err) {
+            console.log(err);
+            return;
+        }
+        var page = parseInt(p) + 1;
+        if (page < pages) {
+            $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
+        } else {
+            $('#loadmore_'+vid).hide();
+        }
+    }
+    try {
+        p = items.length;
+    } catch(err) {
+        if (sublist === false) {
+            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+            $('#search').show();
+            $('#loading').hide();
+            return;
+        }
+    }
+    // init pagination bar
+    if ((sublist === false) && (pagination_init === false) && (browse === false)) {
+        $("#pagination").pagination({
+                items: totalResults,
+                itemsOnPage: 25,
+                displayedPages:5,
+                cssStyle: 'compact-theme',
+                edges:1,
+                prevText : ''+myLocalize.translate("Prev")+'',
+                nextText : ''+myLocalize.translate("Next")+'',
+                onPageClick : changePage
+        });
+        pagination_init = true;
+        total_pages=$("#pagination").pagination('getPagesCount');
+    }
+    // load videos
+    switch(engine) {
+        case 'dailymotion':
+            for(var i=0; i<items.length; i++) {
+                dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'dailymotion')});
+            }
+            break;
+        case 'youtube':
+            for(var i=0; i<items.length; i++) {
+                youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'youtube')});
+            }
+            break;
     }
 }
 
 function getPlaylistInfos(datas, engine){
     sublist=false;
-    //dailymotion
-    if (engine === 'dailymotion') {
-        var items=datas.list;
-        var totalResults = datas.total;
-        if (totalResults === 0) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
-            $('#search').show();
-            $('#loading').hide();
-            return;
-        }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found")+'</p>');
-        try {
-            for(var i=0; i<items.length; i++) {
-                loadPlaylistItems(items[i], 'dailymotion');
-            }
-            if ((sublist === false) && (pagination_init === false)) {
-                $("#pagination").pagination({
-                        items: totalResults,
-                        itemsOnPage: 25,
-                        displayedPages:5,
-                        cssStyle: 'compact-theme',
-                        edges:1,
-                        prevText : ''+myLocalize.translate("Prev")+'',
-                        nextText : ''+myLocalize.translate("Next")+'',
-                        onPageClick : changePage
-                });
-                pagination_init = true;
-                total_pages=$("#pagination").pagination('getPagesCount');
-            }
-        } catch(err) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
-            $('#search').show();
-            $('#loading').hide();
-        }
+    
+    switch(engine) {
+        case 'youtube':
+            var items = datas.items;
+            var totalResults = datas.totalItems;
+            break;
+        case 'dailymotion': 
+            var items = datas.list;
+            var totalResults = datas.total;
     }
-    // youtube
-    else if (engine === 'youtube') {
-        totalResults = datas.totalItems;
-        if (totalResults === 0) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
-            $('#search').show();
-            $('#loading').hide();
-            return;
-        }
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found")+'</p>');
-        var items=datas.items;
-        try {
-            p=items.length;
-        } catch(err) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
-            $('#search').show();
-            $('#loading').hide();
-            return;
-        }
-        // load videos
+    if (totalResults === 0) {
+        $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
+        $('#search').show();
+        $('#loading').hide();
+        return;
+    }
+    $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found")+'</p>');
+    try {
         for(var i=0; i<items.length; i++) {
-           loadPlaylistItems(items[i], 'youtube');
+            loadPlaylistItems(items[i], engine);
         }
         if ((sublist === false) && (pagination_init === false)) {
             $("#pagination").pagination({
@@ -748,6 +668,10 @@ function getPlaylistInfos(datas, engine){
             pagination_init = true;
             total_pages=$("#pagination").pagination('getPagesCount');
         }
+    } catch(err) {
+        $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
+        $('#search').show();
+        $('#loading').hide();
     }
     $('#items_container').show();
     $('#pagination').show();
@@ -911,18 +835,16 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
             $('#youtube_entry_res_'+vid).parent().parent().remove();
         }
         if (engine === 'youtube') {
-            if (sublist === false) {
-                $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" />');
-            } else {
-                $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in youtube")+'" href="http://www.youtube.com/watch?v='+vid+'"><img style="margin-top:8px;" src="images/export.png" />');
-            }
+            var slink = "http://www.youtube.com/watch?v="+vid;
         } else if (engine === 'dailymotion') {
-             if (sublist === false) {
-                $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in dailymotion")+'" href="http://www.dailymotion.com/video/'+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
-             } else  {
-                $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in dailymotion")+'" href="http://www.dailymotion.com/video/'+vid+'"><img style="margin-top:8px;" src="images/export.png" /></a>');
-             }
+            var slink = "http://www.dailymotion.com/video/"+vid;
         }
+        if (sublist === false) {
+            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in "+engine+"")+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
+        } else {
+            $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in "+engine+"")+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
+        }
+        
     } catch(err){
         console.log('printVideoInfos err: '+err);
     }
