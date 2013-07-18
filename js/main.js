@@ -23,6 +23,7 @@ var https = require('https');
 var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
+var urllib = require('urllib');
 
 //localize
 var Localize = require('localize');
@@ -311,19 +312,19 @@ $(document).ready(function(){
         e.preventDefault();
         var link = $(this).attr('href');
         var title= $(this).attr('alt');
-        if (search_engine === 'dailymotion') {
-			var req = request($(this).attr('href'), function (error, response, body) {
-				if (!error) {
-					link = response.request.href;
-					downloadFile(link,title);
-				} else {
-					console.log('can\'t get dailymotion download link');
-					return;
-				}
-			});
-		} else {
-			downloadFile(link,title);
-		}
+        if (link.match(/dailymotion/) !== 'null') {
+            var req = request(link, function (error, response, body) {
+                if (!error) {
+                    var link = response.request.href;
+                    downloadFile(link,title);
+                } else {
+                    console.log('can\'t get dailymotion download link');
+                    return;
+                }
+            });
+        } else {
+            downloadFile(link,title);
+        }
     });
     //cancel download
     $(document).on('click','.cancel',function(e) {
@@ -412,7 +413,7 @@ $(document).ready(function(){
     $('#config_btn').click(function() {
         editSettings();
     });
-    startSearch('wu tang clan');
+    startSearch('daft punk');
 });
 
 function getCategories() {
@@ -978,7 +979,7 @@ function startVideo(vid_id) {
 
 //download and convert
 
-function downloadFile(link,title){
+function downloadFile(link,title,engine){
     var vid = title.split('::')[1];
     var pbar = $('#progress_'+vid);
     var title = title.split('::')[0];
@@ -1013,6 +1014,12 @@ function downloadFile(link,title){
 		function (response) {
 			$('#progress_'+vid+' a.cancel').show();
 			var contentLength = response.headers["content-length"];
+            if ((link.match(/dailymotion/) !== 'null') && (parseInt(contentLength) === 0)) {
+                $('#progress_'+vid+' a.cancel').hide();
+                $('#progress_'+vid+' strong').html(myLocalize.translate("can't download this file..."));
+                isDownloading = false;
+                setTimeout(function(){pbar.hide()},5000);
+            }
 			var file = fs.createWriteStream(target);
 			response.on('data',function (chunk) {
 				file.write(chunk);

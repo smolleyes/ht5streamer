@@ -178,6 +178,12 @@
     },
     "Browsing mode, use the pagination bar to navigate": {
         "fr": "Mode navigation, utilisez la barre de pagination..."
+    },
+    "can't download this file...": {
+        "fr": "Impossible de télécharger ce fichier..."
+    },
+    "Enter your search": {
+        "fr": "Entrez votre recherche"
     }
 }
 
