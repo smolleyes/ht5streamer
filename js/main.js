@@ -23,7 +23,6 @@ var https = require('https');
 var http = require('http');
 var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
-var urllib = require('urllib');
 
 //localize
 var Localize = require('localize');
