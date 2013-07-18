@@ -365,6 +365,10 @@ $(document).ready(function(){
     $("select#category_select").change(function () {
         $("select#category_select option:selected").each(function () {
             selected_category = $(this).val();
+            pagination_init = false;
+            current_page=1;
+            current_search_page=1;
+            current_start_index=1;
         });
     });
     //search filters
