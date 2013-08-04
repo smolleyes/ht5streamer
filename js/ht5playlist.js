@@ -45,7 +45,7 @@ function showItems(results) {
 				"icon" : "js/jstree/themes/default/movie_file.png",
 				"data" : {
 					"title" : results[i].title, 
-					"attr" : { "type": "media", "id": results[i]._id, "vid" : results[i].vid, "flink" : results[i].flink, "engine" : results[i].engine, "parent" : parent } 
+					"attr" : { "type": "media", "id": results[i]._id, "vid" : results[i].vid, "flink" : results[i].flink, "engine" : results[i].engine, "parent" : parent,"title" : results[i].title } 
 				}
 			}
 			$("#treeview").jstree("create", $("#"+parent+"_rootnode"), "inside",  obj, function() { }, true);
@@ -60,6 +60,7 @@ function onSelectedItem(data) {
 		var flink = item.flink.value;
 		var engine = item.engine.value;
 		var id = item.id.value;
+		var title = item.title.value;
 		var next_vid = '';
 		var next= '';
 		try {
@@ -70,9 +71,11 @@ function onSelectedItem(data) {
 			console.log("no more videos to play in this playlist");
 		}
 		if (engine === 'youtube') {
-			youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine)});
+			youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine,title)});
 		} else if (engine === 'dailymotion'){
-			dailymotion.getVideoInfos(vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine)});
+			dailymotion.getVideoInfos(vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine,title)});
+		} else if (engine === 'youporn'){
+			youporn.getVideoById(flink,function(datas) {showInfos(datas,next_vid,vid,flink,engine,title)});
 		}
 	} catch(err) {
 		console.log(err);
@@ -115,10 +118,11 @@ function onCreateItem(item) {
 	}
 }
 
-function showInfos(datas,next_vid,vid,flink,engine) {
+function showInfos(datas,next_vid,vid,flink,engine,title) {
 	var link = {};
 	link.link= '';
 	link.next = next_vid;
+	link.title = title;
 	if (datas === 'null') {return;}
     var resolutions_string = ['1080p','720p','480p','360p'];
 	var resolutions = datas[0].resolutions;

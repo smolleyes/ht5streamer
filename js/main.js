@@ -31,6 +31,10 @@ var myLocalize = new Localize('./translations/');
 //engines
 var dailymotion = require('dailymotion');
 var youtube = require('yt-streamer');
+var youporn = require('youporn-js');
+var cliphunter = require('cliphunter-js');
+var superhqporn = require('superhqporn-js');
+var beeg = require('beeg-js');
 
 //var player;
 var exec_path=path.dirname(process.execPath);
@@ -56,6 +60,7 @@ var search_order='relevance';
 var current_download={};
 var canceled = false;
 var previousLink;
+var player;
 
 // global var
 var search_engine = 'youtube';
@@ -81,6 +86,10 @@ var htmlStr = '<div id="menu"> \
         <select id="engines_select"> \
             <option value = "youtube">Youtube</option> \
             <option value = "dailymotion">dailymotion</option> \
+            <!--<option value = "youporn">youporn</option> \
+            <option value = "cliphunter">cliphunter</option> \
+            <option value = "superhqporn">superhqporn</option> \
+            <option value = "beeg">beeg</option>--> \
         </select> \
     </div> \
     <form id="video_search"> \
@@ -208,12 +217,12 @@ $(document).ready(function(){
     // next signal and callback
     $(document).on('click','.mejs-next-btn',function(e) {
         e.preventDefault();
-        playNextVideo(next_vid);
+        getNext();
     });
     // previous signal and callback
     $(document).on('click','.mejs-back-btn',function(e) {
         e.preventDefault();
-        playNextVideo(prev_vid);
+        getPrev();
     });
     // start video by clicking title
      $(document).on('click','.start_video',function(e) {
@@ -229,9 +238,10 @@ $(document).ready(function(){
             console.log('no media loaded, can\'t save current song...');
         }
         current_song_page = current_page;
+        var title = $(this)[0].innerText;
         current_song = $(this).parent().closest('.youtube_item').find('div')[5].id;
         $('#'+current_song).closest('.youtube_item').toggleClass('highlight','true');
-        startVideo(current_song);
+        startVideo(current_song,title);
     });
     // load video signal and callback
     $(document).on('click','.video_link',function(e) {
@@ -249,57 +259,38 @@ $(document).ready(function(){
         } catch(err) {
             load_first_song_next=true;
         }
-        $('video').trigger('loadPlayer',[$(this).attr('href'),next_vid]);
+        var video = {};
+        video.link = $(this).attr('href');
+        video.title = $('#'+current_song).parent().find('b')[0].innerText;
+        video.next = next_vid;
+        $('video').trigger('loadPlayer',[video]);
     });
-    $('video').on('loadPlayer',function(e,link,next_vid){
-         if (typeof(link) === 'object') {
-            next_vid = link.next;
-            link = link.link
-            player.pause();
-            player.setSrc(link);
-            player.play();
-        } else {    
-            player.pause();
-            player.setSrc(link);
-            player.play();
-        }
+    $('video').on('loadPlayer',function(e,video){
+        var next_vid = video.next;
+        var link = video.link;
+        var title = video.title;
+        player.pause();
+        // check local files
+        var list = fs.readdirSync(download_dir);
+        var localLink = null;
+        var count = list.length-1;
+        $.each(list,function(index,ftitle){
+            if ((title+'.mp4' === ftitle) || (title+'.webm' === ftitle)) {
+                localLink = 'file://'+encodeURI(download_dir+'/'+ftitle);
+            }
+            if (index === count) {
+                if (localLink !== null) {
+                    player.setSrc(localLink);
+                } else {
+                    player.setSrc(link);
+                }
+                player.play();
+            }
+        });
     });
     // next vid
     player.media.addEventListener('ended', function () {
-        // if previous page ended while playing continue with the first video on the new page
-        if ( load_first_song_next === true ) {
-            //try to load a new page if available
-                try {
-                    if (total_pages > current_page){
-                        $('.next').click();
-                    } else {
-                        console.log('No more videos to plays...');
-                    }
-                } catch(err) {
-                    console.log(err + " : can't play next video...");
-                }
-        } else if ( load_first_song_prev === true ) {
-            try {
-                if (current_page > 1){
-                    $('.prev').click();
-                } else {
-                    console.log('No more videos to plays...');
-                }
-            } catch(err) {
-                console.log(err + " : can't play next video...");
-            }
-        } else  {
-            if ($('.tabActiveHeader').attr('id') === 'tabHeader_2') {
-                var vid = $('.jstree-clicked').attr('id');
-                if (vid === undefined) {
-                    console.log("no more videos to play in the playlists");
-                } else {
-                    $('#'+vid).next().find('a').click();
-                }
-            } else {
-                playNextVideo(next_vid);
-            }
-        }
+        getNext();
     });
     //load playlist
     $(document).on('click','.load_playlist',function(e) {
@@ -311,18 +302,19 @@ $(document).ready(function(){
         e.preventDefault();
         var link = $(this).attr('href');
         var title= $(this).attr('alt');
-        if (link.match(/dailymotion/) !== 'null') {
+        var engine = title.split('::')[2];
+        if (engine === 'dailymotion') {
             var req = request(link, function (error, response, body) {
                 if (!error) {
                     var link = response.request.href;
-                    downloadFile(link,title);
+                    downloadFile(link,title,engine);
                 } else {
                     console.log('can\'t get dailymotion download link');
                     return;
                 }
             });
         } else {
-            downloadFile(link,title);
+            downloadFile(link,title,engine);
         }
     });
     //cancel download
@@ -419,6 +411,7 @@ $(document).ready(function(){
     startSearch('daft punk');
 });
 
+
 function getCategories() {
     if (search_engine === 'youtube') {
         http.get('http://gdata.youtube.com/schemas/2007/categories.cat?hl='+locale, function(resp){ 
@@ -456,8 +449,69 @@ function getCategories() {
         }).on("error", function(e){
             console.log("Got error: " + e.message);
         });
+    } else if (search_engine === "beeg") {
+        $.get("beeg-cat.html", function(data){
+            $('#category_select').html(data);
+        });
+        selected_category = '18';
     }
 }
+
+function getNext() {
+    // if previous page ended while playing continue with the first video on the new page
+    if ( load_first_song_next === true ) {
+        //try to load a new page if available
+            try {
+                if (total_pages > current_page){
+                    $('.next').click();
+                } else {
+                    console.log('No more videos to plays...');
+                }
+            } catch(err) {
+                console.log(err + " : can't play next video...");
+            }
+    } else if ( load_first_song_prev === true ) {
+        try {
+            if (current_page > 1){
+                $('.prev').click();
+            } else {
+                console.log('No more videos to plays...');
+            }
+        } catch(err) {
+            console.log(err + " : can't play next video...");
+        }
+    } else  {
+        if ($('.tabActiveHeader').attr('id') === 'tabHeader_2') {
+            var vid = $('.jstree-clicked').attr('id');
+            if (vid === undefined) {
+                console.log("no more videos to play in the playlists");
+            } else {
+                $('#'+vid).next().find('a').click();
+            }
+        } else {
+            playNextVideo(next_vid);
+        }
+    }    
+}
+
+function getPrev() {
+    if ($('.tabActiveHeader').attr('id') === 'tabHeader_2') {
+            var vid = $('.jstree-clicked').attr('id');
+            if (vid === undefined) {
+                console.log("no more videos to play in the playlists");
+            } else {
+                var pid = $('#'+vid).prev().attr('id');
+                if (pid.match(/node/) === null) {
+                    $('#'+pid).find('a').click();
+                } else{
+                    console.log("no previous videos to play in the playlists");
+                }
+            }
+        } else {
+            playNextVideo(prev_vid);
+        }
+}
+
 
 function changePage() {
     current_page = $("#pagination").pagination('getCurrentPage');
@@ -477,6 +531,9 @@ function onKeyPress(key) {
 
 //search
 function startSearch(query){
+    if ($('.tabActiveHeader').attr('id') === 'tabHeader_2') {
+        $("#tabHeader_1").click();
+    }
     if (query === '') {
         if (search_type !== 'category') {
             $('#video_search_query').attr('placeholder','').focus();
@@ -511,6 +568,20 @@ function startSearch(query){
         } else if (search_type === 'category') {
             youtube.categories(query,current_page,search_filters,selected_category,function(datas){ getVideosDetails(datas,'youtube',false); });
         }
+    } else if (search_engine === 'youporn') {
+        if (search_type === 'videos') {
+            youporn.searchVideos(query,current_page,search_filters, search_order,function(datas){ getVideosDetails(datas,'youporn',false); });
+        }
+    } else if (search_engine === 'cliphunter') {
+        if (search_type === 'videos') {
+            cliphunter.searchVideos(query,current_page,search_filters, search_order,function(datas){ getVideosDetails(datas,'cliphunter',false); });
+        }
+    } else if (search_engine === 'superhqporn') {
+        if (search_type === 'videos') {
+            superhqporn.searchVideos(query,current_page,search_filters, search_order,function(datas){ getVideosDetails(datas,'superhqporn',false); });
+        }
+    } else if (search_engine === 'beeg') {
+            beeg.searchVideos(query,current_page,search_filters, search_order, search_type, selected_category, function(datas){ getVideosDetails(datas,'beeg',false); });
     }
     
 }
@@ -533,12 +604,43 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var startPage = 0;
             var browse = false;
             var has_more = false;
+            var itemsByPage = 25;
             break;
         case 'dailymotion': 
             var items = datas.list;
             var totalResults = datas.total;
             var pages = totalResults / 10;
             var startPage = 1;
+            var browse = false;
+            var itemsByPage = 25;
+        case 'youporn':
+            var items = datas[0].items;
+            var totalResults = datas[0].totalItems;
+            var pages = totalResults / 10;
+            var startPage = 1;
+            var browse = false;
+            var itemsByPage = 32;
+        case 'cliphunter':
+            var items = datas[0].items;
+            var totalResults = datas[0].totalItems;
+            var pages = totalResults / 10;
+            var startPage = 1;
+            var browse = false;
+            var itemsByPage = 34;
+        case 'superhqporn':
+            var items = datas[0].items;
+            var totalResults = datas[0].totalItems;
+            var pages = totalResults / 10;
+            var startPage = 1;
+            var browse = false;
+            var itemsByPage = 120;
+        case 'beeg':
+            var items = datas[0].items;
+            var totalResults = datas[0].totalItems;
+            var pages = totalResults / 10;
+            var startPage = 1;
+            var browse = false;
+            var itemsByPage = datas[0].total;
     }
     if (totalResults === 0) {
         if (sublist === false) {
@@ -563,7 +665,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
                     nextText : ''+myLocalize.translate("Next")+'',
                     onPageClick : changePage
             });
-            if (datas.has_more === true) {
+            if ((datas.has_more === true) && (engine === 'dailymotion') || (engine === 'beeg')) {
                 pagination_init = false;
             } else {
                 pagination_init = true;
@@ -608,7 +710,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
     if ((sublist === false) && (pagination_init === false) && (browse === false)) {
         $("#pagination").pagination({
                 items: totalResults,
-                itemsOnPage: 25,
+                itemsOnPage: itemsByPage,
                 displayedPages:5,
                 cssStyle: 'compact-theme',
                 edges:1,
@@ -630,6 +732,42 @@ function getVideosDetails(datas,engine,sublist,vid) {
             for(var i=0; i<items.length; i++) {
                 youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,sublist,vid,'youtube')});
             }
+            break;
+        case 'youporn':
+            for(var i=0; i<items.length; i++) {
+                printVideoInfos(items[i],false,sublist,items[i].id,'youporn');
+            }
+            $('#items_container').show();
+            $('#pagination').show();
+            $('#search').show();
+            $('#loading').hide();
+            break;
+        case 'cliphunter':
+            for(var i=0; i<items.length; i++) {
+                printVideoInfos(items[i],false,sublist,items[i].id,'cliphunter');
+            }
+            $('#items_container').show();
+            $('#pagination').show();
+            $('#search').show();
+            $('#loading').hide();
+            break;
+        case 'superhqporn':
+            for(var i=0; i<items.length; i++) {
+                printVideoInfos(items[i],false,sublist,items[i].id,'superhqporn');
+            }
+            $('#items_container').show();
+            $('#pagination').show();
+            $('#search').show();
+            $('#loading').hide();
+            break;
+        case 'beeg':
+            for(var i=0; i<items.length; i++) {
+                printVideoInfos(items[i],false,sublist,items[i].id,'beeg');
+            }
+            $('#items_container').show();
+            $('#pagination').show();
+            $('#search').show();
+            $('#loading').hide();
             break;
     }
 }
@@ -790,12 +928,20 @@ function fillPlaylist(items,sublist,sublist_id,engine) {
 
 function printVideoInfos(infos,solo,sublist,sublist_id,engine){
     try{
-        var title = infos.title.replace(/[\"\[\]\.\)\(\'']/g,'');
+        var title = infos.title.replace(/[\"\[\]\.\)\(\'']/g,'').replace(/  /g,' ');
         var thumb = infos.thumb;
         var vid = infos.id;
-        var seconds = secondstotime(parseInt(infos.duration));
+        var seconds;
+        if ((engine !== 'youporn') && (engine !== 'cliphunter') && (engine !== 'superhqporn')  && (engine !== 'beeg')){
+            seconds = secondstotime(parseInt(infos.duration));
+        } else {
+            seconds = infos.time;
+        }
         var views = infos.views;
         var author = infos.author;
+        if (author === 'unknown') {
+            author = myLocalize.translate("unknown");
+        }
         if ($('#youtube_entry_res_'+vid).length === 1) {return;}
         if ($('#youtube_entry_res_sub'+vid).length === 1) {return;}
         var page=0;
@@ -829,9 +975,9 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
                 img='images/sd.png';
             }
             if (sublist === false) {
-                $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
+                $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'::'+engine+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
             } else {
-                $('#youtube_entry_res_sub_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
+                $('#youtube_entry_res_sub_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'::'+engine+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
             }
         }
         if ($('#youtube_entry_res_'+vid+' a.video_link').length === 0){
@@ -841,11 +987,19 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
             var slink = "http://www.youtube.com/watch?v="+vid;
         } else if (engine === 'dailymotion') {
             var slink = "http://www.dailymotion.com/video/"+vid;
+        } else if (engine === 'youporn') {
+            var slink = "http://www.youporn.com/watch/"+vid;
+        } else if (engine === 'cliphunter') {
+            var slink = infos.link;
+        } else if (engine === 'superhqporn') {
+            var slink = 'http://www.superhqporn.com/?v='+infos.id;
+        } else if (engine === 'beeg') {
+            var slink = 'http://www.beeg.com/'+infos.id;
         }
         if (sublist === false) {
-            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in "+engine+"")+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
+            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
         } else {
-            $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in "+engine+"")+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
+            $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
         }
         
     } catch(err){
@@ -876,7 +1030,7 @@ function playNextVideo(vid_id) {
     }
 }
 
-function startVideo(vid_id) {
+function startVideo(vid_id,title) {
     var childs = $('#'+vid_id+' a.video_link');
     var elength = parseInt(childs.length);
     if (elength > 1){
@@ -939,7 +1093,7 @@ function downloadFile(link,title,engine){
 		function (response) {
 			$('#progress_'+vid+' a.cancel').show();
 			var contentLength = response.headers["content-length"];
-            if ((link.match(/dailymotion/) !== 'null') && (parseInt(contentLength) === 0)) {
+            if (parseInt(contentLength) === 0) {
                 $('#progress_'+vid+' a.cancel').hide();
                 $('#progress_'+vid+' strong').html(myLocalize.translate("can't download this file..."));
                 isDownloading = false;
@@ -970,7 +1124,7 @@ function downloadFile(link,title,engine){
 					$('#progress_'+vid+' strong').html(myLocalize.translate("Download canceled!"));
 					setTimeout(function(){pbar.hide()},5000);
 				} else {
-					fs.rename(target,download_dir+'/'+title, function (err) {
+					fs.rename(target,download_dir+'/'+title.replace(/  /g,' '), function (err) {
 						if (err) {
 						} else {
 							console.log('successfully renamed '+download_dir+'/'+title);

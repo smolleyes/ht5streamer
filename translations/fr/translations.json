@@ -92,11 +92,8 @@
     "Filters:": {
         "fr": "Filtres:"
     },
-    "Open in youtube": {
-        "fr": "Ouvrir dans youtube"
-    },
-    "Open in dailymotion": {
-        "fr": "Ouvrir dans dailymotion"
+    "Open in ": {
+        "fr": "Ouvrir dans "
     },
     "Download": {
         "fr": "Télécharger"
@@ -184,6 +181,12 @@
     },
     "Enter your search": {
         "fr": "Entrez votre recherche"
+    },
+    "Copy youporn link": {
+        "fr": "Copier le lien youporn"
+    },
+    "unknown": {
+        "fr": "inconnu"
     }
 }
 

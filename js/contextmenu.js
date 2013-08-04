@@ -44,6 +44,11 @@ $(document).ready(function() {
 				var engine='dailymotion';
 				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy dailymotion link")+'</a></li>');
 				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
+			} else if (search_engine === 'youporn') {
+				var link = "http://www.youporn.com/watch/"+vid;
+				var engine='youporn';
+				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy youporn link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
 			}
 		} catch(err) {
 			console.log("can't detect link to copy..." + err);
