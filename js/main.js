@@ -606,13 +606,14 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var has_more = false;
             var itemsByPage = 25;
             break;
-        case 'dailymotion': 
+        case 'dailymotion':
             var items = datas.list;
             var totalResults = datas.total;
             var pages = totalResults / 10;
             var startPage = 1;
             var browse = false;
             var itemsByPage = 25;
+            break;
         case 'youporn':
             var items = datas[0].items;
             var totalResults = datas[0].totalItems;
@@ -620,6 +621,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var startPage = 1;
             var browse = false;
             var itemsByPage = 32;
+            break;
         case 'cliphunter':
             var items = datas[0].items;
             var totalResults = datas[0].totalItems;
@@ -627,6 +629,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var startPage = 1;
             var browse = false;
             var itemsByPage = 34;
+            break;
         case 'superhqporn':
             var items = datas[0].items;
             var totalResults = datas[0].totalItems;
@@ -634,6 +637,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var startPage = 1;
             var browse = false;
             var itemsByPage = 120;
+            break;
         case 'beeg':
             var items = datas[0].items;
             var totalResults = datas[0].totalItems;
@@ -641,6 +645,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var startPage = 1;
             var browse = false;
             var itemsByPage = datas[0].total;
+            break;
     }
     if (totalResults === 0) {
         if (sublist === false) {
