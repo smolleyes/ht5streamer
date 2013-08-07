@@ -274,19 +274,24 @@ $(document).ready(function(){
         var list = fs.readdirSync(download_dir);
         var localLink = null;
         var count = list.length-1;
-        $.each(list,function(index,ftitle){
-            if ((title+'.mp4' === ftitle) || (title+'.webm' === ftitle)) {
-                localLink = 'file://'+encodeURI(download_dir+'/'+ftitle);
-            }
-            if (index === count) {
-                if (localLink !== null) {
-                    player.setSrc(localLink);
-                } else {
-                    player.setSrc(link);
+        if (parseInt(count) === -1) {
+            player.setSrc(link);
+            player.play();
+        } else {
+            $.each(list,function(index,ftitle){
+                if ((title+'.mp4' === ftitle) || (title+'.webm' === ftitle)) {
+                    localLink = 'file://'+encodeURI(download_dir+'/'+ftitle);
                 }
-                player.play();
-            }
-        });
+                if (index === count) {
+                    if (localLink !== null) {
+                        player.setSrc(localLink);
+                    } else {
+                        player.setSrc(link);
+                    }
+                    player.play();
+                }
+            });
+        }
     });
     // next vid
     player.media.addEventListener('ended', function () {
