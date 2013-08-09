@@ -108,7 +108,7 @@ height:calc(100% - 50px) !important;
     vertical-align:middle;
 }
 
-.youtube_item, .youtube_item_playlist {
+.youtube_item, .youtube_item_playlist, .youtube_item_channel{
     border:1px solid black;
     overflow:auto;
 }

@@ -187,6 +187,24 @@
     },
     "unknown": {
         "fr": "inconnu"
+    },
+    "Videos": {
+        "fr": "Vidéos"
+    },
+    "Playlists": {
+        "fr": "Playlists"
+    },
+    "Channels": {
+        "fr": "Chaînes"
+    },
+    "<p><strong>No channels</strong> found...</p>": {
+        "fr": "<p><strong>Aucune chaîne</strong> trouvée...</p>"
+    },
+    "channels found": {
+        "fr": "chaînes trouvées"
+    },
+    "videos found in this channel" : {
+        "fr": "vidéos trouvées dans cette chaîne"
     }
 }
 

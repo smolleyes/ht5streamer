@@ -66,6 +66,9 @@ var player;
 var search_engine = 'youtube';
 var total_pages = 0;
 var pagination_init = false;
+var current_channel_link = '';
+var current_channel_engine = '';
+var channelPagination = false;
 
 // settings
 var confDir;
@@ -97,9 +100,10 @@ var htmlStr = '<div id="menu"> \
         <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" /> \
         <label>'+myLocalize.translate("Search type:")+'</label> \
         <select id="search_type_select"> \
-            <option value = "videos">Videos</option> \
-            <option value = "playlists">Playlists</option> \
+            <option value = "videos">'+myLocalize.translate("Videos")+'</option> \
+            <option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
             <option value = "category">'+myLocalize.translate("Categories")+'</option> \
+            <option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option> \
         </select> \
         <label id="category_label">'+myLocalize.translate("Category:")+'</label> \
         <select id="category_select"> \
@@ -264,6 +268,10 @@ $(document).ready(function(){
         video.title = $('#'+current_song).parent().find('b')[0].innerText;
         video.next = next_vid;
         $('video').trigger('loadPlayer',[video]);
+        if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
+            var p = $('#'+current_song).parent().parent().position().top;
+            $(window).scrollTop(p+13);
+        }
     });
     $('video').on('loadPlayer',function(e,video){
         var next_vid = video.next;
@@ -301,6 +309,11 @@ $(document).ready(function(){
     $(document).on('click','.load_playlist',function(e) {
         var pid = $(this).attr('id');
         loadPlaylistSongs(pid);
+    });
+    //load channels
+    $(document).on('click','.load_channel',function(e) {
+        var pid = $(this).attr('id');
+        loadChannelSongs(pid);
     });
     // download file signal and callback
     $(document).on('click','.download_file',function(e) {
@@ -342,12 +355,14 @@ $(document).ready(function(){
                                 <option value = "visited">'+myLocalize.translate("Views")+'</option> \
                                 <option value = "rated">'+myLocalize.translate("Rating")+'</option>';
                     $('#orderby_select').empty().append(html);
+                    $('#channelsOpt').hide();
                 } else {
                     var html = '<option value = "relevance">'+myLocalize.translate("Relevance")+'</option> \
                                 <option value = "published">'+myLocalize.translate("Published")+'</option> \
                                 <option value = "viewCount">'+myLocalize.translate("Views")+'</option> \
                                 <option value = "rating">'+myLocalize.translate("Rating")+'</option>';
                     $('#orderby_select').empty().append(html);
+                    $('#channelsOpt').show();
                 }
         });
     });
@@ -549,11 +564,12 @@ function startSearch(query){
     $('#pagination').hide();
     $('#search').hide();
     $('#loading').show();
-    if (query !== current_search) {
+    if ((query !== current_search) || channelPagination === true) {
         current_page =1;
         current_search_page=1;
         current_start_index=1;
-        var pagination_init = false;
+        pagination_init = false;
+        channelPagination = false;
     }
     current_search=query;
     if (search_engine === 'dailymotion') {
@@ -572,6 +588,8 @@ function startSearch(query){
             youtube.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'youtube'); });
         } else if (search_type === 'category') {
             youtube.categories(query,current_page,search_filters,selected_category,function(datas){ getVideosDetails(datas,'youtube',false); });
+        }else if (search_type === 'channels') {
+            youtube.searchChannels(query,current_page,function(datas){ getChannelsInfos(datas, 'youtube'); });
         }
     } else if (search_engine === 'youporn') {
         if (search_type === 'videos') {
@@ -793,6 +811,7 @@ function getPlaylistInfos(datas, engine){
         case 'dailymotion': 
             var items = datas.list;
             var totalResults = datas.total;
+            break;
     }
     if (totalResults === 0) {
         $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
@@ -804,6 +823,54 @@ function getPlaylistInfos(datas, engine){
     try {
         for(var i=0; i<items.length; i++) {
             loadPlaylistItems(items[i], engine);
+        }
+        if ((sublist === false) && (pagination_init === false)) {
+            $("#pagination").pagination({
+                    items: totalResults,
+                    itemsOnPage: 25,
+                    displayedPages:5,
+                    cssStyle: 'compact-theme',
+                    edges:1,
+                    prevText : ''+myLocalize.translate("Prev")+'',
+                    nextText : ''+myLocalize.translate("Next")+'',
+                    onPageClick : changePage
+            });
+            pagination_init = true;
+            total_pages=$("#pagination").pagination('getPagesCount');
+        }
+    } catch(err) {
+        $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
+        $('#search').show();
+        $('#loading').hide();
+    }
+    $('#items_container').show();
+    $('#pagination').show();
+    $('#search').show();
+    $('#loading').hide();
+}
+
+function getChannelsInfos(datas, engine){
+    sublist=false;
+    switch(engine) {
+        case 'youtube':
+            var items = datas.feed.entry;
+            var totalResults = datas.feed.openSearch$totalResults['$t'];
+            break;
+        case 'dailymotion': 
+            var items = datas.list;
+            var totalResults = datas.total;
+            break;
+    }
+    if (totalResults === 0) {
+        $('#search_results').html(myLocalize.translate("<p><strong>No channels</strong> found...</p>"));
+        $('#search').show();
+        $('#loading').hide();
+        return;
+    }
+    $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("channels found")+'</p>');
+    try {
+        for(var i=0; i<items.length; i++) {
+            loadChannelsItems(items[i], engine);
         }
         if ((sublist === false) && (pagination_init === false)) {
             $("#pagination").pagination({
@@ -850,6 +917,27 @@ function loadPlaylistItems(item, engine) {
     $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:238px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
 }
 
+function loadChannelsItems(item, engine) {
+    if (engine === 'dailymotion') {
+        var title = item.name;
+        var thumb = item.thumbnail_medium_url;
+        var pid = item.id;
+        var length=item.videos_total;
+        var author = item['owner.username'];
+        var description = item.description;
+    }
+    else if ( engine === 'youtube') {
+        var pid = item.id;
+        var length = item.gd$feedLink[0].countHint;
+        var author = item.author[0].name['$t'];
+        var description = item.summary['$t'];
+        var thumb =  item.media$thumbnail[0].url;
+        var title = item.title['$t'];
+        var link = item.gd$feedLink[0].href;
+    }
+    $('#items_container').append('<div class="youtube_item_channel"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:238px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'::'+link+'" class="load_channel"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
+}
+
 function loadPlaylistSongs(pid){
     $('#items_container').empty().hide();
     $('#pagination').hide();
@@ -866,6 +954,88 @@ function loadPlaylistSongs(pid){
     }
     else if ( engine === 'youtube') {
         youtube.loadSongs(plid,length,current_start_index, function(datas, length, pid, engine) { fillPlaylistFromPlaylist(datas, length, pid, engine); });
+    }
+}
+
+function loadChannelSongs(pid){
+    $('#items_container').empty().hide();
+    $('#pagination').hide();
+    $('#search').hide();
+    $('#loading').show();
+    var plid = pid.split('::')[0];
+    var length = pid.split('::')[1];
+    var engine = pid.split('::')[2];
+    var link = pid.split('::')[3];
+    current_start_index = 1;
+    current_prev_start_index = 1;
+    current_search_page=1;
+    pagination_init = false;
+    current_channel_link = link;
+    if (engine === 'dailymotion'){
+        dailymotion.loadSongs(link,current_search_page, function(datas) { fillPlaylistFromPlaylist(datas, engine); });
+    }
+    else if ( engine === 'youtube') {
+        youtube.loadChannelSongs(link,current_search_page, function(datas) { fillPlaylistFromChannel(datas,engine); });
+    }
+}
+
+function fillPlaylistFromChannel(datas,engine) {
+    var sublist=false;
+    current_channel_engine = engine;
+    channelPagination = true;
+    switch(engine) {
+        case 'youtube':
+            var items = datas.data.items;
+            var totalResults = datas.data.totalItems;
+            break;
+        case 'dailymotion': 
+            var items = datas.list;
+            var totalResults = datas.total;
+            break;
+    }
+    if (totalResults === 0) {
+        $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+        $('#search').show();
+        $('#loading').hide();
+        return;
+    } else {
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ myLocalize.translate("videos found in this channel")+' </p>');
+        try {
+            for(var i=0; i<items.length; i++) {
+                if (engine === 'youtube') {
+                    youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,false,'','youtube');});
+                }
+            }
+            if ((sublist === false) && (pagination_init === false)) {
+                $("#pagination").pagination({
+                        items: totalResults,
+                        itemsOnPage: 25,
+                        displayedPages:5,
+                        cssStyle: 'compact-theme',
+                        edges:1,
+                        prevText : ''+myLocalize.translate("Prev")+'',
+                        nextText : ''+myLocalize.translate("Next")+'',
+                        onPageClick : changeChannelPage
+                });
+                pagination_init = true;
+                total_pages=$("#pagination").pagination('getPagesCount');
+            }
+        } catch(err) {
+            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+            $('#search').show();
+            $('#loading').hide();
+        }
+    }
+}
+
+function changeChannelPage() {
+    current_page = $("#pagination").pagination('getCurrentPage');
+    $('#items_container').empty().hide();
+    $('#pagination').hide();
+    $('#search').hide();
+    $('#loading').show();
+    if (current_channel_engine === 'youtube') {
+        youtube.loadChannelSongs(current_channel_link,current_page, function(datas) { fillPlaylistFromChannel(datas,current_channel_engine); });
     }
 }
 
