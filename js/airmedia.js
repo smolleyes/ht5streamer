@@ -100,6 +100,7 @@ function ask_authorization() {
 }
 
 function wait_user_auth(track_id) {
+	alert("Merci d'accepter l'authorisation sur l'afficheur de votre freebox pour activer airplay...!");
     http.get('http://mafreebox.freebox.fr/api/v1/login/authorize/'+track_id+'',function(res){
         var datas = '';
         res.on('data',function(data){
@@ -123,7 +124,7 @@ function wait_user_auth(track_id) {
                     return;
                 }
             } else {
-                console.log('can t get authorization status...pending/timout...')
+                console.log('can t get authorization status...pending/timeout...')
                 return;
             }
         });

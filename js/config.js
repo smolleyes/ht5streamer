@@ -19,7 +19,7 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
-var win = gui.Window.get();
+var confWin = gui.Window.get();
 var version = "0.2";
 
 //localize
@@ -87,8 +87,9 @@ $(document).ready(function() {
 	    settings.locale = $(this).val();
 	});
     });
-    $('#valid_config').click(function() {
-	saveConf();
+    $('#valid_config').click(function(e) {
+		e.preventDefault();
+		savePopConf();
     });
     //resolutions select
     var selected_resolution = settings.resolution;
@@ -131,7 +132,7 @@ function makeConfigFile() {
 	    return;
         } else {
             console.log("ht5config file created!");
-	    win.reload();
+	    confWin.reload();
         }
     });
 }
@@ -164,7 +165,7 @@ function loadConf(confdir) {
     }
 }
 
-function saveConf() {
+function savePopConf() {
     settings.edit=false;
     if (settings.download_dir === '') {
 	$('#download_path').val('REQUIRED!!!').css({'color':'red'});
@@ -174,8 +175,8 @@ function saveConf() {
         if(err) {
             console.log(err);
         } else {
-	    if (win.width < 650){
-		win.close();
+	    if (confWin.width < 700){
+		confWin.close();
             } else {
 		console.log("ht5config config updated successfully!");
 		window.location='index.html';

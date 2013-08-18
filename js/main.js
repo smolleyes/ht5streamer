@@ -93,11 +93,11 @@ var htmlStr = '<div id="menu"> \
         <select id="engines_select"> \
             <option value = "youtube">Youtube</option> \
             <option value = "dailymotion">dailymotion</option> \
-            <option value = "hhnh">hotnewhiphop</option> \
+            <!-- <option value = "hhnh">hotnewhiphop</option> \
             <option value = "youporn">youporn</option> \
             <option value = "cliphunter">cliphunter</option> \
             <option value = "superhqporn">superhqporn</option> \
-            <option value = "beeg">beeg</option> \
+            <option value = "beeg">beeg</option> --> \
         </select> \
     </div> \
     <form id="video_search"> \
