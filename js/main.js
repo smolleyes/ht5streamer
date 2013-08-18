@@ -35,6 +35,7 @@ var youporn = require('youporn-js');
 var cliphunter = require('cliphunter-js');
 var superhqporn = require('superhqporn-js');
 var beeg = require('beeg-js');
+var hhnh= require('hhnh-js');
 
 //var player;
 var exec_path=path.dirname(process.execPath);
@@ -61,6 +62,9 @@ var current_download={};
 var canceled = false;
 var previousLink;
 var player;
+var playAirMedia = false;
+var airMediaDevices = [];
+var airMediaDevice;
 
 // global var
 var search_engine = 'youtube';
@@ -89,14 +93,15 @@ var htmlStr = '<div id="menu"> \
         <select id="engines_select"> \
             <option value = "youtube">Youtube</option> \
             <option value = "dailymotion">dailymotion</option> \
-            <!--<option value = "youporn">youporn</option> \
+            <option value = "hhnh">hotnewhiphop</option> \
+            <option value = "youporn">youporn</option> \
             <option value = "cliphunter">cliphunter</option> \
             <option value = "superhqporn">superhqporn</option> \
-            <option value = "beeg">beeg</option>--> \
+            <option value = "beeg">beeg</option> \
         </select> \
     </div> \
     <form id="video_search"> \
-        <label>'+myLocalize.translate("Search:")+'</label> \
+        <label id="search_label">'+myLocalize.translate("Search:")+'</label> \
         <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" /> \
         <label>'+myLocalize.translate("Search type:")+'</label> \
         <select id="search_type_select"> \
@@ -145,6 +150,7 @@ var htmlStr = '<div id="menu"> \
                         <li id="tabHeader_2">'+myLocalize.translate("Library")+'</li> \
                     </ul> \
                 </div> \
+                <div id="airplayContainer" style="display:none;"><a id="airplay-toggle" class="airplay tiptip airplay-disabled"></a><form id="fbxPopup" style="display:none;"></form></div> \
                 <div class="tabscontent"> \
                     <div class="tabpage" id="tabpage_1"> \
                         <div id="loading" style="display:None;"><img style="width:28px;height:28px;"src="images/spinner.gif" />'+myLocalize.translate(" Loading videos...")+'</div> \
@@ -282,6 +288,11 @@ $(document).ready(function(){
         var list = fs.readdirSync(download_dir);
         var localLink = null;
         var count = list.length-1;
+        // play on airmedia
+        if (playAirMedia === true) {
+            play_on_fbx(link);
+            return;
+        }
         if (parseInt(count) === -1) {
             player.setSrc(link);
             player.play();
@@ -356,13 +367,21 @@ $(document).ready(function(){
                                 <option value = "rated">'+myLocalize.translate("Rating")+'</option>';
                     $('#orderby_select').empty().append(html);
                     $('#channelsOpt').hide();
+                } else if (search_engine === 'hhnh') {
+                    var html = ' <option value = "songs">'+myLocalize.translate("Songs/Artists")+'</option> \
+                            <option value = "t100mixtape">'+myLocalize.translate("Top 100 mixtape")+'</option>';
+                            $('#search_type_select').empty().append(html);
                 } else {
                     var html = '<option value = "relevance">'+myLocalize.translate("Relevance")+'</option> \
                                 <option value = "published">'+myLocalize.translate("Published")+'</option> \
                                 <option value = "viewCount">'+myLocalize.translate("Views")+'</option> \
                                 <option value = "rating">'+myLocalize.translate("Rating")+'</option>';
                     $('#orderby_select').empty().append(html);
-                    $('#channelsOpt').show();
+                    var html ='<option value = "videos">'+myLocalize.translate("Videos")+'</option> \
+                            <option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
+                            <option value = "category">'+myLocalize.translate("Categories")+'</option> \
+                            <option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option>';
+                    $('#search_type_select').empty().append(html);
                 }
         });
     });
@@ -397,6 +416,14 @@ $(document).ready(function(){
             current_prev_start_index = 1;
             current_page=1;
             current_search_page=1;
+            if (search_type === 't100mixtape') {
+                $('#video_search_query').hide();
+                $('#search_label').hide();
+            } else {
+                $('#video_search_query').show();
+                $('#search_label').show();
+            }
+            
             if (search_type === 'category') {
                 $('#category_label').show();
                 $('#category_select').show();
@@ -428,6 +455,32 @@ $(document).ready(function(){
     $('#config_btn').click(function() {
         editSettings();
     });
+    
+    // airplay
+    $('#airplay-toggle').click(function(e) {
+        e.preventDefault();
+        $('#airplay-toggle').toggleClass('airplay-enabled','airplay-disabled');
+        if (playAirMedia === false) {
+            playAirMedia = true;
+            login();
+        } else {
+            $('#tiptip_holder').remove();
+            login();
+            playAirMedia = false;
+        }
+    });
+    
+    $(document).on('change','#tiptip_content input',function(){
+        var selected = $(this).prop('name');
+        airMediaDevice = selected;
+        $("#tiptip_content input").each(function(){
+            var name = $(this).prop('name');
+            if (name !== selected) {
+                $(this).prop('checked','');
+            }
+        });
+    });
+    
     startSearch('daft punk');
 });
 
@@ -555,7 +608,7 @@ function startSearch(query){
         $("#tabHeader_1").click();
     }
     if (query === '') {
-        if (search_type !== 'category') {
+        if ((search_type !== 'category') && (search_type !== 't100mixtape')) {
             $('#video_search_query').attr('placeholder','').focus();
             return;
         }
@@ -605,6 +658,10 @@ function startSearch(query){
         }
     } else if (search_engine === 'beeg') {
             beeg.searchVideos(query,current_page,search_filters, search_order, search_type, selected_category, function(datas){ getVideosDetails(datas,'beeg',false); });
+    } else if (search_engine === 'hhnh') {
+        if (search_type === 't100mixtape') {
+            hhnh.topMixtapes(search_order, function(datas){ getPlaylistInfos(datas, 'hhnh'); });
+        }
     }
     
 }
@@ -802,15 +859,21 @@ function getVideosDetails(datas,engine,sublist,vid) {
 
 function getPlaylistInfos(datas, engine){
     sublist=false;
-    
     switch(engine) {
         case 'youtube':
             var items = datas.items;
             var totalResults = datas.totalItems;
+            var itemsByPage = 25;
             break;
         case 'dailymotion': 
             var items = datas.list;
             var totalResults = datas.total;
+            var itemsByPage = 25;
+            break;
+        case 'hhnh':
+            var items = datas[1].items;
+            var totalResults = datas[1].totalResults;
+            var itemsByPage = 100;
             break;
     }
     if (totalResults === 0) {
@@ -827,7 +890,7 @@ function getPlaylistInfos(datas, engine){
         if ((sublist === false) && (pagination_init === false)) {
             $("#pagination").pagination({
                     items: totalResults,
-                    itemsOnPage: 25,
+                    itemsOnPage: itemsByPage,
                     displayedPages:5,
                     cssStyle: 'compact-theme',
                     edges:1,
@@ -905,6 +968,8 @@ function loadPlaylistItems(item, engine) {
         var length=item.videos_total;
         var author = item['owner.username'];
         var description = item.description;
+        $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:238px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
+
     }
     else if ( engine === 'youtube') {
         var pid = item.id;
@@ -913,8 +978,18 @@ function loadPlaylistItems(item, engine) {
         var description = item.description;
         var thumb =  item.thumbnail.sqDefault;
         var title = item.title;
+        $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:238px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
+
+    } 
+    else if ( engine === 'hhnh') {
+        var link = item.link;
+        var length = '';
+        var author = item.artist;
+        var description = '';
+        var thumb =  item.thumb;
+        var title = item.title;
+        $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:38px;height:38px;"/><div class="left" style="width:500px;"><p><b>'+author+' - '+title+'</b></p></div><div class="right"><a href="#" id="'+link+'::'+length+'::'+engine+'" class="load_playlist"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
     }
-    $('#items_container').append('<div class="youtube_item_playlist"><img src="'+thumb+'" style="float:left;width:120px;height:90px;"/><div class="left" style="width:238px;"><p><b>'+title+'</b></p><p><span><b>total videos:</b> '+length+'</span>      <span><b>      author:</b> '+author+'</span></p></div><div class="right"><a href="#" id="'+pid+'::'+length+'::'+engine+'" class="load_playlist"><img width="36" height ="36" src="images/play.png" /></a></div></div>');
 }
 
 function loadChannelsItems(item, engine) {
@@ -955,6 +1030,9 @@ function loadPlaylistSongs(pid){
     else if ( engine === 'youtube') {
         youtube.loadSongs(plid,length,current_start_index, function(datas, length, pid, engine) { fillPlaylistFromPlaylist(datas, length, pid, engine); });
     }
+    else if ( engine === 'hhnh') {
+        hhnh.loadMixtapeSongs(plid, function(datas) { fillPlaylistFromMixtape(datas,engine); });
+    }
 }
 
 function loadChannelSongs(pid){
@@ -977,6 +1055,40 @@ function loadChannelSongs(pid){
     else if ( engine === 'youtube') {
         youtube.loadChannelSongs(link,current_search_page, function(datas) { fillPlaylistFromChannel(datas,engine); });
     }
+}
+
+function fillPlaylistFromMixtape(datas,engine) {
+    var sublist=false;
+    var items = datas[1].items;
+    var totalResults = datas[1].totalResults;
+    if (totalResults === 0) {
+        $('#search_results').html(myLocalize.translate("<p><strong>No sounds</strong> found...</p>"));
+        $('#search').show();
+        $('#loading').hide();
+        return;
+    } else {
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ myLocalize.translate("sounds in this mixtape")+' </p>');
+        try {
+            for(var i=0; i<items.length; i++) {
+                var infos = {};
+                infos.id = items[i].songId;
+                infos.resolutions = items[i].resolutions;
+                infos.author = items[i].author;
+                infos.views = items[i].views;
+                infos.title= infos.author +' - '+ items[i].title;
+                infos.thumb = items[i].thumb;
+                infos.slink = items[i].songLink;
+                printVideoInfos(infos,false, false,'',engine);
+            }
+        } catch(err) {
+            $('#search_results').html(myLocalize.translate("<p><strong>No sounds</strong> found...</p>"));
+            $('#search').show();
+            $('#loading').hide();
+        }
+    }
+    $('#search').show();
+    $('#loading').hide();
+    $('#items_container').show();
 }
 
 function fillPlaylistFromChannel(datas,engine) {
@@ -1112,8 +1224,10 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
         var thumb = infos.thumb;
         var vid = infos.id;
         var seconds;
-        if ((engine !== 'youporn') && (engine !== 'cliphunter') && (engine !== 'superhqporn')  && (engine !== 'beeg')){
+        if ((engine !== 'youporn') && (engine !== 'cliphunter') && (engine !== 'superhqporn')  && (engine !== 'beeg') && (engine !== 'hhnh')){
             seconds = secondstotime(parseInt(infos.duration));
+        } else if (engine === 'hhnh'){
+            seconds = '         ';
         } else {
             seconds = infos.time;
         }
@@ -1175,6 +1289,8 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
             var slink = 'http://www.superhqporn.com/?v='+infos.id;
         } else if (engine === 'beeg') {
             var slink = 'http://www.beeg.com/'+infos.id;
+        }else if (engine === 'hhnh') {
+            var slink = infos.slink;
         }
         if (sublist === false) {
             $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');

@@ -205,6 +205,18 @@
     },
     "videos found in this channel" : {
         "fr": "vidéos trouvées dans cette chaîne"
+    },
+    "sounds in this mixtape" : {
+        "fr": "sons dans cette mixtape"
+    },
+    "<p><strong>No sounds</strong> found...</p>" : {
+        "fr": "<p><strong>Aucun son</strong> trouvé...</p>"
+    },
+    "Top 100 mixtape" : {
+        "fr": "Top 100 mixtape"
+    },
+    "Songs/Artists" : {
+        "fr": "Sons/artistes"
     }
 }
 

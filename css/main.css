@@ -436,3 +436,27 @@ color: White;
     position: relative;
     top:40px;
 }
+
+/* airplay */
+#airplayContainer {
+    position:fixed;
+    z-index:1200;
+    left:160px;
+    top: 50px;
+}
+
+.airplay-disabled {
+    background:url(../images/airplay.png);
+    background-repeat:no-repeat;
+    height: 26px;
+    width: 26px;
+    position: absolute;
+}
+
+.airplay-enabled {
+    height: 26px;
+    width: 26px;
+    position: absolute;
+    background:url(../images/airplay-hover.png);
+    background-repeat:no-repeat;
+}
