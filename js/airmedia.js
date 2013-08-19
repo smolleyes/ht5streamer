@@ -100,7 +100,7 @@ function ask_authorization() {
 }
 
 function wait_user_auth(track_id) {
-	alert("Merci d'accepter l'authorisation sur l'afficheur de votre freebox pour activer airplay...!");
+	alert("Veuillez accepter l'autorisation qui s'affiche actuellement SUR VOTRE FREEBOX à la place de l'heure pour activer airplay...!");
     http.get('http://mafreebox.freebox.fr/api/v1/login/authorize/'+track_id+'',function(res){
         var datas = '';
         res.on('data',function(data){
