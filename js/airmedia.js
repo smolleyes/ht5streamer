@@ -243,7 +243,7 @@ function getAirMediaReceivers() {
                             $(this).prop('checked','');
                         }
                     });
-                    $("#tiptip_content input[name="+airMediaDevice+"]").prop('checked','checked');
+                    $("#tiptip_content input[name='"+airMediaDevice+"']").prop('checked','checked');
                 }
                 if (airMediaDevices.length === 1) {
                     airMediaDevice = airMediaDevices[0];
