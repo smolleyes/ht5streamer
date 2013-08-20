@@ -20,7 +20,7 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var confWin = gui.Window.get();
-var version = "0.2";
+var version = "0.3";
 
 //localize
 var Localize = require('localize');
@@ -116,17 +116,26 @@ fs.exists(confdir, function (exists) {
 function makeConfdir(confdir) {
     mkdirp(confdir, function(err) { 
         if(err){
-	    console.log('can\'t create confdir '+confdir);
+	    console.log('can\'t create config dir '+confdir);
 	    return;
 	} else {
 	    console.log('Config dir '+confdir+' created successfully');
 	    checkConf();
 	}	
     });
+    mkdirp(confdir+'/updates', function(err) { 
+        if(err){
+	    console.log('can\'t create update dir '+confdir);
+	    return;
+	} else {
+	    console.log('Update dir '+confdir+'/updates created successfully');
+	    checkConf();
+	}	
+    });
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{"resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":""}', function(err) {
+    fs.writeFile(confdir+'/ht5conf.json', '{updateDir:"'+confdir+'"/updates",version: "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":""}', function(err) {
         if(err) {
             console.log(err);
 	    return;
@@ -163,6 +172,29 @@ function loadConf(confdir) {
     if (settings.edit === true) {
 	return;
     }
+    if ((settings.version === undefined) || (settings.version !== version) || (settings.updateDir === undefined)) {
+	settings.version = version;
+	settings.updateDir = confdir+'/updates';
+	fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+	    if(err) {
+		console.log(err);
+	    }
+	});
+    }
+    fs.exists(confdir+'/updates', function (exists) {
+	util.debug(exists ? "Update dir ok..." : mkupdateDir(confdir));
+    });
+}
+
+function mkupdateDir(confdir) {
+    mkdirp(confdir+'/updates', function(err) { 
+	if(err){
+	    console.log('can\'t create update dir '+confdir);
+	    return;
+	} else {
+	    console.log('Update dir '+confdir+'/updates created successfully');
+	}	
+    });
 }
 
 function savePopConf() {

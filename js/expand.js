@@ -34,13 +34,13 @@ $(document).ready(function() {
 			if (content.hasClass('opened') === true) {
 				content.removeClass('opened').addClass('closed');
 				content.slideToggle();
-				$(window).scrollTop(pos);
+				$(window).scrollTop(pos+17);
 				var text = $(this).text().replace('-','+');
 				$(this).html(text);
 			} else {
 				content.removeClass('closed').addClass('opened');
 				content.slideToggle();
-				$(window).scrollTop(pos);
+				$(window).scrollTop(pos+17);
 				var text= $(this).text().replace('+','-');
 				$(this).html(text);
 			}
@@ -50,7 +50,7 @@ $(document).ready(function() {
 			searchRelated(vid,1,engine);
 			content.slideToggle();
 			$(this).html('- '+ myLocalize.translate("Open related videos"));
-			$(window).scrollTop(pos);
+			$(window).scrollTop(pos+17);
 		}
 	});
 });

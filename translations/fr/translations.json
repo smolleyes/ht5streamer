@@ -217,6 +217,27 @@
     },
     "Songs/Artists" : {
         "fr": "Sons/artistes"
+    },
+    "A new version is available !" : {
+        "fr": "Une nouvelle version est disponible !"
+    },
+    "Update" : {
+        "fr": "Mettre à jour"
+    },
+    "Your software is up to date !" : {
+        "fr": "Votre logiciel est à jour !"
+    },
+    "Downloading : " : {
+        "fr": "Téléchargement : "
+    },
+    "Installing update..." : {
+        "fr": "Installation de la mise à jour..."
+    },
+    "Update successfully installed! please restart ht5streamer" : {
+        "fr": "Mise à jour installée avec succès ! merci de redémarrer ht5streamer..."
+    },
+    "Update error, please report the problem... !" : {
+        "fr": "Erreur de mise à jour, merci de remonter le problème !"
     }
 }
 

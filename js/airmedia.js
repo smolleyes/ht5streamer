@@ -48,7 +48,8 @@ $(document).ready(function(){
             API.device_name = obj.device_name;
             BASE_URL = FREEBOX_URL+API_BASE_URL+'v'+API.version+'/';
             if ((token_string === undefined) || (token_string === '')) {
-                console.log("Token undefined or empty, need authorisation")
+                console.log("Token undefined or empty, need authorisation");
+                $.notif({title: 'Activation airplay:',img: 'images/authorize.png', timeout: 0,content:"Veuillez accepter l'autorisation qui s'affiche actuellement SUR VOTRE FREEBOX à la place de l'heure pour activer airplay...!",btnId:'notifOk',btnTitle:'Valider',btnColor: 'green',btnDisplay:'block',updateDisplay:'none'});
                 ask_authorization();
             } else {
                 console.log('airmedia already registered, token string : '+token_string);
@@ -100,7 +101,6 @@ function ask_authorization() {
 }
 
 function wait_user_auth(track_id) {
-	alert("Veuillez accepter l'autorisation qui s'affiche actuellement SUR VOTRE FREEBOX à la place de l'heure pour activer airplay...!");
     http.get('http://mafreebox.freebox.fr/api/v1/login/authorize/'+track_id+'',function(res){
         var datas = '';
         res.on('data',function(data){
@@ -115,16 +115,20 @@ function wait_user_auth(track_id) {
                     setTimeout("wait_user_auth("+track_id+")",5000);
                 } else if (statut === 'granted') {
                     console.log('authorization validated by user, token : '+token_string);
+                    $("#notification").hide();
                     saveToken();
                 } else if (statut === 'timeout') {
                     console.log('authorization timeout...');
+                    $("#notification").hide();
                     return;
                 } else if (statut === 'denied') {
                     console.log('authorization denied by user...');
+                    $("#notification").hide();
                     return;
                 }
             } else {
                 console.log('can t get authorization status...pending/timeout...')
+                $("#notification").hide();
                 return;
             }
         });

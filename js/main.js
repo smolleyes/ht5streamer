@@ -87,6 +87,7 @@ var selected_resolution = settings.resolution;
 var locale = settings.locale;
 myLocalize.setLocale(locale);
 
+
 var htmlStr = '<div id="menu"> \
     <div id="engines" class="space"> \
         <label>'+myLocalize.translate("Engine:")+'</label> \
@@ -481,7 +482,7 @@ $(document).ready(function(){
         });
     });
     
-    startSearch('daft punk');
+    //startSearch('daft punk');
 });
 
 
@@ -1197,7 +1198,7 @@ function fillPlaylist(items,sublist,sublist_id,engine) {
         if (items.length === 1) {
 			printVideoInfos(items[i], true, sublist, sublist_id,engine);
 			var pos = $('#items_container .youtube_item').first().position()['top'];
-			$(window).scrollTop(pos);
+			$(window).scrollTop(pos-65);
 		} else {
 			printVideoInfos(items[i],false, sublist,sublist_id,engine);
 		}
