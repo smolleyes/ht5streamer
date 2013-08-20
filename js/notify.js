@@ -106,11 +106,11 @@ function installUpdate(file) {
     if (process.platform === 'win32') {
         update = spawn(file);
     } else {
-        var args = ['-o', '"'+file+'"' , '-d' , execDir];
+        var args = ['-o',file,'-d',execDir];
         var update = spawn('unzip', args);
     }
     update.on('exit', function(data){
-        console.log(data);
+        console.log(data, file, execDir);
         pbar.click();
         $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
     });
