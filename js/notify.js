@@ -2,6 +2,8 @@ var http=require('http');
 var path = require('path');
 var fs = require('fs');
 
+var online_version;
+
 $(document).ready(function(){
     try {
         http.get('http://sd-20470.dedibox.fr/ht5streamer/update.html',function(res,err){
@@ -13,7 +15,7 @@ $(document).ready(function(){
                 console.log("Checking for updates....");
                 var data = datas.join('');
                 var txt = $('p',data).prevObject[1].innerHTML;
-                var online_version = txt;
+                online_version = txt;
                 console.log("online version : "+online_version+', current version : '+ settings.version);
                 if (online_version === settings.version) {
                     $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:myLocalize.translate("Your software is up to date !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
@@ -34,7 +36,7 @@ $(document).ready(function(){
         var file = '';
         var link = '';
         if (process.platform === 'win32') {
-            file = 'ht5streamer-32.zip';
+            file = 'ht5streamer-setup.exe';
             link = 'http://sd-20470.dedibox.fr/ht5streamer/windows/'+file;
         } else {
             if (arch === 'ia32') {
