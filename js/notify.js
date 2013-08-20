@@ -105,9 +105,8 @@ function installUpdate(file) {
     
     if (process.platform === 'win32') {
         update = spawn(file);
-        console.log('installing' + file);
     } else {
-        var args = ['-o', file , '-d' , execDir];
+        var args = ['-o', '"'+file+'"' , '-d' , execDir];
         var update = spawn('unzip', args);
     }
     update.on('exit', function(data){
