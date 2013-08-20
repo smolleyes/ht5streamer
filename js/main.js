@@ -481,8 +481,7 @@ $(document).ready(function(){
             }
         });
     });
-    
-    //startSearch('daft punk');
+    startSearch('daft punk');
 });
 
 
