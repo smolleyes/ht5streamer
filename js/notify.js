@@ -1,7 +1,9 @@
 var http=require('http');
 var path = require('path');
 var fs = require('fs');
-
+var temp = require('temp');
+var exec = require('child_process').exec;
+ 
 var online_version;
 
 $(document).ready(function(){
@@ -16,7 +18,12 @@ $(document).ready(function(){
                 var data = datas.join('');
                 var txt = $('p',data).prevObject[1].innerHTML;
                 online_version = txt;
-                console.log("online version : "+online_version+', current version : '+ settings.version);
+                try {
+					console.log("online version : "+online_version+', current version : '+ settings.version);
+				} catch(err){
+					console.log(err);
+					return;
+				}
                 if (online_version === settings.version) {
                     $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:myLocalize.translate("Your software is up to date !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
                 } else {
@@ -31,7 +38,6 @@ $(document).ready(function(){
     // udpates
     $(document).on('click','#updateBtn',function(e) {
         e.preventDefault();
-        var updir = settings.updateDir;
         var arch = process.arch;
         var file = '';
         var link = '';
@@ -44,26 +50,19 @@ $(document).ready(function(){
                 file = 'ht5streamer-32.zip';
             } else if (arch === 'x64') {
                 console.log('linux 64 bits detected...');
-                file = '';
+                file = 'ht5streamer-64.zip';
             }
             link = 'http://sd-20470.dedibox.fr/ht5streamer/'+file;
         }
-        var target = updir+'/'+file;
-        downloadUpdate(link,target,file);
+        downloadUpdate(link,file);
     });
 });
 
-function downloadUpdate(link,target,file) {
-    $.notif({title: 'Ht5streamer update:',icon: '&#128229;',timeout:0,content:'',btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'block'})
+function downloadUpdate(link,filename) {
+    $.notif({title: 'Ht5streamer update:',icon: '&#128229;',timeout:0,content:'',btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'block'});
     // remove file if already exist
     var pbar = $('#updateProgress');
     var execDir = path.dirname(process.execPath);
-    fs.unlink(target, function (err) {
-        if (err) {
-        } else {
-            console.log('successfully deleted '+target);
-        }
-    });
     // start download
     $('#updateProgress strong').html(myLocalize.translate('Waiting for connection...'));
     var val = $('#updateProgress progress').attr('value');
@@ -77,7 +76,16 @@ function downloadUpdate(link,target,file) {
                 $('#updateProgress strong').html(myLocalize.translate("can't download this file..."));
                 setTimeout(function(){pbar.hide()},5000);
             }
+            temp.mkdir('ht5streamer', function(err, dirPath) {
+			tmpPath = dirPath;
+			var target;
+			if (process.platform === 'win32') {
+				target = dirPath+'\\'+filename;
+			} else {
+				target = dirPath+'/'+filename;
+			}
 			var file = fs.createWriteStream(target);
+			console.log(target);
 			response.on('data',function (chunk) {
 				file.write(chunk);
 				var bytesDone = file.bytesWritten;
@@ -93,35 +101,33 @@ function downloadUpdate(link,target,file) {
                 $('#updateProgress b').empty();
                 $('#updateProgress strong').html(myLocalize.translate('Download ended !'));
                 $('#updateProgress progress').hide();
-                installUpdate(target);
+                var execDir = path.dirname(process.execPath);
+				var update;
+				process.chdir(tmpPath);
+				$('#updateProgress strong').html(myLocalize.translate('Installing update...'));
+				
+				if (process.platform === 'win32') {
+					update = exec(filename);
+				} else {
+					var args = ['-o',filename,'-d',execDir];
+					var update = spawn('unzip', args);
+				}
+				update.on('exit', function(data){
+					pbar.click();
+					$('.notification').click();
+					if (parseInt(data) == 0) {
+						$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+					} else {
+						$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+					}
+				});
+				update.stderr.on('data', function(data) {
+					$('.notification').click();
+					$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+					console.log('update stderr: ' + data);
+				});
 			});
 		});
+	});
     current_download.end();
-}
-
-function installUpdate(file) {
-    var pbar = $('#updateProgress');
-    var execDir = path.dirname(process.execPath);
-    var update;
-    $('#updateProgress strong').html(myLocalize.translate('Installing update...'));
-    
-    if (process.platform === 'win32') {
-        update = spawn(file);
-    } else {
-        var args = ['-o',file,'-d',execDir];
-        var update = spawn('unzip', args);
-    }
-    update.on('exit', function(data){
-        pbar.click();
-        if (parseInt(data) == 0) {
-            $.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-        } else {
-            $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-        }
-    });
-    update.stderr.on('data', function(data) {
-        pbar.click();
-        $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-        console.log('update stderr: ' + data);
-    });
 }
