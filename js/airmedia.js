@@ -302,6 +302,8 @@ function play_on_fbx(url) {
             // check response
             if (resultObject.success === true) {
                 console.log('media started...');
+                $('.mejs-container p#fbxMsg').remove();
+                $('.mejs-container').append('<p id="fbxMsg" style="position:absolute;top:45%;margin:auto;color:white;font-size:30px;text-align:center;z-index:10000;right:125px;">Lecture en cours sur la freebox !</p>')
             } else {
                 console.log('can t start the media...');
             }
@@ -324,7 +326,7 @@ function stop_on_fbx() {
     var options = {
         host: 'mafreebox.freebox.fr',
         port: 80,
-        path: '/api/v1/airmedia/receivers/salon/',
+        path: '/api/v1/airmedia/receivers/'+airMediaDevice+'/',
         method: 'POST',
         headers: headers
     };
@@ -340,6 +342,7 @@ function stop_on_fbx() {
             // check response
             if (resultObject.success === true) {
                 console.log('media stopped...');
+                $('.mejs-container p#fbxMsg').remove();
             } else {
                 console.log('can t stop the media...');
             }

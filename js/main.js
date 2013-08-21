@@ -230,6 +230,14 @@ $(document).ready(function(){
         e.preventDefault();
         getNext();
     });
+    // pause/stop button
+    $('.mejs-playpause-button').click(function(e) {
+        if (playAirMedia === true) {
+            if ($('.mejs-play').length === 0) {
+                stop_on_fbx();
+            }
+        }
+    });
     // previous signal and callback
     $(document).on('click','.mejs-back-btn',function(e) {
         e.preventDefault();
@@ -291,9 +299,15 @@ $(document).ready(function(){
         var count = list.length-1;
         // play on airmedia
         if (playAirMedia === true) {
+            player.pause();
+            player.setSrc('');
+            player.currentTime = 0;
             play_on_fbx(link);
+            $('.mejs-play').click();
+            $('.mejs-overlay-loading').hide();
             return;
         }
+        $('.mejs-overlay-loading').show();
         if (parseInt(count) === -1) {
             player.setSrc(link);
             player.play();
@@ -599,6 +613,17 @@ function onKeyPress(key) {
         }
     } else if (key.key === 'f') {
       $('#fullscreen_btn').click();
+    } else if (key.key === 'Spacebar') {
+        key.preventDefault();
+        if (playAirMedia === false) {
+            if ($('.highlight').length !== 0) {
+                $('.mejs-playpause-button').click();
+            }
+        } else {
+            if ($('.mejs-play').length === 0) {
+                $('.mejs-pause').click();
+            }
+        }
     }
 }
 
