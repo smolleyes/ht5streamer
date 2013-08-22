@@ -201,7 +201,7 @@ $(document).ready(function(){
 		search_engine = $(this).val();
     });
     
-     var player = $('video').mediaelementplayer()[0].player;
+     player = $('video').mediaelementplayer()[0].player;
      // search form
      $('#video_search').bind('submit', function(e){
         e.preventDefault();
@@ -293,15 +293,18 @@ $(document).ready(function(){
         var link = video.link;
         var title = video.title;
         player.pause();
+        player.setSrc('');
+        player.currentTime = 0;
+        player.current[0].style.width = 0;
+        player.loaded[0].style.width = 0;
+        player.durationD.html('00:00');
         // check local files
         var list = fs.readdirSync(download_dir);
         var localLink = null;
         var count = list.length-1;
         // play on airmedia
+        $('.mejs-container p#fbxMsg').remove();
         if (playAirMedia === true) {
-            player.pause();
-            player.setSrc('');
-            player.currentTime = 0;
             play_on_fbx(link);
             $('.mejs-play').click();
             $('.mejs-overlay-loading').hide();

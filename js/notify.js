@@ -68,66 +68,66 @@ function downloadUpdate(link,filename) {
     var val = $('#updateProgress progress').attr('value');
     var currentTime;
     var startTime = (new Date()).getTime();
-    
-	current_download = http.request(link,
-		function (response) {
-			var contentLength = response.headers["content-length"];
-            if (parseInt(contentLength) === 0) {
-                $('#updateProgress strong').html(myLocalize.translate("can't download this file..."));
-                setTimeout(function(){pbar.hide()},5000);
-            }
-            temp.mkdir('ht5streamer', function(err, dirPath) {
-			tmpPath = dirPath;
-			var target;
-			if (process.platform === 'win32') {
-				target = dirPath+'\\'+filename;
-			} else {
-				target = dirPath+'/'+filename;
-			}
-			var file = fs.createWriteStream(target);
-			console.log(target);
-			response.on('data',function (chunk) {
-				file.write(chunk);
-				var bytesDone = file.bytesWritten;
-				currentTime = (new Date()).getTime();
-				var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
-				var newVal= bytesDone*100/contentLength;
-				var txt = Math.floor(newVal)+'% '+ myLocalize.translate('done at')+' '+transfer_speed+' kb/s';
-				$('#updateProgress progress').attr('value',newVal).text(txt);
-				$('#updateProgress strong').html(txt);
-			});
-			response.on('end', function() {
-				file.end();
-                $('#updateProgress b').empty();
-                $('#updateProgress strong').html(myLocalize.translate('Download ended !'));
-                $('#updateProgress progress').hide();
-                var execDir = path.dirname(process.execPath);
-				var update;
-				process.chdir(tmpPath);
-				$('#updateProgress strong').html(myLocalize.translate('Installing update...'));
-				
-				if (process.platform === 'win32') {
-					update = exec(filename);
-				} else {
-					var args = ['-o',filename,'-d',execDir];
-					var update = spawn('unzip', args);
-				}
-				update.on('exit', function(data){
-					pbar.click();
-					$('.notification').click();
-					if (parseInt(data) == 0) {
-						$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-					} else {
-						$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-					}
-				});
-				update.stderr.on('data', function(data) {
-					$('.notification').click();
-					$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-					console.log('update stderr: ' + data);
-				});
-			});
-		});
+    current_download = http.request(link,
+    function (response) {
+	var contentLength = response.headers["content-length"];
+    if (parseInt(contentLength) === 0) {
+	$('#updateProgress strong').html(myLocalize.translate("can't download this file..."));
+	setTimeout(function(){pbar.hide()},5000);
+    }
+    temp.mkdir('ht5streamer', function(err, dirPath) {
+	tmpPath = dirPath;
+	var target;
+	if (process.platform === 'win32') {
+		target = dirPath+'\\'+filename;
+	} else {
+		target = dirPath+'/'+filename;
+	}
+	var file = fs.createWriteStream(target);
+	console.log(target);
+	response.on('data',function (chunk) {
+		file.write(chunk);
+		var bytesDone = file.bytesWritten;
+		currentTime = (new Date()).getTime();
+		var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
+		var newVal= bytesDone*100/contentLength;
+		var txt = Math.floor(newVal)+'% '+ myLocalize.translate('done at')+' '+transfer_speed+' kb/s';
+		$('#updateProgress progress').attr('value',newVal).text(txt);
+		$('#updateProgress strong').html(txt);
 	});
-    current_download.end();
+	response.on('end', function() {
+	    file.end();
+	    $('#updateProgress b').empty();
+	    $('#updateProgress strong').html(myLocalize.translate('Download ended !'));
+	    $('#updateProgress progress').hide();
+	    var execDir = path.dirname(process.execPath);
+	    var update;
+	    process.chdir(tmpPath);
+	    $('#updateProgress strong').html(myLocalize.translate('Installing update...'));
+	    
+	    if (process.platform === 'win32') {
+		    update = exec(filename);
+		    win.close(true);
+	    } else {
+		    var args = ['-o',filename,'-d',execDir];
+		    var update = spawn('unzip', args);
+	    }
+	    update.on('exit', function(data){
+		    pbar.click();
+		    $('.notification').click();
+		    if (parseInt(data) == 0) {
+			    $.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    } else {
+			    $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    }
+	    });
+	    update.stderr.on('data', function(data) {
+		    $('.notification').click();
+		    $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    console.log('update stderr: ' + data);
+	    });
+	});
+    });
+});
+current_download.end();
 }
