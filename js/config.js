@@ -20,14 +20,14 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var confWin = gui.Window.get();
-var version = "0.4.1";
+var version = "0.4.2";
 
 //localize
 var Localize = require('localize');
 var myLocalize = new Localize('./translations/');
 
 var settings = {};
-var locale;
+var locale = 'en';
 
 // settings
 var confdir;
@@ -37,6 +37,14 @@ if (process.platform === 'win32') {
 } else {
     confdir = getUserHome()+'/.config/ht5streamer';
 }
+
+try {
+    settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
+    if ((settings.locale !== '') && (settings.locale !== undefined)) {
+	locale = settings.locale;
+    } 
+    myLocalize.setLocale(locale);
+} catch(err) {}
 
 var htmlConfig='<div style="height:36px;"> \
 		<label>'+myLocalize.translate("Language:")+'</label> \
@@ -65,23 +73,21 @@ var htmlConfig='<div style="height:36px;"> \
 $(document).ready(function() {
     try {
 	settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-	if (settings.edit === false) {
-	    if ((settings.version === undefined) || (settings.version !== version)) {
-		settings.version = version;
-		fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+    if (settings.edit === false) {
+	 if ((settings.version === undefined) || (settings.version !== version)) {
+	    settings.version = version;
+	    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
 		    if(err) {
-			console.log(err);
+		    console.log(err);
+		    } else {
+			window.location="index.html";
 		    }
-		});
-	    }
+	    });
 	} else {
-	    if (settings.locale !== '') {
-		locale = settings.locale;
-	    }
-	    myLocalize.setLocale(locale);
+	    window.location="index.html";
 	}
-    } catch(err) {}
-    
+    }
+} catch(err) {}
     
     $('#main_config').empty().append(htmlConfig);
     $('#version').empty().append("Version: "+version);
@@ -177,13 +183,9 @@ function chooseDownloadDir(confdir) {
 
 function loadConf(confdir) {
     // clear cache
-    gui.App.clearCache();
     var settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
     if (settings.edit === true) {
 	return;
-    } else {
-	console.log('conf loaded...');
-	window.location='index.html';
     }
 }
 
