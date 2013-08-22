@@ -27,7 +27,7 @@ var Localize = require('localize');
 var myLocalize = new Localize('./translations/');
 
 var settings = {};
-var locale = 'en';
+var locale;
 
 // settings
 var confdir;
@@ -71,6 +71,7 @@ var htmlConfig='<div style="height:36px;"> \
 
 
 $(document).ready(function() {
+    $('body').hide();
     try {
 	settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
     if (settings.edit === false) {
@@ -78,17 +79,22 @@ $(document).ready(function() {
 	    settings.version = version;
 	    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
 		    if(err) {
-		    console.log(err);
+			console.log(err);
 		    } else {
 			window.location="index.html";
+			$('body').show();
+			return;
 		    }
 	    });
 	} else {
 	    window.location="index.html";
+	    $('#main_config').show();
+	    return;
 	}
     }
-} catch(err) {}
-    
+} catch(err) {
+}
+    $('body').show();
     $('#main_config').empty().append(htmlConfig);
     $('#version').empty().append("Version: "+version);
     $('#config_title').empty().append(myLocalize.translate("Ht5streamer configuration:"));
@@ -183,10 +189,12 @@ function chooseDownloadDir(confdir) {
 
 function loadConf(confdir) {
     // clear cache
-    var settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-    if (settings.edit === true) {
-	return;
-    }
+    try {
+	var settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
+	    if (settings.edit === true) {
+		return;
+	    }
+    } catch(err) {}
 }
 
 function savePopConf() {
