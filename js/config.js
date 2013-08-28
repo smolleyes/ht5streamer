@@ -20,7 +20,7 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var confWin = gui.Window.get();
-var version = "0.4.2";
+var version = "0.4.3";
 
 //localize
 var Localize = require('localize');
@@ -39,6 +39,25 @@ if (process.platform === 'win32') {
 }
 
 try {
+    settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
+    if (settings.edit === false) { 
+	if ((settings.version === undefined) || (settings.version !== version))  {
+	    settings.version = version;
+	    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+		    if(err) {
+			console.log(err);
+		    } else {
+			window.location="index.html";
+			$('body').show();
+			return;
+		    }
+	    });
+	} else {
+	    window.location="index.html";
+	    $('#main_config').show();
+	    return;
+	}
+    }
     settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
     if ((settings.locale !== '') && (settings.locale !== undefined)) {
 	locale = settings.locale;
@@ -71,29 +90,6 @@ var htmlConfig='<div style="height:36px;"> \
 
 
 $(document).ready(function() {
-    $('body').hide();
-    try {
-	settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-    if (settings.edit === false) {
-	 if ((settings.version === undefined) || (settings.version !== version)) {
-	    settings.version = version;
-	    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-		    if(err) {
-			console.log(err);
-		    } else {
-			window.location="index.html";
-			$('body').show();
-			return;
-		    }
-	    });
-	} else {
-	    window.location="index.html";
-	    $('#main_config').show();
-	    return;
-	}
-    }
-} catch(err) {
-}
     $('body').show();
     $('#main_config').empty().append(htmlConfig);
     $('#version').empty().append("Version: "+version);

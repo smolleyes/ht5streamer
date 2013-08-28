@@ -238,6 +238,27 @@
     },
     "Update error, please report the problem... !" : {
         "fr": "Erreur de mise à jour, merci de remonter le problème !"
+    },
+    "Top rated" : {
+        "fr": "Mieux notées"
+    },
+    "Most viewed" : {
+        "fr": "Plus populaires"
+    },
+    "Date:" : {
+        "fr": "Date:"
+    },
+    "Today" : {
+        "fr": "Aujourd'hui"
+    },
+    "This week" : {
+        "fr": "Cette semaine"
+    },
+    "This month" : {
+        "fr": "Ce mois"
+    },
+    "All time" : {
+        "fr": "Toujours"
     }
 }
 

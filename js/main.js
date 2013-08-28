@@ -73,6 +73,7 @@ var pagination_init = false;
 var current_channel_link = '';
 var current_channel_engine = '';
 var channelPagination = false;
+var searchDate = 'today';
 
 // settings
 var confDir;
@@ -87,6 +88,10 @@ var selected_resolution = settings.resolution;
 var locale = settings.locale;
 myLocalize.setLocale(locale);
 
+var localeCode = 'US';
+if (locale === 'fr') {
+    localeCode = 'FR';
+}
 
 var htmlStr = '<div id="menu"> \
     <div id="engines" class="space"> \
@@ -110,6 +115,15 @@ var htmlStr = '<div id="menu"> \
             <option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
             <option value = "category">'+myLocalize.translate("Categories")+'</option> \
             <option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option> \
+            <option id="topRatedOpt" value = "topRated">'+myLocalize.translate("Top rated")+'</option> \
+            <option id="mostViewed" value = "mostViewed">'+myLocalize.translate("Most viewed")+'</option> \
+        </select> \
+        <label id="date_type_label">'+myLocalize.translate("Date:")+'</label> \
+        <select id="date_type_select"> \
+            <option value = "today">'+myLocalize.translate("Today")+'</option> \
+            <option value = "this_week">'+myLocalize.translate("This week")+'</option> \
+            <option value = "this_month">'+myLocalize.translate("This month")+'</option> \
+            <option value = "all_time">'+myLocalize.translate("All time")+'</option> \
         </select> \
         <label id="category_label">'+myLocalize.translate("Category:")+'</label> \
         <select id="category_select"> \
@@ -121,7 +135,7 @@ var htmlStr = '<div id="menu"> \
             <option value = "viewCount">'+myLocalize.translate("Views")+'</option> \
             <option value = "rating">'+myLocalize.translate("Rating")+'</option> \
         </select> \
-        <label >'+myLocalize.translate("Filters:")+'</label> \
+        <label id="filters_label">'+myLocalize.translate("Filters:")+'</label> \
         <select id="search_filters"> \
             <option value = ""></option> \
             <option value = "hd">HD</option> \
@@ -195,8 +209,10 @@ $(document).ready(function(){
     $('#video_search_query').focusout(function() {
         document.addEventListener("keydown", fn, false );
     });
-    
+    // default parameters
     $('#resolutions_select').val(selected_resolution);
+    $('#search_type_select').val('mostViewed');
+    
     $("select#engines_select option:selected").each(function () {
 		search_engine = $(this).val();
     });
@@ -208,7 +224,6 @@ $(document).ready(function(){
         query=$('#video_search_query').val();
         current_start_index = 1;
         current_prev_start_index = 1;
-        current_search=query;
         startSearch(query);
     });
     // open in browser
@@ -373,6 +388,7 @@ $(document).ready(function(){
     $("select#engines_select").change(function () {
         $("select#engines_select option:selected").each(function () {
                 search_engine = $(this).val();
+                search_type = 'videos';
                 getCategories();
                 pagination_init = false;
                 current_page=1;
@@ -384,7 +400,11 @@ $(document).ready(function(){
                                 <option value = "visited">'+myLocalize.translate("Views")+'</option> \
                                 <option value = "rated">'+myLocalize.translate("Rating")+'</option>';
                     $('#orderby_select').empty().append(html);
-                    $('#channelsOpt').hide();
+                    var html ='<option value = "videos">'+myLocalize.translate("Videos")+'</option> \
+                            <option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
+                            <option value = "category">'+myLocalize.translate("Categories")+'</option>';
+                    $('#search_type_select').empty().append(html);
+                    
                 } else if (search_engine === 'hhnh') {
                     var html = ' <option value = "songs">'+myLocalize.translate("Songs/Artists")+'</option> \
                             <option value = "t100mixtape">'+myLocalize.translate("Top 100 mixtape")+'</option>';
@@ -398,14 +418,40 @@ $(document).ready(function(){
                     var html ='<option value = "videos">'+myLocalize.translate("Videos")+'</option> \
                             <option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
                             <option value = "category">'+myLocalize.translate("Categories")+'</option> \
-                            <option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option>';
+                            <option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option> \
+                            <option id="topRated" value = "topRated">'+myLocalize.translate("Top rated")+'</option> \
+                            <option id="mostViewed" value = "mostViewed">'+myLocalize.translate("Most viewed")+'</option>';
                     $('#search_type_select').empty().append(html);
                 }
+                $('#video_search_query').show();
+                $('#search_label').show();
+                $('#orderby_label').show();
+                $('#orderby_select').show();
+                $('#date_type_label').hide();
+                $('#date_type_select').hide();
+                $('#filters_label').show();
+                $('#search_filters').show();
+        });
+    });
+    // search date select
+    $("select#date_type_select").change(function () {
+        $("select#date_type_select option:selected").each(function () {
+            pagination_init = false;
+            current_start_index = 1;
+            current_prev_start_index = 1;
+            current_page=1;
+            current_search_page=1;
+            searchDate = $(this).val();
         });
     });
     // search order
     $("select#orderby_select").change(function () {
         $("select#orderby_select option:selected").each(function () {
+            pagination_init = false;
+            current_start_index = 1;
+            current_prev_start_index = 1;
+            current_page=1;
+            current_search_page=1;
             search_order = $(this).val();
         });
     });
@@ -414,14 +460,20 @@ $(document).ready(function(){
         $("select#category_select option:selected").each(function () {
             selected_category = $(this).val();
             pagination_init = false;
+            current_start_index = 1;
+            current_prev_start_index = 1;
             current_page=1;
             current_search_page=1;
-            current_start_index=1;
         });
     });
     //search filters
     $("select#search_filters").change(function () {
         $("select#search_filters option:selected").each(function () {
+            pagination_init = false;
+            current_start_index = 1;
+            current_prev_start_index = 1;
+            current_page=1;
+            current_search_page=1;
             search_filters = $(this).val();
         });
     });
@@ -434,12 +486,26 @@ $(document).ready(function(){
             current_prev_start_index = 1;
             current_page=1;
             current_search_page=1;
-            if (search_type === 't100mixtape') {
+            if ((search_type === 't100mixtape') || (search_type === 'topRated') || (search_type === 'mostViewed')) {
                 $('#video_search_query').hide();
                 $('#search_label').hide();
+                $('#orderby_label').hide();
+                $('#orderby_select').hide();
+                $('#filters_label').hide();
+                $('#search_filters').hide();
+                if (search_type !== 't100mixtape') {
+                    $('#date_type_label').show();
+                    $('#date_type_select').show();
+                }
             } else {
                 $('#video_search_query').show();
                 $('#search_label').show();
+                $('#orderby_label').show();
+                $('#orderby_select').show();
+                $('#date_type_label').hide();
+                $('#date_type_select').hide();
+                $('#filters_label').show();
+                $('#search_filters').show();
             }
             
             if (search_type === 'category') {
@@ -450,8 +516,6 @@ $(document).ready(function(){
             } else {
                 $('#category_label').hide();
                 $('#category_select').hide();
-                $('#orderby_label').show();
-                $('#orderby_select').show();
             }
         });
     });
@@ -498,7 +562,15 @@ $(document).ready(function(){
             }
         });
     });
-    startSearch('daft punk');
+    // start default search
+    search_type = 'mostViewed';
+    $('#video_search_query').hide();
+    $('#search_label').hide();
+    $('#orderby_label').hide();
+    $('#orderby_select').hide();
+    $('#filters_label').hide();
+    $('#search_filters').hide();
+    startSearch('');
 });
 
 
@@ -636,7 +708,8 @@ function startSearch(query){
         $("#tabHeader_1").click();
     }
     if (query === '') {
-        if ((search_type !== 'category') && (search_type !== 't100mixtape')) {
+        current_search = '';
+        if ((search_type !== 'category') && (search_type !== 't100mixtape') && (search_type !== 'topRated') && (search_type !== 'mostViewed')) {
             $('#video_search_query').attr('placeholder','').focus();
             return;
         }
@@ -645,7 +718,7 @@ function startSearch(query){
     $('#pagination').hide();
     $('#search').hide();
     $('#loading').show();
-    if ((query !== current_search) || channelPagination === true) {
+    if ((query !== current_search) || (channelPagination === true)) {
         current_page =1;
         current_search_page=1;
         current_start_index=1;
@@ -669,8 +742,12 @@ function startSearch(query){
             youtube.searchPlaylists(query,current_page,function(datas){ getPlaylistInfos(datas, 'youtube'); });
         } else if (search_type === 'category') {
             youtube.categories(query,current_page,search_filters,selected_category,function(datas){ getVideosDetails(datas,'youtube',false); });
-        }else if (search_type === 'channels') {
+        } else if (search_type === 'channels') {
             youtube.searchChannels(query,current_page,function(datas){ getChannelsInfos(datas, 'youtube'); });
+        } else if (search_type === 'topRated') {
+            youtube.standard(current_page,localeCode,'top_rated',searchDate,function(datas){ getVideosDetails(datas,'youtube',false); });
+        } else if (search_type === 'mostViewed') {
+            youtube.standard(current_page,localeCode,'most_popular',searchDate,function(datas){ getVideosDetails(datas,'youtube',false); });
         }
     } else if (search_engine === 'youporn') {
         if (search_type === 'videos') {
@@ -691,7 +768,6 @@ function startSearch(query){
             hhnh.topMixtapes(search_order, function(datas){ getPlaylistInfos(datas, 'hhnh'); });
         }
     }
-    
 }
 
 function searchRelated(vid,page,engine) {
@@ -702,14 +778,13 @@ function searchRelated(vid,page,engine) {
 	}
 }
 
-
 function getVideosDetails(datas,engine,sublist,vid) {
     switch(engine) {
         case 'youtube':
             var items = datas.items;
             var totalResults = datas.totalItems;
             var pages = totalResults / 10;
-            var startPage = 0;
+            var startPage = 1;
             var browse = false;
             var has_more = false;
             var itemsByPage = 25;
@@ -720,6 +795,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var pages = totalResults / 10;
             var startPage = 1;
             var browse = false;
+            var has_more = datas.has_more;
             var itemsByPage = 25;
             break;
         case 'youporn':
@@ -763,7 +839,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             return;
         }
     // for dailymotion
-    } else if (totalResults === undefined ) {
+    } else if ((totalResults === undefined) && (datas.limit !== 10) || (engine === 'youtube') && (search_type === 'topRated') || (search_type === 'mostViewed')) {
         $('#search_results').html('<p>'+myLocalize.translate("Browsing mode, use the pagination bar to navigate")+'</p>');
         browse = true;
         if ((sublist === false) && (pagination_init === false)) {
@@ -778,7 +854,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
                     nextText : ''+myLocalize.translate("Next")+'',
                     onPageClick : changePage
             });
-            if ((datas.has_more === true) && (engine === 'dailymotion') || (engine === 'beeg')) {
+            if ((datas.has_more === true) && (engine === 'dailymotion') || (engine ==='youtube') && (search_type === 'topRated') || (search_type === 'mostViewed') || (engine === 'beeg')) {
                 pagination_init = false;
             } else {
                 pagination_init = true;
@@ -788,7 +864,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
     }
     // print total results
     if (sublist === false) {
-        if (totalResults !== undefined ) {
+        if ((totalResults !== undefined) && (browse === false)) {
             $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
         }
     } else {
@@ -796,17 +872,27 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var p = $('#loadmore_'+vid).attr('alt').split('::')[1];
             if (parseInt(p) === startPage) {
                 var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
-                $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
+                
+                    $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
+                
             }
         } catch(err) {
             console.log(err);
             return;
         }
         var page = parseInt(p) + 1;
-        if (page < pages) {
-            $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
+        if (engine === 'dailymotion') {
+            if (has_more === true) {
+                $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
+            } else {
+                $('#loadmore_'+vid).hide();
+            }
         } else {
-            $('#loadmore_'+vid).hide();
+            if (pages > page) {
+                $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
+            } else {
+                $('#loadmore_'+vid).hide();
+            }
         }
     }
     try {
@@ -1265,11 +1351,8 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
             author = myLocalize.translate("unknown");
         }
         if ($('#youtube_entry_res_'+vid).length === 1) {return;}
-        if ($('#youtube_entry_res_sub'+vid).length === 1) {return;}
-        var page=0;
-        if (engine === 'dailymotion') {
-			page = 1;
-		}
+        if ($('#youtube_entry_res_sub_'+vid).length === 1) {return;}
+        var page = 1;
         if (solo === true) {
 			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="progress_'+vid+'" class="progress" style="display:none;"><p><b>'+myLocalize.translate("Downloading")+' :</b> <strong>0%</strong></p><progress value="5" min="0" max="100">0%</progress><a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"><img src="images/video_convert.png"></a><a href="#" style="display:none;" class="cancel space" alt="" title="'+myLocalize.translate("Cancel")+'"><img src="images/close.png"></a><a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"><img src="images/close.png"></a></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+myLocalize.translate("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+myLocalize.translate("Load more videos")+'</button></div></div></div>');
 		} else {
@@ -1304,6 +1387,8 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
         }
         if ($('#youtube_entry_res_'+vid+' a.video_link').length === 0){
             $('#youtube_entry_res_'+vid).parent().parent().remove();
+        } else if ($('#youtube_entry_res_sub_'+vid+' a.video_link').length === 0) {
+            $('#youtube_entry_res_sub_'+vid).parent().parent().remove();
         }
         if (engine === 'youtube') {
             var slink = "http://www.youtube.com/watch?v="+vid;
