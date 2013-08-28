@@ -48,13 +48,11 @@ try {
 			console.log(err);
 		    } else {
 			window.location="index.html";
-			$('body').show();
 			return;
 		    }
 	    });
 	} else {
 	    window.location="index.html";
-	    $('#main_config').show();
 	    return;
 	}
     }
@@ -90,7 +88,7 @@ var htmlConfig='<div style="height:36px;"> \
 
 
 $(document).ready(function() {
-    $('body').show();
+    $('#main_config').hide();
     $('#main_config').empty().append(htmlConfig);
     $('#version').empty().append("Version: "+version);
     $('#config_title').empty().append(myLocalize.translate("Ht5streamer configuration:"));
@@ -104,8 +102,7 @@ $(document).ready(function() {
 	});
     });
     $('#valid_config').click(function(e) {
-		e.preventDefault();
-		savePopConf();
+	savePopConf();
     });
     //resolutions select
     var selected_resolution = settings.resolution;
@@ -139,19 +136,10 @@ function makeConfdir(confdir) {
 	    checkConf();
 	}	
     });
-    mkdirp(confdir+'/updates', function(err) { 
-        if(err){
-	    console.log('can\'t create update dir '+confdir);
-	    return;
-	} else {
-	    console.log('Update dir '+confdir+'/updates created successfully');
-	    checkConf();
-	}	
-    });
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{version: "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":""}', function(err) {
+    fs.writeFile(confdir+'/ht5conf.json', '{"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":""}', function(err) {
         if(err) {
             console.log(err);
 	    return;
@@ -163,6 +151,7 @@ function makeConfigFile() {
 }
 
 function checkConf(confdir) {
+    $('#main_config').show();
     fs.exists(confdir+'/ht5conf.json', function (exists) {
         util.debug(exists ? loadConf(confdir) : makeConfigFile(confdir) );
     });

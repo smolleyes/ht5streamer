@@ -3,7 +3,7 @@ var path = require('path');
 var fs = require('fs');
 var temp = require('temp');
 var exec = require('child_process').exec;
- 
+
 var online_version;
 
 $(document).ready(function(){
