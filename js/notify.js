@@ -106,7 +106,7 @@ function downloadUpdate(link,filename) {
 	    $('#updateProgress strong').html(myLocalize.translate('Installing update...'));
 	    
 	    if (process.platform === 'win32') {
-		    update = exec(filename);
+		    exec(filename);
 		    win.close(true);
 	    } else {
 		    var args = ['-o',filename,'-d',execDir];
