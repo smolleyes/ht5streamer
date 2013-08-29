@@ -487,7 +487,7 @@ $(document).ready(function(){
             current_page=1;
             current_search_page=1;
             if ((search_type === 't100mixtape') || (search_type === 'topRated') || (search_type === 'mostViewed')) {
-                $('#video_search_query').hide();
+                $('#video_search_query').prop('disabled', true);
                 $('#search_label').hide();
                 $('#orderby_label').hide();
                 $('#orderby_select').hide();
@@ -498,7 +498,7 @@ $(document).ready(function(){
                     $('#date_type_select').show();
                 }
             } else {
-                $('#video_search_query').show();
+                $('#video_search_query').prop('disabled', false);
                 $('#search_label').show();
                 $('#orderby_label').show();
                 $('#orderby_select').show();
@@ -564,7 +564,7 @@ $(document).ready(function(){
     });
     // start default search
     search_type = 'mostViewed';
-    $('#video_search_query').hide();
+    $('#video_search_query').prop('disabled', true);
     $('#search_label').hide();
     $('#orderby_label').hide();
     $('#orderby_select').hide();
