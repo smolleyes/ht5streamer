@@ -423,7 +423,7 @@ $(document).ready(function(){
                             <option id="mostViewed" value = "mostViewed">'+myLocalize.translate("Most viewed")+'</option>';
                     $('#search_type_select').empty().append(html);
                 }
-                $('#video_search_query').show();
+                $('#video_search_query').prop('disabled', false);
                 $('#search_label').show();
                 $('#orderby_label').show();
                 $('#orderby_select').show();
@@ -488,7 +488,6 @@ $(document).ready(function(){
             current_search_page=1;
             if ((search_type === 't100mixtape') || (search_type === 'topRated') || (search_type === 'mostViewed')) {
                 $('#video_search_query').prop('disabled', true);
-                $('#search_label').hide();
                 $('#orderby_label').hide();
                 $('#orderby_select').hide();
                 $('#filters_label').hide();
@@ -565,7 +564,6 @@ $(document).ready(function(){
     // start default search
     search_type = 'mostViewed';
     $('#video_search_query').prop('disabled', true);
-    $('#search_label').hide();
     $('#orderby_label').hide();
     $('#orderby_select').hide();
     $('#filters_label').hide();
