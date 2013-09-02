@@ -88,7 +88,6 @@ var htmlConfig='<div style="height:36px;"> \
 
 
 $(document).ready(function() {
-    $('#main_config').hide();
     $('#main_config').empty().append(htmlConfig);
     $('#version').empty().append("Version: "+version);
     $('#config_title').empty().append(myLocalize.translate("Ht5streamer configuration:"));

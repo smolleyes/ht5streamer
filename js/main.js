@@ -521,7 +521,7 @@ $(document).ready(function(){
     // convert to mp3
     $(document).on('click','.convert',function(e) {
         e.preventDefault();
-        if ( process.platform === 'win32' ){
+        if ((process.platform === 'win32') || (process.platform === 'darwin')){
             convertTomp3Win($(this).attr('alt'));
         }else{
             convertTomp3($(this).attr('alt'));
@@ -1553,9 +1553,13 @@ function convertTomp3Win(file){
     var pbar = $('#progress_'+vid);
     var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
     $('#progress_'+vid+' strong').html(myLocalize.translate("Converting video to mp3, please wait..."));
-	var args = ['-i', title, '-ab', '192k', target];
-    var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
-    console.log('Spawning ffmpeg ' + args.join(' '));
+	var args = ['-y','-i', title, '-ab', '192k', target];
+	if (process.platform === 'win32') {
+    	var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
+	} else {
+		var ffmpeg = spawn(exec_path+'/ffmpeg', args);
+	}
+    console.log('Spawning ffmpeg ' + args.join(' ') +' --- ffmpeg path:'+exec_path+'/ffmpeg');
     ffmpeg.on('exit', function(){
 		console.log('ffmpeg exited');
 		$('#progress_'+vid+' strong').html(myLocalize.translate("video converted successfully !"));
