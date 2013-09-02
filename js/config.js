@@ -20,7 +20,7 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var confWin = gui.Window.get();
-var version = "0.4.5";
+var version = "0.4.6";
 
 //localize
 var Localize = require('localize');

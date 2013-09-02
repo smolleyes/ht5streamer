@@ -44,6 +44,9 @@ $(document).ready(function(){
         if (process.platform === 'win32') {
             file = 'ht5streamer-setup.exe';
             link = 'http://sd-20470.dedibox.fr/ht5streamer/windows/'+file;
+		} else if (process.platform === 'darwin') {
+			 file = 'ht5streamer-32.nw';
+			 link = 'http://sd-20470.dedibox.fr/ht5streamer/'+file;
         } else {
             if (arch === 'ia32') {
                 console.log('linux 32 bits detected...');
@@ -72,8 +75,8 @@ function downloadUpdate(link,filename) {
     function (response) {
 	var contentLength = response.headers["content-length"];
     if (parseInt(contentLength) === 0) {
-	$('#updateProgress strong').html(myLocalize.translate("can't download this file..."));
-	setTimeout(function(){pbar.hide()},5000);
+		$('#updateProgress strong').html(myLocalize.translate("can't download this file..."));
+		setTimeout(function(){pbar.hide()},5000);
     }
     temp.mkdir('ht5streamer', function(err, dirPath) {
 	tmpPath = dirPath;
@@ -84,7 +87,6 @@ function downloadUpdate(link,filename) {
 		target = dirPath+'/'+filename;
 	}
 	var file = fs.createWriteStream(target);
-	console.log(target);
 	response.on('data',function (chunk) {
 		file.write(chunk);
 		var bytesDone = file.bytesWritten;
@@ -108,24 +110,32 @@ function downloadUpdate(link,filename) {
 	    if (process.platform === 'win32') {
 		    exec(filename);
 		    win.close(true);
-	    } else {
+ 	    } else if (process.platform === 'darwin') {
+			var source = fs.createReadStream(filename);
+			var dest = fs.createWriteStream(execDir.match(/.*Ht5streamer.app(.*?)/)[0]+"/Contents/Resources/app.nw");
+			source.pipe(dest);
+			pbar.click();
+			$('.notification').click();
+			source.on('end', function() { $.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'}); });
+			source.on('error', function(err) { $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'}); });
+ 	    } else {
 		    var args = ['-o',filename,'-d',execDir];
 		    var update = spawn('unzip', args);
-	    }
-	    update.on('exit', function(data){
-		    pbar.click();
-		    $('.notification').click();
-		    if (parseInt(data) == 0) {
-			    $.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    } else {
-			    $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    }
-	    });
-	    update.stderr.on('data', function(data) {
-		    $('.notification').click();
-		    $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    console.log('update stderr: ' + data);
-	    });
+	    	update.on('exit', function(data){
+		    	pbar.click();
+		    	$('.notification').click();
+		    	if (parseInt(data) == 0) {
+			    	$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	} else {
+			    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	}
+	    	});
+	    	update.stderr.on('data', function(data) {
+		    	$('.notification').click();
+		    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	console.log('update stderr: ' + data);
+	    	});
+		}
 	});
     });
 });
