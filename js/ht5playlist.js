@@ -55,6 +55,7 @@ function showItems(results) {
 
 function onSelectedItem(data) {
 	var item = data.rslt.obj.prevObject[0].attributes;
+	console.log(item);
 	try {
 		var vid = item.vid.value;
 		var flink = item.flink.value;
