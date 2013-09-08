@@ -125,13 +125,16 @@ height:calc(100% - 50px) !important;
     vertical-align:middle;
 }
 
-.hide_bar, .convert {
+.convert {
+	position:relative;
+	top:-10px;
     margin-left: 5px;
 }
 
-.hide_bar {
-    position:relative;
-    top: -2px;
+.cancel, .hide_bar {
+	position:relative;
+	top:-12px;
+    margin-left: 5px;
 }
 
 .video_link, .download_file {
