@@ -49,13 +49,13 @@ function showItems(results) {
 				}
 			}
 			$("#treeview").jstree("create", $("#"+parent+"_rootnode"), "inside",  obj, function() { }, true);
+			$("#treeview").jstree('close_all');
 		}
 	}
 }
 
 function onSelectedItem(data) {
 	var item = data.rslt.obj.prevObject[0].attributes;
-	console.log(item);
 	try {
 		var vid = item.vid.value;
 		var flink = item.flink.value;
@@ -75,8 +75,6 @@ function onSelectedItem(data) {
 			youtube.getVideoInfos('http://www.youtube.com/watch?v='+vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine,title)});
 		} else if (engine === 'dailymotion'){
 			dailymotion.getVideoInfos(vid,0,1,function(datas) {showInfos(datas,next_vid,vid,flink,engine,title)});
-		} else if (engine === 'youporn'){
-			youporn.getVideoById(flink,function(datas) {showInfos(datas,next_vid,vid,flink,engine,title)});
 		}
 	} catch(err) {
 		console.log(err);
@@ -120,6 +118,7 @@ function onCreateItem(item) {
 }
 
 function showInfos(datas,next_vid,vid,flink,engine,title) {
+	console.log(datas,next_vid,vid,flink,engine,title);
 	var link = {};
 	link.link= '';
 	link.next = next_vid;

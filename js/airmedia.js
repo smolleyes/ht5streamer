@@ -305,7 +305,7 @@ function play_on_fbx(url) {
                 $('.mejs-container p#fbxMsg').remove();
                 $('.mejs-container').append('<p id="fbxMsg" style="position:absolute;top:45%;margin:auto;color:white;font-size:30px;text-align:center;z-index:10000;right:125px;">Lecture en cours sur la freebox !</p>')
             } else {
-                console.log('can t start the media...');
+                console.log('can t start the media...', responseString);
             }
         });
     });

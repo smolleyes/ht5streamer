@@ -259,6 +259,33 @@
     },
     "All time" : {
         "fr": "Toujours"
+    },
+    "Local files" : {
+        "fr": "Fichiers locaux"
+    },
+    "Local network interface:" : {
+        "fr": "Interface réseau local"
+    },
+    "Add or remove directories to scan for your local library:" : {
+        "fr": "Ajouter ou supprimer vos dossiers à scanner pour votre bibliothèque locale:"
+    },
+    "Add" : {
+        "fr": "Ajouter"
+    },
+    "Remove" : {
+        "fr": "Supprimer"
+    },
+    "Please add local folders to scan in the settings" : {
+        "fr": "Merci d'ajouter des dossiers à scanner dans les paramètres"
+    },
+    "please select a network interface in the configuration panel" : {
+        "fr": "Merci de sélectioner une interface réseau dans les paramètres"
+    },
+    "results found" : {
+        "fr": "résultats trouvés"
+    },
+    "Local library" : {
+        "fr": "Librairie locale"
     }
 }
 

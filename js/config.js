@@ -20,6 +20,8 @@ var mkdirp = require('mkdirp');
 var util = require('util');
 var gui = require('nw.gui');
 var confWin = gui.Window.get();
+var os = require('os');
+var wrench = require('wrench');
 var version = "0.4.7";
 
 //localize
@@ -28,6 +30,7 @@ var myLocalize = new Localize('./translations/');
 
 var settings = {};
 var locale;
+var selected_interface;
 
 // settings
 var confdir;
@@ -40,28 +43,31 @@ if (process.platform === 'win32') {
 
 try {
     settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-    if (settings.edit === false) { 
-	if ((settings.version === undefined) || (settings.version !== version))  {
-	    settings.version = version;
-	    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-		    if(err) {
-			console.log(err);
-		    } else {
+    if (settings.edit === false) {
+		if ((settings.version === undefined) || (settings.version !== version))  {
+			settings.version = version;
+			fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+				if(err) {
+				console.log(err);
+				} else {
+				window.location="index.html";
+				return;
+				}
+			});
+		} else {
 			window.location="index.html";
 			return;
-		    }
-	    });
-	} else {
-	    window.location="index.html";
-	    return;
-	}
+		}
     }
     settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
     if ((settings.locale !== '') && (settings.locale !== undefined)) {
-	locale = settings.locale;
+		locale = settings.locale;
     } 
     myLocalize.setLocale(locale);
-} catch(err) {}
+} catch(err) {
+	
+}
+
 
 var htmlConfig='<div style="height:36px;"> \
 		<label>'+myLocalize.translate("Language:")+'</label> \
@@ -81,8 +87,23 @@ var htmlConfig='<div style="height:36px;"> \
 	    </div> \
 	    <div style="height:36px;"> \
 		<label>'+myLocalize.translate("Download directory:")+'</label> \
-		<input type="text" id="download_path" size="50"></input><button id="choose_download_dir">'+myLocalize.translate("Select")+'</button> \
+		<input type="text" id="download_path"></input><button id="choose_download_dir">'+myLocalize.translate("Select")+'</button> \
 	    </div> \
+	    <div> \
+			<label>'+myLocalize.translate("Local network interface:")+'</label> \
+			<select id="interface_select"> \
+			</select> \
+	    </div>\
+	    <div style="height:240px;margin-top:30px;"> \
+			<p>'+myLocalize.translate("Add or remove directories to scan for your local library:")+'</p> \
+			<select id="shared_dir_select" multiple name="shared_dir"> \
+			</select> \
+		</div> \
+		<div id="shared_dir_controls"> \
+				<button id="add_shared_dir">'+myLocalize.translate("Add")+'</button> \
+				<button id="remove_shared_dir" >'+myLocalize.translate("Remove")+'</button> \
+		</div>\
+	    <br\><br\> \
 	    <button id="valid_config">'+myLocalize.translate("Save")+'</button> \
 ';
 
@@ -92,16 +113,21 @@ $(document).ready(function() {
     $('#version').empty().append("Version: "+version);
     $('#config_title').empty().append(myLocalize.translate("Ht5streamer configuration:"));
     // start flags
-    $('#countries').val(settings.locale);
     $('#download_path').val(settings.download_dir);
-    $("#countries").msDropdown();
     $("select#countries").change(function () {
 	$("select#countries option:selected").each(function () {
-	    settings.locale = $(this).val();
-	});
+			locale = $(this).val();
+		});
     });
+    getInterfaces();
+    $("select#interface_select").change(function () {
+		$("select#interface_select option:selected").each(function () {
+				settings.interface = $(this).val();
+				getIpaddress();
+		});
+	});
     $('#valid_config').click(function(e) {
-	savePopConf();
+		savePopConf();
     });
     //resolutions select
     var selected_resolution = settings.resolution;
@@ -115,15 +141,45 @@ $(document).ready(function() {
     $('#choose_download_dir').click(function() {
 	chooseDownloadDir();
     });
+    // shared dirs
+    $('#add_shared_dir').click(function() {
+		addSharedDir();
+    });
+    $('#remove_shared_dir').click(function() {
+		removeSharedDir();
+    });
+    //init
+    if ((settings.interface === undefined) || (settings.interface === '') || (settings.ipaddress === undefined) || (settings.ipaddress === '')) {
+		selected_interface = '';
+		$("#interface_select").val('');
+	} else {
+		selected_interface = settings.interface;
+		$("#interface_select").val(selected_interface);
+	}
+    $(document).on('change',"#sharedDirDialog",function(){
+		addDir($('#sharedDirDialog').val());
+	});
+	
+	if (settings.shared_dirs !== undefined) {
+		$.each(settings.shared_dirs,function(index,dir){
+			$('#shared_dir_select').append('<option value="">'+dir+'</option>');
+		});
+	}
+	$('#countries').val(settings.locale);
+    $("#countries").msDropdown();
+    initCheck();
 });
 
 function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
 
-fs.exists(confdir, function (exists) {
-  util.debug(exists ? checkConf(confdir) : makeConfdir(confdir));
-});
+function initCheck() {
+	confWin.show();
+	fs.exists(confdir, function (exists) {
+		util.debug(exists ? checkConf(confdir) : makeConfdir(confdir));
+	});
+}
 
 function makeConfdir(confdir) {
     mkdirp(confdir, function(err) { 
@@ -138,13 +194,14 @@ function makeConfdir(confdir) {
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":""}', function(err) {
+    fs.writeFile(confdir+'/ht5conf.json', '{"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false}', function(err) {
         if(err) {
             console.log(err);
 	    return;
         } else {
             console.log("ht5config file created!");
-	    confWin.reload();
+            settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
+            $('#resolutions_select').val('1080p');
         }
     });
 }
@@ -171,34 +228,120 @@ function chooseDownloadDir(confdir) {
     });
 }
 
+function addSharedDir() {
+	var selected_dir = '';
+    var chooser = $('#sharedDirDialog');
+    chooser.trigger('click');            
+}
+
+function removeSharedDir() {
+	selected_toRemove = $("select#shared_dir_select option:selected")[0].innerText;
+	var index = $.inArray(selected_toRemove, settings.shared_dirs);
+	if (index>=0) settings.shared_dirs.splice(index, 1);
+	$("select#shared_dir_select option:selected").remove();
+	saveSettings();
+}
+
+function addDir(dir) {
+	if (settings.shared_dirs === undefined) {
+		settings.shared_dirs = [];
+	}
+	var selected_dir;
+	if (process.platform === 'win32') {
+		selected_dir=dir.replace(/\\/g,'//');
+	} else {
+		selected_dir=dir;
+	}
+	settings.shared_dirs.push(selected_dir);
+	$('#shared_dir_select').append('<option value="">'+selected_dir+'</option>');
+	saveSettings();
+}
+
 function loadConf(confdir) {
     // clear cache
     try {
-	var settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
 	    if (settings.edit === true) {
-		return;
+			return;
 	    }
     } catch(err) {}
 }
 
+function getInterfaces() {
+	$("#interface_select").empty();
+	if ((settings.interface=== undefined) || (settings.interface === '') || (settings.ipaddress=== undefined) || (settings.ipaddress === '')) {
+		$("#interface_select").append("<option value=''></option>");
+	}
+	var ifaces=os.networkInterfaces();
+	for (var dev in ifaces) {
+	  var alias=0;
+	  ifaces[dev].forEach(function(details){
+		if (details.family=='IPv4') {
+			if ((dev !== 'lo') || (dev.match('tun') !== null)) {
+				$("#interface_select").append("<option value="+dev+">"+dev+"</option>");
+			}
+			++alias;
+		}
+	  });
+	}
+}
+
+function getIpaddress() {
+	var ifaces=os.networkInterfaces();
+	for (var dev in ifaces) {
+	  var alias=0;
+	  ifaces[dev].forEach(function(details){
+		if (details.family=='IPv4') {
+		  if (dev === settings.interface) {
+			settings.ipaddress = details.address;
+		  }
+		  ++alias;
+		}
+	  });
+	}
+}
+
 function savePopConf() {
+	var fromPopup = settings.fromPopup;
     settings.edit=false;
+    settings.fromPopup = false;
+    var locale_changed = false;
+    if (locale !== settings.locale) {
+		locale_changed= true;
+		settings.locale=locale;
+	}
     if (settings.download_dir === '') {
-	$('#download_path').val('REQUIRED!!!').css({'color':'red'});
-	return;
+		$('#download_path').val('REQUIRED!!!').css({'color':'red'});
+		return;
     }
     fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
         if(err) {
             console.log(err);
         } else {
-	    if (confWin.width < 700){
-		confWin.close();
-            } else {
-		console.log("ht5config config updated successfully!");
-		window.location='index.html';
-	    }
-        }
+			if (fromPopup === true){
+				if (locale_changed === true) {
+					window.haveParent.window.server.close();
+					window.haveParent.reload();
+				} else {
+					window.haveParent.window.settings=settings;
+					window.haveParent.window.server.close();
+					window.haveParent.window.createServer();
+				}
+				confWin.hide();
+				confWin.close(true);
+			} else {
+				window.location='index.html';
+				window.window.settings=settings;
+			}
+			console.log("ht5config config updated successfully!");
+		}
     });
 }
 
+function saveSettings() {
+	fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+        if(err) {
+            console.log(err);
+        }
+    });
+}
 
