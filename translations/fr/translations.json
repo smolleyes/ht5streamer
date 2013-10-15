@@ -236,8 +236,8 @@
     "Update successfully installed! please restart ht5streamer" : {
         "fr": "Mise à jour installée avec succès ! merci de redémarrer ht5streamer..."
     },
-    "Update error, please report the problem... !" : {
-        "fr": "Erreur de mise à jour, merci de remonter le problème !"
+    "Update error, please report the problem... or try to reinstall manually !" : {
+        "fr": "Erreur de mise à jour, merci de remonter le problème ou reinstallez manuellement !"
     },
     "Top rated" : {
         "fr": "Mieux notées"

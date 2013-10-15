@@ -353,6 +353,10 @@ $(document).ready(function(){
         }
     });
     $('video').on('loadPlayer',function(e,video){
+		try {
+			stop_on_fbx();
+		} catch(err) {
+		}
         startPlay(video);
     });
     //play local file

@@ -24,7 +24,7 @@ html{
 }
 
 body {
-    font: 12px Verdana,Arial,Helvetica,sans-serif;
+    font:12px/1.5 Tahoma, Arial, sans-serif;
 }
 
 a {
@@ -291,7 +291,7 @@ height:calc(100% - 50px) !important;
 
 #fileBrowser {
 	position:absolute;
-	top:20px;
+	top:30px;
 }
 
 #fileBrowser li {
@@ -306,8 +306,8 @@ height:calc(100% - 50px) !important;
     background: rgba(0, 0, 0, 0.6);
     color: white;
     position: relative;
-    left: -63px;
-    top: 94px;
+    left: -65px;
+    top: 92px;
     padding: 2px 5px;
 }
 
@@ -474,7 +474,7 @@ color: White;
 #airplayContainer {
     position:fixed;
     z-index:1200;
-    left:250px;
+    left:255px;
     top: 50px;
 }
 
