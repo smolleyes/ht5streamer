@@ -133,13 +133,23 @@ function downloadUpdate(link,filename) {
 				}
 			},5000);
  	    } else if (process.platform === 'darwin') {
-			var source = fs.createReadStream(filename);
-			var dest = fs.createWriteStream(execDir.match(/.*Ht5streamer.app(.*?)/)[0]+"/Contents/Resources/app.nw");
-			source.pipe(dest);
-			pbar.click();
-			$('.notification').click();
-			source.on('end', function() { $.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'}); });
-			source.on('error', function(err) { $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'}); });
+			var dest = path.dirname(execDir.match(/.*ht5streamer.app(.*?)/)[0]);
+		    var args = ['-o',filename,'-d',dest];
+		    var update = spawn('unzip', args);
+	    	update.on('exit', function(data){
+		    	pbar.click();
+		    	$('.notification').click();
+		    	if (parseInt(data) == 0) {
+			    	$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:myLocalize.translate("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	} else {
+			    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	}
+	    	});
+	    	update.stderr.on('data', function(data) {
+		    	$('.notification').click();
+		    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	console.log('update stderr: ' + data);
+	    	});
  	    } else {
 		    var args = ['-o',filename,'-d',execDir];
 		    var update = spawn('unzip', args);
