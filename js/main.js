@@ -482,7 +482,6 @@ $(document).ready(function(){
 					$.each(selectTypes,function(index,type){
 						$("#"+type+"_select").empty();
 						var is = $.inArray(type, engine.defaultMenus) > -1;
-						console.log("#"+type+"_select is "+is)
 						if (is === false) {
 							$("#"+type+"_label").hide();
 							$("#"+type+"_select").hide();
@@ -1005,7 +1004,6 @@ function startSearch(query){
 		searchOptions.dateFilter = $("#dateTypes_select option:selected").val();
 		searchOptions.searchFilter = $("#searchFilters_select option:selected").val();
 		searchOptions.category = $("#categories_select option:selected").val();
-		console.log(searchOptions,current_page,pagination_init);
 		engine.search(query,searchOptions,win.window);
 	} catch(err) {
     
