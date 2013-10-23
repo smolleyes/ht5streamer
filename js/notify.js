@@ -147,7 +147,7 @@ function downloadUpdate(link,filename) {
 	    	});
 	    	update.stderr.on('data', function(data) {
 		    	$('.notification').click();
-		    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:myLocalize.translate("Update error, please report the problem... !") + data,btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
 		    	console.log('update stderr: ' + data);
 	    	});
  	    } else {

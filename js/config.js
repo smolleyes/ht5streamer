@@ -31,6 +31,7 @@ var myLocalize = new Localize('./translations/');
 var settings = {};
 var locale;
 var selected_interface;
+var shared_length = 0;
 
 // settings
 var confdir;
@@ -63,6 +64,7 @@ try {
     if ((settings.locale !== '') && (settings.locale !== undefined)) {
 		locale = settings.locale;
     } 
+    shared_length = settings.shared_dirs.length;
     myLocalize.setLocale(locale);
 } catch(err) {
 	
@@ -318,19 +320,29 @@ function savePopConf() {
         if(err) {
             console.log(err);
         } else {
+			console.log(confWin, window)
 			if (fromPopup === true){
 				if (locale_changed === true) {
 					window.haveParent.window.server.close();
 					window.haveParent.reload();
 				} else {
 					window.haveParent.window.settings=settings;
-					window.haveParent.window.server.close();
-					window.haveParent.window.createServer();
+					if (settings.shared_dirs.length !== shared_length) {
+						console.log("Updating local files list...");
+						try {
+							window.haveParent.window.createServer();
+						} catch(err) {};
+					}
 				}
 				confWin.hide();
 				confWin.close(true);
 			} else {
 				window.location='index.html';
+				if (settings.shared_dirs.length !== shared_length) {
+					settings.scan_dirs = true;
+				} else {
+					settings.scan_dirs = false;
+				}
 				window.window.settings=settings;
 			}
 			console.log("ht5config config updated successfully!");

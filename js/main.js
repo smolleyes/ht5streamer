@@ -210,7 +210,7 @@ var htmlStr = '<div id="menu"> \
                     <div class="tabpage" id="tabpage_1"> \
                         <div id="loading" style="display:None;"><img style="float:left;width:28px;height:28px;margin-right:10px;"src="images/spinner.gif" /><p>'+myLocalize.translate(" Loading videos...")+'</p></div> \
                          <div id="search"> \
-                            <div id="search_results"></div> \
+                            <div id="search_results"><p></p></div> \
                             <div id="pagination"></div> \
                         </div> \
                         <div id="items_container"></div> \
@@ -264,7 +264,7 @@ $(document).ready(function(){
     });
     // default parameters
     $('#resolutions_select').val(selected_resolution);
-    $('#searchTypes_select').val('mostViewed');
+    $('#searchTypes_select').val('videos');
     
     $("select#engines_select option:selected").each(function () {
 		search_engine = $(this).val();
@@ -704,16 +704,26 @@ $(document).ready(function(){
     });
 
 	// create server
-	createServer();
+	if (settings.scan_dirs === undefined) {
+		if ((settings.shared_dirs.length !== 0)) {
+			createServer();
+		}
+	} else {
+		if ((settings.scan_dirs === true)) {
+			createServer();
+		}
+	}
     
     // start default search
-    searchTypes_select = 'mostViewed';
-    $('#video_search_query').prop('disabled', true);
+    searchTypes_select = 'videos';
+    $('#video_search_query').prop('disabled', false);
     $('#orderBy_label').hide();
     $('#orderBy_select').hide();
     $('#searchFilters_label').hide();
     $('#searchFilters_select').hide();
-    startSearch('');
+    $('#items_container').hide();
+    $('#search_results p').empty().append(myLocalize.translate("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")).show();
+    //startSearch('');
 
 });
 

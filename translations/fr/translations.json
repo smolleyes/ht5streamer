@@ -286,6 +286,13 @@
     },
     "Local library" : {
         "fr": "Librairie locale"
+    },
+    "Update error, please report the problem... !" : {
+        "fr": "Erreur de mise à jour, merci de remonter le problème ..."
+    },
+    "Welcome to Ht5streamer !<br><br>Make a new search or select a category to start..." : {
+        "fr": "Bienvenue dans Ht5streamer!<br><br>Lancez une recherche ou sélectionnez une catégorie pour démarrer..."
     }
+    
 }
 
