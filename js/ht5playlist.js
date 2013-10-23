@@ -55,6 +55,10 @@ function showItems(results) {
 }
 
 function onSelectedItem(data) {
+	$(".mejs-overlay").show();
+	$(".mejs-layer").show();
+	$(".mejs-overlay-play").hide();
+	$(".mejs-overlay-loading").show();
 	var item = data.rslt.obj.prevObject[0].attributes;
 	try {
 		var vid = item.vid.value;
@@ -118,14 +122,17 @@ function onCreateItem(item) {
 }
 
 function showInfos(datas,next_vid,vid,flink,engine,title) {
-	console.log(datas,next_vid,vid,flink,engine,title);
 	var link = {};
 	link.link= '';
 	link.next = next_vid;
 	link.title = title;
 	if (datas === 'null') {return;}
     var resolutions_string = ['1080p','720p','480p','360p'];
-	var resolutions = datas[0].resolutions;
+    if (engine === 'youtube') {
+		var resolutions = datas[25].resolutions;
+	} else {
+		var resolutions = datas[0].resolutions;
+	}
 	var arr = [];
 	var l=0;
 	for(var i=0; i<resolutions_string.length; i++) {

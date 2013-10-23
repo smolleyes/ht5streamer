@@ -237,6 +237,7 @@ var htmlStr = '<div id="menu"> \
 </ol> \
 </div> \
 </div>';
+
 try {
 	process.on('uncaughtException', function(err) {
 		try{
