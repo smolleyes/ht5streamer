@@ -239,7 +239,9 @@ var htmlStr = '<div id="menu"> \
 </div>';
 try {
 	process.on('uncaughtException', function(err) {
-		console.error(err.stack);
+		try{
+			console.error(err.stack);
+		} catch(err){}
 	});
 } catch(err) {
 	console.log("exception error");
