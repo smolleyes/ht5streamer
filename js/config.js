@@ -29,7 +29,7 @@ var Localize = require('localize');
 var myLocalize = new Localize('./translations/');
 
 var settings = {};
-var locale;
+var locale = 'en';
 var selected_interface;
 var shared_length = 0;
 
@@ -63,8 +63,13 @@ try {
     settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
     if ((settings.locale !== '') && (settings.locale !== undefined)) {
 		locale = settings.locale;
-    } 
-    shared_length = settings.shared_dirs.length;
+    } else {
+		settings.locale = locale;
+	}
+	try {
+		shared_length = settings.shared_dirs.length;
+	} catch(err) {
+	}
     myLocalize.setLocale(locale);
 } catch(err) {
 	
