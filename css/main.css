@@ -140,6 +140,14 @@ height:calc(100% - 50px) !important;
     margin-left: 5px;
 }
 
+.progress {
+	border: 1px solid black !important;
+	position: relative;
+	top: 35px;
+	padding: 10px;
+	left: 5px;
+}
+
 .video_link, .download_file {
     display:inline-block;
     vertical-align: middle;
@@ -150,6 +158,11 @@ height:calc(100% - 50px) !important;
     float:left;
 }
 
+.open_folder {
+	position: relative;
+	top: -12px;
+	margin-left: 5px;
+}
 .item_infos {
     position: relative;
     top: -20;
@@ -474,7 +487,7 @@ color: White;
 #airplayContainer {
     position:fixed;
     z-index:1200;
-    left:255px;
+    left:370px;
     top: 50px;
 }
 

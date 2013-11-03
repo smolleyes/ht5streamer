@@ -227,7 +227,7 @@
     "Your software is up to date !" : {
         "fr": "Votre logiciel est à jour !"
     },
-    "Downloading : " : {
+    "Downloading: " : {
         "fr": "Téléchargement : "
     },
     "Installing update..." : {
@@ -292,7 +292,12 @@
     },
     "Welcome to Ht5streamer !<br><br>Make a new search or select a category to start..." : {
         "fr": "Bienvenue dans Ht5streamer!<br><br>Lancez une recherche ou sélectionnez une catégorie pour démarrer..."
+    },
+    "Downloads" : {
+        "fr": "Téléchargements"
+    },
+    "Open Download folder" : {
+        "fr": "Ouvrir le dossier de téléchargement"
     }
-    
 }
 

@@ -22,7 +22,7 @@ var gui = require('nw.gui');
 var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
-var version = "0.5.5";
+var version = "0.6";
 
 //localize
 var Localize = require('localize');
@@ -282,7 +282,6 @@ function getInterfaces() {
 	for (var dev in ifaces) {
 	  var alias=0;
 	  ifaces[dev].forEach(function(details){
-		  console.log(details);
 		if (details.family=='IPv4') {
 			if ((dev !== 'lo') || (dev.match('tun') !== null)) {
 				$("#interface_select").append("<option value="+encodeURIComponent(dev)+">"+dev+"</option>");
