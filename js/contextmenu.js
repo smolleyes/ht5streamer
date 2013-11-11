@@ -22,7 +22,7 @@ $(document).ready(function() {
 		delegateType: "contextmenu"
 	};
 	$(document).on("rightclick", ".start_video", function(e) {
-		var evid = $(this).parent().closest('.youtube_item').find('div')[5].id;
+		var evid = $(this).parent().closest('.youtube_item').find('div')[4].id;
 		var vid = '';
 		var title = $(this)[0].text;
 		if (evid.match('_sub') === null) {
@@ -37,18 +37,18 @@ $(document).ready(function() {
 			if (search_engine === 'youtube') {
 				var link = "http://www.youtube.com/watch?v="+vid;
 				var engine='youtube';
-				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy youtube link")+'</a></li>');
-				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Copy youtube link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Save to playlist")+'</a></li>');
 			} else if (search_engine === 'dailymotion') {
 				var link = "http://www.dailymotion.com/video/"+vid;
 				var engine='dailymotion';
-				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy dailymotion link")+'</a></li>');
-				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Copy dailymotion link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Save to playlist")+'</a></li>');
 			} else if (search_engine === 'youporn') {
 				var link = "http://www.youporn.com/watch/"+vid;
 				var engine='youporn';
-				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Copy youporn link")+'</a></li>');
-				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+myLocalize.translate("Save to playlist")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Copy youporn link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Save to playlist")+'</a></li>');
 			}
 		} catch(err) {
 			console.log("can't detect link to copy..." + err);
@@ -66,10 +66,10 @@ $(document).ready(function() {
 			var ytlink = getYtlinkFromClipboard();
 			var textStr = getSelectedText();
 			if (textStr !== null) {
-				$('#custom-menu ol').append('<li><a id="copy" href="#">'+myLocalize.translate("Copy")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="copy" href="#">'+_("Copy")+'</a></li>');
 			}
 			if ((search_engine === 'youtube') && ytlink !== null) {
-				$('#custom-menu ol').append('<li><a id="paste_ytlink" href="#">'+myLocalize.translate("Paste/Open youtube link")+'</a></li>');
+				$('#custom-menu ol').append('<li><a id="paste_ytlink" href="#">'+_("Paste/Open youtube link")+'</a></li>');
 			}
 			if ($('#custom-menu li').length === 0 ) {
 				return;

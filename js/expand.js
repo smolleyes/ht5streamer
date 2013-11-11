@@ -49,7 +49,7 @@ $(document).ready(function() {
 			content.addClass('opened');
 			searchRelated(vid,1,engine);
 			content.slideToggle();
-			$(this).html('- '+ myLocalize.translate("Open related videos"));
+			$(this).html('- '+ _("Open related videos"));
 			$(window).scrollTop(pos+17);
 		}
 	});

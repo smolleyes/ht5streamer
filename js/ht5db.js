@@ -15,9 +15,12 @@
 //~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 var fs = require('fs');
+var path = require('path');
 //localize
-var Localize = require('localize');
-var myLocalize = new Localize('./translations/');
+var i18n = require("i18n");
+var _ = i18n.__;
+var localeList = ['en', 'fr'];
+var locale = 'en';
 var db;
 // settings
 
@@ -30,14 +33,23 @@ if (process.platform === 'win32') {
 var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 var download_dir = settings.download_dir;
 var selected_resolution = settings.resolution;
-var locale = settings.locale;
-myLocalize.setLocale(locale);
 var db;
 
 $(document).ready(function() {
-	settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-	locale = settings.locale;
-	myLocalize.setLocale(locale);
+	// setup locale
+	i18n.configure({
+		defaultLocale: 'en',
+		locales:localeList,
+		directory: path.dirname(process.execPath) + '/locales',
+		updateFiles: true
+	});
+
+	if ($.inArray(settings.locale, localeList) >-1) {
+		locale=settings.locale;
+		i18n.setLocale(locale);
+	} else {
+		i18n.setLocale('en');
+	}
 // load/create db
 loadDb(function() {createRootNodes()});
 
@@ -128,8 +140,8 @@ function createRootNodes(cb) {
 			"plugins" : [ "themes", "json_data", "ui", "contextmenu","types","crrm" ],
 			"json_data" : {
 			"data" : { 
-					"attr" : { id : ''+myLocalize.translate("Library")+'_rootnode' },
-					"data" : myLocalize.translate("Library"),
+					"attr" : { id : ''+_("Library")+'_rootnode' },
+					"data" : _("Library"),
 					"children" : []
 				}
 			},
@@ -142,7 +154,7 @@ function createRootNodes(cb) {
 					// Some key
 					"remove" : {
 						// The item label
-						"label"				: myLocalize.translate("Remove"),
+						"label"				: _("Remove"),
 						// The function to execute upon a click
 						"action"			: function (obj) { this.remove(obj); },
 						// All below are optional 
@@ -154,7 +166,7 @@ function createRootNodes(cb) {
 					},
 					"create" : {
 						// The item label
-						"label"				: myLocalize.translate("Add folder"),
+						"label"				: _("Add folder"),
 						// The function to execute upon a click
 						"action"			: function (obj) {
 												this.create(obj); 
@@ -168,7 +180,7 @@ function createRootNodes(cb) {
 					},
 					"rename" : {
 						// The item label
-						"label"				: myLocalize.translate("Rename"),
+						"label"				: _("Rename"),
 						// The function to execute upon a click
 						"action"			: function (obj) { this.rename(obj); },
 						// All below are optional 

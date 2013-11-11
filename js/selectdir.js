@@ -17,17 +17,10 @@
 var fs = require('fs');
 var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 
-//localize
-var Localize = require('localize');
-var myLocalize = new Localize('./translations/');
-
 $(document).ready(function() {
-	var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-	var locale = settings.locale;
-	myLocalize.setLocale(locale);
 	$('body').css({"font" :"12px Verdana,Arial,Helvetica,sans-serif"});
 	createNodes();
-	var infos = myLocalize.translate("Select or create a folder (right click) to save your video and close the window to validate.");
+	var infos = _("Select or create a folder (right click) to save your video and close the window to validate.");
 	$('#infos').html(infos);
 });
 
@@ -39,8 +32,8 @@ function createNodes() {
 			"plugins" : [ "themes", "json_data", "ui", "contextmenu","types","crrm" ],
 			"json_data" : {
 			"data" : { 
-					"attr" : { id : ''+myLocalize.translate("Library")+'_rootnode' },
-					"data" : myLocalize.translate("Library"),
+					"attr" : { id : ''+_("Library")+'_rootnode' },
+					"data" : _("Library"),
 					"children" : []
 				}
 			},
@@ -53,7 +46,7 @@ function createNodes() {
 					// Some key
 					"remove" : {
 						// The item label
-						"label"				: myLocalize.translate("Remove"),
+						"label"				: _("Remove"),
 						// The function to execute upon a click
 						"action"			: function (obj) { this.remove(obj); },
 						// All below are optional 
@@ -65,7 +58,7 @@ function createNodes() {
 					},
 					"create" : {
 						// The item label
-						"label"				: myLocalize.translate("Add folder"),
+						"label"				: _("Add folder"),
 						// The function to execute upon a click
 						"action"			: function (obj) {
 												this.create(obj); 
@@ -79,7 +72,7 @@ function createNodes() {
 					},
 					"rename" : {
 						// The item label
-						"label"				: myLocalize.translate("Rename"),
+						"label"				: _("Rename"),
 						// The function to execute upon a click
 						"action"			: function (obj) { this.rename(obj); },
 						// All below are optional 
@@ -152,7 +145,7 @@ function onCreateItem(item) {
 	if (item.args.length === 1) {
 		var name = item.rslt.name;
 		if (name.match(' ') !== null) {
-			alert(myLocalize.translate("Please do not use spaces or special characters in your playlist name!"));
+			alert(_("Please do not use spaces or special characters in your playlist name!"));
 			item.rslt.obj.remove();
 			settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 			settings.selectedDir="";

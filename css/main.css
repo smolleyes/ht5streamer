@@ -304,7 +304,22 @@ height:calc(100% - 50px) !important;
 
 #fileBrowser {
 	position:absolute;
-	top:30px;
+	top:55px;
+}
+
+#file_update {
+	position:relative;
+	top: 35px;
+	left:5px;
+}
+
+#file_update span {
+	position:relative;
+	top: -4px;
+}
+
+#update_img {
+	height:17px;
 }
 
 #fileBrowser li {

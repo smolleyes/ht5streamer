@@ -16,8 +16,10 @@
 
 var fs = require('fs');
 //localize
-var Localize = require('localize');
-var myLocalize = new Localize('./translations/');
+var i18n = require("i18n");
+var _ = i18n.__;
+var localeList = ['en', 'fr'];
+var locale = 'en';
 var db;
 // settings
 
@@ -29,9 +31,21 @@ if (process.platform === 'win32') {
 }
 
 $(document).ready(function() {
-	settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-	locale = settings.locale;
-	myLocalize.setLocale(locale);
+	var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+	// setup locale
+	i18n.configure({
+		defaultLocale: 'en',
+		locales:localeList,
+		directory: path.dirname(process.execPath) + '/locales',
+		updateFiles: true
+	});
+
+	if ($.inArray(settings.locale, localeList) >-1) {
+		locale=settings.locale;
+		i18n.setLocale(locale);
+	} else {
+		i18n.setLocale('en');
+	}
 	createRootNodes();
 });
 
@@ -112,7 +126,7 @@ function onCreateItem(item) {
 	if (item.args.length === 1) {
 		var name = item.rslt.name;
 		if (name.match(' ') !== null) {
-			alert(myLocalize.translate("Please do not use spaces or special characters in your playlist name!"));
+			alert(_("Please do not use spaces or special characters in your playlist name!"));
 			item.rslt.obj.remove();
 		} else {
 			var parent = $.trim(item.args[0].prevObject[0].innerText);

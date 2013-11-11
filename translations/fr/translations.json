@@ -298,6 +298,12 @@
     },
     "Open Download folder" : {
         "fr": "Ouvrir le dossier de téléchargement"
+    },
+    "Update files list..." : {
+        "fr": "Mettre à jour..."
+    },
+    "Updating..." : {
+        "fr": "Mise à jour..."
     }
 }
 

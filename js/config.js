@@ -25,11 +25,12 @@ var wrench = require('wrench');
 var version = "0.6";
 
 //localize
-var Localize = require('localize');
-var myLocalize = new Localize('./translations/');
+var i18n = require("i18n");
+var _ = i18n.__;
+var localeList = ['en', 'fr'];
+var locale = 'en';
 
 var settings = {};
-var locale = 'en';
 var selected_interface;
 var shared_length = 0;
 
@@ -60,31 +61,50 @@ try {
 			return;
 		}
     }
-    settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-    if ((settings.locale !== '') && (settings.locale !== undefined)) {
-		locale = settings.locale;
-    } else {
-		settings.locale = locale;
-	}
-	try {
-		shared_length = settings.shared_dirs.length;
-	} catch(err) {
-	}
-    myLocalize.setLocale(locale);
 } catch(err) {
 	
 }
 
+try {
+	settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
+	if ((settings.locale !== '') && (settings.locale !== undefined)) {
+		locale = settings.locale;
+	} else {
+		settings.locale = locale;
+	}
+}catch(err){
+	settings.locale = locale;
+}
+
+try {
+	shared_length = settings.shared_dirs.length;
+} catch(err) {
+}
+// setup locale
+i18n.configure({
+	defaultLocale: 'en',
+	locales:localeList,
+	directory: path.dirname(process.execPath) + '/locales',
+	updateFiles: true
+});
+
+if ($.inArray(settings.locale, localeList) >-1) {
+	locale=settings.locale;
+	i18n.setLocale(locale);
+} else {
+	i18n.setLocale('en');
+}
+
 
 var htmlConfig='<div style="height:36px;"> \
-		<label>'+myLocalize.translate("Language:")+'</label> \
+		<label>'+_("Language:")+'</label> \
 		<select name="countries" id="countries" style="width:300px;"> \
 		  <option value="en" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag gb" data-title="England">English</option> \
 		  <option value="fr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag fr" data-title="France">French</option> \
 		</select> \
 	    </div> \
             <div style="height:36px;"> \
-		<label>'+myLocalize.translate("Maximum resolution:")+'</label> \
+		<label>'+_("Maximum resolution:")+'</label> \
 		<select id="resolutions_select"> \
 		    <option value = "1080p">1080p</option> \
 		    <option value = "720p">720p</option> \
@@ -93,32 +113,32 @@ var htmlConfig='<div style="height:36px;"> \
 		</select> \
 	    </div> \
 	    <div style="height:36px;"> \
-		<label>'+myLocalize.translate("Download directory:")+'</label> \
-		<input type="text" id="download_path"></input><button id="choose_download_dir">'+myLocalize.translate("Select")+'</button> \
+		<label>'+_("Download directory:")+'</label> \
+		<input type="text" id="download_path"></input><button id="choose_download_dir">'+_("Select")+'</button> \
 	    </div> \
 	    <div> \
-			<label>'+myLocalize.translate("Local network interface:")+'</label> \
+			<label>'+_("Local network interface:")+'</label> \
 			<select id="interface_select"> \
 			</select> \
 	    </div>\
 	    <div style="height:240px;margin-top:30px;"> \
-			<p>'+myLocalize.translate("Add or remove directories to scan for your local library:")+'</p> \
+			<p>'+_("Add or remove directories to scan for your local library:")+'</p> \
 			<select id="shared_dir_select" multiple name="shared_dir"> \
 			</select> \
 		</div> \
 		<div id="shared_dir_controls"> \
-				<button id="add_shared_dir">'+myLocalize.translate("Add")+'</button> \
-				<button id="remove_shared_dir" >'+myLocalize.translate("Remove")+'</button> \
+				<button id="add_shared_dir">'+_("Add")+'</button> \
+				<button id="remove_shared_dir" >'+_("Remove")+'</button> \
 		</div>\
 	    <br\><br\> \
-	    <button id="valid_config">'+myLocalize.translate("Save")+'</button> \
+	    <button id="valid_config">'+_("Save")+'</button> \
 ';
 
 
 $(document).ready(function() {
     $('#main_config').empty().append(htmlConfig);
     $('#version').empty().append("Version: "+version);
-    $('#config_title').empty().append(myLocalize.translate("Ht5streamer configuration:"));
+    $('#config_title').empty().append(_("Ht5streamer configuration:"));
     // start flags
     $('#download_path').val(settings.download_dir);
     $("select#countries").change(function () {

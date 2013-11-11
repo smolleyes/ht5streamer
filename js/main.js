@@ -58,8 +58,10 @@ var vidStreamer = require("vid-streamer");
 var wrench = require("wrench");
 
 //localize
-var Localize = require('localize');
-var myLocalize = new Localize('./translations/');
+var i18n = require("i18n");
+var _ = i18n.__;
+var localeList = ['en', 'fr'];
+var locale = 'en';
 
 //engines
 var dailymotion = require('dailymotion');
@@ -119,9 +121,22 @@ if (process.platform === 'win32') {
 var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 var download_dir = settings.download_dir;
 var selected_resolution = settings.resolution;
-var locale = settings.locale;
-myLocalize.setLocale(locale);
 var ipaddress = settings.ipaddress;
+
+// setup loccale
+i18n.configure({
+	defaultLocale: 'en',
+    locales:localeList,
+    directory: path.dirname(process.execPath) + '/locales',
+    updateFiles: true
+});
+
+if ($.inArray(settings.locale, localeList) >-1) {
+	locale=settings.locale;
+	i18n.setLocale(locale);
+} else {
+	i18n.setLocale('en');
+}
 
 var localeCode = 'US';
 if (locale === 'fr') {
@@ -141,50 +156,50 @@ var browse = true;
 
 var htmlStr = '<div id="menu"> \
     <div id="engines" class="space"> \
-        <label>'+myLocalize.translate("Engine:")+'</label> \
+        <label>'+_("Engine:")+'</label> \
         <select id="engines_select"> \
             <option value = "youtube">Youtube</option> \
             <option value = "dailymotion">dailymotion</option> \
         </select> \
     </div> \
     <form id="video_search"> \
-        <label id="searchTypes_label">'+myLocalize.translate("Search:")+'</label> \
-        <input type="text" id="video_search_query" name="video_search_query" placeholder="'+myLocalize.translate("Enter your search...")+'" /> \
-        <label>'+myLocalize.translate("Search type:")+'</label> \
+        <label id="searchTypes_label">'+_("Search:")+'</label> \
+        <input type="text" id="video_search_query" name="video_search_query" placeholder="'+_("Enter your search...")+'" /> \
+        <label>'+_("Search type:")+'</label> \
         <select id="searchTypes_select"> \
-            <option value = "videos">'+myLocalize.translate("Videos")+'</option> \
-            <option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
-            <option value = "category">'+myLocalize.translate("Categories")+'</option> \
-            <option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option> \
-            <option id="topRatedOpt" value = "topRated">'+myLocalize.translate("Top rated")+'</option> \
-            <option id="mostViewed" value = "mostViewed">'+myLocalize.translate("Most viewed")+'</option> \
+            <option value = "videos">'+_("Videos")+'</option> \
+            <option value = "playlists">'+_("Playlists")+'</option> \
+            <option value = "category">'+_("Categories")+'</option> \
+            <option id="channelsOpt" value = "channels">'+_("Channels")+'</option> \
+            <option id="topRatedOpt" value = "topRated">'+_("Top rated")+'</option> \
+            <option id="mostViewed" value = "mostViewed">'+_("Most viewed")+'</option> \
         </select> \
-        <label id="dateTypes_label">'+myLocalize.translate("Date:")+'</label> \
+        <label id="dateTypes_label">'+_("Date:")+'</label> \
         <select id="dateTypes_select"> \
-            <option value = "today">'+myLocalize.translate("Today")+'</option> \
-            <option value = "this_week">'+myLocalize.translate("This week")+'</option> \
-            <option value = "this_month">'+myLocalize.translate("This month")+'</option> \
-            <option value = "all_time">'+myLocalize.translate("All time")+'</option> \
+            <option value = "today">'+_("Today")+'</option> \
+            <option value = "this_week">'+_("This week")+'</option> \
+            <option value = "this_month">'+_("This month")+'</option> \
+            <option value = "all_time">'+_("All time")+'</option> \
         </select> \
-        <label id="categories_label">'+myLocalize.translate("Category:")+'</label> \
+        <label id="categories_label">'+_("Category:")+'</label> \
         <select id="categories_select"> \
         </select> \
-        <label id="orderBy_label">'+myLocalize.translate("Order by:")+'</label> \
+        <label id="orderBy_label">'+_("Order by:")+'</label> \
         <select id="orderBy_select"> \
-            <option value = "relevance">'+myLocalize.translate("Relevance")+'</option> \
-            <option value = "published">'+myLocalize.translate("Published")+'</option> \
-            <option value = "viewCount">'+myLocalize.translate("Views")+'</option> \
-            <option value = "rating">'+myLocalize.translate("Rating")+'</option> \
+            <option value = "relevance">'+_("Relevance")+'</option> \
+            <option value = "published">'+_("Published")+'</option> \
+            <option value = "viewCount">'+_("Views")+'</option> \
+            <option value = "rating">'+_("Rating")+'</option> \
         </select> \
-        <label id="searchFilters_label">'+myLocalize.translate("Filters:")+'</label> \
+        <label id="searchFilters_label">'+_("Filters:")+'</label> \
         <select id="searchFilters_select"> \
             <option value = ""></option> \
             <option value = "hd">HD</option> \
             <option id="3dopt" value = "3d">3D</option> \
         </select> \
-        <input id="video_search_btn" type="submit" class="space" value="'+myLocalize.translate("Send")+'" />  \
+        <input id="video_search_btn" type="submit" class="space" value="'+_("Send")+'" />  \
         </form> \
-        <a id="config_btn" href="#" title="'+myLocalize.translate("Settings")+'"> \
+        <a id="config_btn" href="#" title="'+_("Settings")+'"> \
             <img src="images/config.png" height="28" width="28" /> \
         </a> \
         <div> \
@@ -202,16 +217,16 @@ var htmlStr = '<div id="menu"> \
             <div id="tabContainer"> \
                 <div class="tabs"> \
                     <ul> \
-                        <li id="tabHeader_1">'+myLocalize.translate("Results")+'</li> \
-                        <li id="tabHeader_2">'+myLocalize.translate("Library")+'</li> \
-                        <li id="tabHeader_3">'+myLocalize.translate("Local files")+'</li> \
-                        <li id="tabHeader_4">'+myLocalize.translate("Downloads")+'</li> \
+                        <li id="tabHeader_1">'+_("Results")+'</li> \
+                        <li id="tabHeader_2">'+_("Library")+'</li> \
+                        <li id="tabHeader_3">'+_("Local files")+'</li> \
+                        <li id="tabHeader_4">'+_("Downloads")+'</li> \
                     </ul> \
                 </div> \
                 <div id="airplayContainer" style="display:none;"><a id="airplay-toggle" class="airplay tiptip airplay-disabled"></a><form id="fbxPopup" style="display:none;"></form></div> \
                 <div class="tabscontent"> \
                     <div class="tabpage" id="tabpage_1"> \
-                        <div id="loading" style="display:None;"><img style="float:left;width:28px;height:28px;margin-right:10px;"src="images/spinner.gif" /><p>'+myLocalize.translate(" Loading videos...")+'</p></div> \
+                        <div id="loading" style="display:None;"><img style="float:left;width:28px;height:28px;margin-right:10px;"src="images/spinner.gif" /><p>'+_(" Loading videos...")+'</p></div> \
                          <div id="search"> \
                             <div id="search_results"><p></p></div> \
                             <div id="pagination"></div> \
@@ -223,6 +238,8 @@ var htmlStr = '<div id="menu"> \
                         </div> \
                     </div> \
                     <div class="tabpage" id="tabpage_3"> \
+							<a id="file_update" href="#"><img src="images/update.png" id="update_img" /> \
+							<span>'+_("Update files list...")+'</span></a> \
                         <div id="fileBrowser"> \
 							<div id="fileBrowserContent"> \
 							</div> \
@@ -237,7 +254,7 @@ var htmlStr = '<div id="menu"> \
         </div> \
     </div> \
     <div id="right"> \
-            <video id="videoPlayer" width="100%" height="100%" src="t.mp4" controls></video> \
+            <video class="mejs-ted" id="videoPlayer" width="100%" height="100%" src="t.mp4" controls></video> \
     </div> \
     <div id="custom-menu"> \
 <ol> \
@@ -307,6 +324,13 @@ $(document).ready(function(){
         }
         win.toggleFullscreen();
     });
+    // click on tab1 get focus
+    $(document).on('click','#tabHeader_1',function(e) {
+		try {
+			var p = $('.highlight').position().top;
+			$(window).scrollTop(p-48);
+		} catch(err) {}
+	});
     // next signal and callback
     $(document).on('click','.mejs-next-btn',function(e) {
         e.preventDefault();
@@ -371,7 +395,7 @@ $(document).ready(function(){
         $('video').trigger('loadPlayer',video);
         if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
             var p = $('#'+current_song).parent().parent().position().top;
-            $(window).scrollTop(p+13);
+            $(window).scrollTop(p+16);
         }
     });
     $('video').on('loadPlayer',function(e,video){
@@ -393,7 +417,7 @@ $(document).ready(function(){
 		video.next = $(this).parent().next();
 		if (playAirMedia === true) {
 			if ((settings.interface === undefined) || (settings.interface === '') || (settings.ipaddress === undefined) || (settings.ipaddress === '')) {
-				$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:myLocalize.translate("please select a network interface in the configuration panel"),btnId:'ok',btnTitle:'ok',btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
+				$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("please select a network interface in the configuration panel"),btnId:'ok',btnTitle:'ok',btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
 				return;
 			}
 			if (serverSettings.rootFolder !== video.dir) {
@@ -536,17 +560,15 @@ $(document).ready(function(){
 					update_searchOptions();
 					
 				} catch(err) {
-					console.log(err);
-				
 					if (search_engine === 'dailymotion') {
-						var html = '<option value = "relevance">'+myLocalize.translate("Relevance")+'</option> \
-									<option value = "recent">'+myLocalize.translate("Published")+'</option> \
-									<option value = "visited">'+myLocalize.translate("Views")+'</option> \
-									<option value = "rated">'+myLocalize.translate("Rating")+'</option>';
+						var html = '<option value = "relevance">'+_("Relevance")+'</option> \
+									<option value = "recent">'+_("Published")+'</option> \
+									<option value = "visited">'+_("Views")+'</option> \
+									<option value = "rated">'+_("Rating")+'</option>';
 						$('#orderBy_select').empty().append(html);
-						var html ='<option value = "videos">'+myLocalize.translate("Videos")+'</option> \
-								<option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
-								<option value = "category">'+myLocalize.translate("Categories")+'</option>';
+						var html ='<option value = "videos">'+_("Videos")+'</option> \
+								<option value = "playlists">'+_("Playlists")+'</option> \
+								<option value = "category">'+_("Categories")+'</option>';
 						$('#searchTypes_select').empty().append(html);
 						var html = '<option value = ""></option> \
 									<option value = "hd">HD</option> \
@@ -554,17 +576,17 @@ $(document).ready(function(){
 						$('#searchFilters_select').empty().append(html);
 						
 					} else {
-						var html = '<option value = "relevance">'+myLocalize.translate("Relevance")+'</option> \
-									<option value = "published">'+myLocalize.translate("Published")+'</option> \
-									<option value = "viewCount">'+myLocalize.translate("Views")+'</option> \
-									<option value = "rating">'+myLocalize.translate("Rating")+'</option>';
+						var html = '<option value = "relevance">'+_("Relevance")+'</option> \
+									<option value = "published">'+_("Published")+'</option> \
+									<option value = "viewCount">'+_("Views")+'</option> \
+									<option value = "rating">'+_("Rating")+'</option>';
 						$('#orderBy_select').empty().append(html);
-						var html ='<option value = "videos">'+myLocalize.translate("Videos")+'</option> \
-								<option value = "playlists">'+myLocalize.translate("Playlists")+'</option> \
-								<option value = "category">'+myLocalize.translate("Categories")+'</option> \
-								<option id="channelsOpt" value = "channels">'+myLocalize.translate("Channels")+'</option> \
-								<option id="topRated" value = "topRated">'+myLocalize.translate("Top rated")+'</option> \
-								<option id="mostViewed" value = "mostViewed">'+myLocalize.translate("Most viewed")+'</option>';
+						var html ='<option value = "videos">'+_("Videos")+'</option> \
+								<option value = "playlists">'+_("Playlists")+'</option> \
+								<option value = "category">'+_("Categories")+'</option> \
+								<option id="channelsOpt" value = "channels">'+_("Channels")+'</option> \
+								<option id="topRated" value = "topRated">'+_("Top rated")+'</option> \
+								<option id="mostViewed" value = "mostViewed">'+_("Most viewed")+'</option>';
 						$('#searchTypes_select').empty().append(html);
 						var html = '<option value = ""></option> \
 									<option value = "hd">HD</option> \
@@ -646,10 +668,10 @@ $(document).ready(function(){
 					$('#orderBy_select').hide();
 					$('#searchFilters_label').hide();
 					$('#searchFilters_select').hide();
-					var html = '<option value = "today">'+myLocalize.translate("Today")+'</option> \
-								<option value = "this_week">'+myLocalize.translate("This week")+'</option> \
-								<option value = "this_month">'+myLocalize.translate("This month")+'</option> \
-								<option value = "all_time">'+myLocalize.translate("All time")+'</option>';
+					var html = '<option value = "today">'+_("Today")+'</option> \
+								<option value = "this_week">'+_("This week")+'</option> \
+								<option value = "this_month">'+_("This month")+'</option> \
+								<option value = "all_time">'+_("All time")+'</option>';
 					$('#dateTypes_select').empty().append(html);
 					$('#dateTypes_label').show();
 					$('#dateTypes_select').show();
@@ -730,19 +752,50 @@ $(document).ready(function(){
 			createServer();
 		}
 	}
+	// rotate image
+	$('#file_update').click(function(e){
+		e.preventDefault();
+		AnimateRotate(1080);
+		createLocalRootNodes();
+	});
     
     // start default search
     searchTypes_select = 'videos';
     $('#video_search_query').prop('disabled', false);
-    $('#orderBy_label').hide();
-    $('#orderBy_select').hide();
-    $('#searchFilters_label').hide();
-    $('#searchFilters_select').hide();
+    $('#orderBy_label').show();
+    $('#orderBy_select').show();
+    $('#searchFilters_label').show();
+    $('#searchFilters_select').show();
+    $('#dateTypes_label').hide();
+	$('#dateTypes_select').hide();
     $('#items_container').hide();
-    $('#search_results p').empty().append(myLocalize.translate("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")).show();
+    $('#search_results p').empty().append(_("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")).show();
     //startSearch('');
 
 });
+
+function AnimateRotate(angle) {
+    // caching the object for performance reasons
+    $('#file_update span').text(_('Updating...'));
+    var $elem = $('#update_img');
+	
+    // we use a pseudo object for the animation
+    // (starts from `0` to `angle`), you can name it as you want
+    $({deg: 0}).animate({deg: angle}, {
+        duration: 2000,
+        step: function(now) {
+            // in the step-callback (that is fired each step of the animation),
+            // you can use the `now` paramter which contains the current
+            // animation-position (`0` up to `angle`)
+            $elem.css({
+                transform: 'rotate(' + now + 'deg)'
+            });
+            if (now === 1080) {
+				$('#file_update span').text(_('Update files list...'));
+			}
+        }
+    });
+}
 
 function startPlay(media) {
 	next_vid = media.next;
@@ -827,9 +880,7 @@ function listPlugins() {
 function createServer() {
 	try {
 		server.close();
-	} catch(err) {
-		console.log(err);
-	}
+	} catch(err) {}
 	var homeDir = getUserHome();
 	serverSettings = {
 		"mode": "development",
@@ -1092,14 +1143,14 @@ function getVideosDetails(datas,engine,sublist,vid) {
     }
     if (totalResults === 0) {
         if (sublist === false) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+            $('#search_results').html(_("<p><strong>No videos</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             return;
         }
     // for dailymotion
     } else if ((totalResults === undefined) && (datas.limit !== 10) || (engine === 'youtube') && (searchTypes_select === 'topRated') || (searchTypes_select === 'mostViewed')) {
-        $('#search_results').html('<p>'+myLocalize.translate("Browsing mode, use the pagination bar to navigate")+'</p>');
+        $('#search_results').html('<p>'+_("Browsing mode, use the pagination bar to navigate")+'</p>');
         browse = true;
         if ((sublist === false) && (pagination_init === false)) {
             $("#pagination").pagination({
@@ -1109,8 +1160,8 @@ function getVideosDetails(datas,engine,sublist,vid) {
                     displayedPages:5,
                     cssStyle: 'compact-theme',
                     edges:1,
-                    prevText : ''+myLocalize.translate("Prev")+'',
-                    nextText : ''+myLocalize.translate("Next")+'',
+                    prevText : ''+_("Prev")+'',
+                    nextText : ''+_("Next")+'',
                     onPageClick : changePage
             });
             if ((datas.has_more === true) && (engine === 'dailymotion') || (engine ==='youtube') && (searchTypes_select === 'topRated') || (searchTypes_select === 'mostViewed')) {
@@ -1124,7 +1175,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
     // print total results
     if (sublist === false) {
         if ((totalResults !== undefined) && (browse === false)) {
-            $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("videos found")+'</p>');
+            $('#search_results').html('<p><strong>'+totalResults+'</strong> '+_("videos found")+'</p>');
         }
     } else {
         try {
@@ -1132,7 +1183,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             if (parseInt(p) === startPage) {
                 var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
                 
-                    $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+myLocalize.translate("Videos found")+')');
+                    $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+_("Videos found")+')');
                 
             }
         } catch(err) {
@@ -1158,7 +1209,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
         p = items.length;
     } catch(err) {
         if (sublist === false) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+            $('#search_results').html(_("<p><strong>No videos</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
             return;
@@ -1172,8 +1223,8 @@ function getVideosDetails(datas,engine,sublist,vid) {
                 displayedPages:5,
                 cssStyle: 'compact-theme',
                 edges:1,
-                prevText : ''+myLocalize.translate("Prev")+'',
-                nextText : ''+myLocalize.translate("Next")+'',
+                prevText : ''+_("Prev")+'',
+                nextText : ''+_("Next")+'',
                 onPageClick : changePage
         });
         pagination_init = true;
@@ -1209,12 +1260,12 @@ function getPlaylistInfos(datas, engine){
             break;
     }
     if (totalResults === 0) {
-        $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
+        $('#search_results').html(_("<p><strong>No playlist</strong> found...</p>"));
         $('#search').show();
         $('#loading').hide();
         return;
     }
-    $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("playlists found")+'</p>');
+    $('#search_results').html('<p><strong>'+totalResults+'</strong> '+_("playlists found")+'</p>');
     try {
         for(var i=0; i<items.length; i++) {
             loadPlaylistItems(items[i], engine);
@@ -1226,15 +1277,15 @@ function getPlaylistInfos(datas, engine){
                     displayedPages:5,
                     cssStyle: 'compact-theme',
                     edges:1,
-                    prevText : ''+myLocalize.translate("Prev")+'',
-                    nextText : ''+myLocalize.translate("Next")+'',
+                    prevText : ''+_("Prev")+'',
+                    nextText : ''+_("Next")+'',
                     onPageClick : changePage
             });
             pagination_init = true;
             total_pages=$("#pagination").pagination('getPagesCount');
         }
     } catch(err) {
-        $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
+        $('#search_results').html(_("<p><strong>No playlist</strong> found...</p>"));
         $('#search').show();
         $('#loading').hide();
     }
@@ -1257,12 +1308,12 @@ function getChannelsInfos(datas, engine){
             break;
     }
     if (totalResults === 0) {
-        $('#search_results').html(myLocalize.translate("<p><strong>No channels</strong> found...</p>"));
+        $('#search_results').html(_("<p><strong>No channels</strong> found...</p>"));
         $('#search').show();
         $('#loading').hide();
         return;
     }
-    $('#search_results').html('<p><strong>'+totalResults+'</strong> '+myLocalize.translate("channels found")+'</p>');
+    $('#search_results').html('<p><strong>'+totalResults+'</strong> '+_("channels found")+'</p>');
     try {
         for(var i=0; i<items.length; i++) {
             loadChannelsItems(items[i], engine);
@@ -1274,15 +1325,15 @@ function getChannelsInfos(datas, engine){
                     displayedPages:5,
                     cssStyle: 'compact-theme',
                     edges:1,
-                    prevText : ''+myLocalize.translate("Prev")+'',
-                    nextText : ''+myLocalize.translate("Next")+'',
+                    prevText : ''+_("Prev")+'',
+                    nextText : ''+_("Next")+'',
                     onPageClick : changePage
             });
             pagination_init = true;
             total_pages=$("#pagination").pagination('getPagesCount');
         }
     } catch(err) {
-        $('#search_results').html(myLocalize.translate("<p><strong>No playlist</strong> found...</p>"));
+        $('#search_results').html(_("<p><strong>No playlist</strong> found...</p>"));
         $('#search').show();
         $('#loading').hide();
     }
@@ -1382,12 +1433,12 @@ function fillPlaylistFromMixtape(datas,engine) {
     var items = datas[1].items;
     var totalResults = datas[1].totalResults;
     if (totalResults === 0) {
-        $('#search_results').html(myLocalize.translate("<p><strong>No sounds</strong> found...</p>"));
+        $('#search_results').html(_("<p><strong>No sounds</strong> found...</p>"));
         $('#search').show();
         $('#loading').hide();
         return;
     } else {
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ myLocalize.translate("sounds in this mixtape")+' </p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ _("sounds in this mixtape")+' </p>');
         try {
             for(var i=0; i<items.length; i++) {
                 var infos = {};
@@ -1401,7 +1452,7 @@ function fillPlaylistFromMixtape(datas,engine) {
                 printVideoInfos(infos,false, false,'',engine);
             }
         } catch(err) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No sounds</strong> found...</p>"));
+            $('#search_results').html(_("<p><strong>No sounds</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
         }
@@ -1426,12 +1477,12 @@ function fillPlaylistFromChannel(datas,engine) {
             break;
     }
     if (totalResults === 0) {
-        $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+        $('#search_results').html(_("<p><strong>No videos</strong> found...</p>"));
         $('#search').show();
         $('#loading').hide();
         return;
     } else {
-        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ myLocalize.translate("videos found in this channel")+' </p>');
+        $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ _("videos found in this channel")+' </p>');
         try {
             for(var i=0; i<items.length; i++) {
                 if (engine === 'youtube') {
@@ -1445,15 +1496,15 @@ function fillPlaylistFromChannel(datas,engine) {
                         displayedPages:5,
                         cssStyle: 'compact-theme',
                         edges:1,
-                        prevText : ''+myLocalize.translate("Prev")+'',
-                        nextText : ''+myLocalize.translate("Next")+'',
+                        prevText : ''+_("Prev")+'',
+                        nextText : ''+_("Next")+'',
                         onPageClick : changeChannelPage
                 });
                 pagination_init = true;
                 total_pages=$("#pagination").pagination('getPagesCount');
             }
         } catch(err) {
-            $('#search_results').html(myLocalize.translate("<p><strong>No videos</strong> found...</p>"));
+            $('#search_results').html(_("<p><strong>No videos</strong> found...</p>"));
             $('#search').show();
             $('#loading').hide();
         }
@@ -1491,7 +1542,7 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
         current_start_index+=25;
         valid_vid = $('.youtube_item').length
         if (sublist === false) {
-            $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');
+            $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ _("verified videos in this playlist")+'</p>');
         }
         try {
             for(var i=0; i<items.length; i++) {
@@ -1499,7 +1550,7 @@ function fillPlaylistFromPlaylist(datas, length, pid, engine) {
             }
         } catch(err) {
             if (sublist === false) {
-                $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');
+                $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ _("verified videos in this playlist")+'</p>');
                 return;
             }
         }
@@ -1530,7 +1581,7 @@ function fillPlaylist(items,sublist,sublist_id,engine) {
         $('#pagination').hide();
         if (sublist === false) {
             var valid_vid = $('.youtube_item').length
-            $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ myLocalize.translate("verified videos in this playlist")+'</p>');
+            $('#search_results').html('<p><strong>'+valid_vid+'</strong>'+ _("verified videos in this playlist")+'</p>');
         }
     }
     if (load_first_song_next == true || load_first_song_prev === true) {
@@ -1547,18 +1598,18 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
         var views = infos.views;
         var author = infos.author;
         if (author === 'unknown') {
-            author = myLocalize.translate("unknown");
+            author = _("unknown");
         }
         if ($('#youtube_entry_res_'+vid).length === 1) {return;}
         if ($('#youtube_entry_res_sub_'+vid).length === 1) {return;}
         var page = 1;
         if (solo === true) {
-			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+myLocalize.translate("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+myLocalize.translate("Load more videos")+'</button></div></div></div>');
+			$('#items_container').prepend('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+_("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+_("Views:")+' </b> '+views+'</span></div></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+_("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+_("Load more videos")+'</button></div></div></div>');
 		} else {
             if (sublist === false) {
-                $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+myLocalize.translate("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+myLocalize.translate("Load more videos")+'</button></div></div></div>');
+                $('#items_container').append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+_("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+_("Views:")+' </b> '+views+'</span></div></div><div id="youtube_entry_res_'+vid+'"></div></div></a><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+_("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+_("Load more videos")+'</button></div></div></div>');
             } else {
-                $('#sublist_'+sublist_id).append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+myLocalize.translate("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+myLocalize.translate("Views:")+' </b> '+views+'</span></div></div><div id="youtube_entry_res_sub_'+vid+'"></div></div><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+myLocalize.translate("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+myLocalize.translate("Load more videos")+'</button></div></div></div>');
+                $('#sublist_'+sublist_id).append('<div class="youtube_item"><div class="left"><img src="'+thumb+'" class="video_thumbnail" /></div><div class="item_infos"><span class="video_length">'+seconds+'</span><div><p><a class="start_video"><b>'+title+'</b></a></p><div><span><b>'+_("Posted by:")+'</b> '+author+  ' </span><span style="margin-left:10px;"><b>'+_("Views:")+' </b> '+views+'</span></div></div><div id="youtube_entry_res_sub_'+vid+'"></div></div><div class="toggle-control"><a href="#" class="toggle-control-link" alt="'+vid+'::'+engine+'">+ '+_("Open related videos")+'</a><div class="toggle-content" style="display:none;"><div id="sublist_'+vid+'"></div><button id="loadmore_'+vid+'" href="#" class="load_more" alt="0::'+page+'::'+vid+'::'+engine+'" style="display:none">'+_("Load more videos")+'</button></div></div></div>');
             }
         }
         var resolutions_string = ['1080p','720p','480p','360p'];
@@ -1579,9 +1630,9 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
                 img='images/sd.png';
             }
             if (sublist === false) {
-                $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
+                $('#youtube_entry_res_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ _("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
             } else {
-                $('#youtube_entry_res_sub_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ myLocalize.translate("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
+                $('#youtube_entry_res_sub_'+vid).append('<div class="resolutions_container"><a class="video_link" style="display:none;" href="'+vlink+'" alt="'+resolution+'"><img src="'+img+'" class="resolution_img" /><span>'+ resolution+'</span></a><a href="'+vlink+'" alt="'+title+'.'+container+'::'+vid+'" title="'+ _("Download")+'" class="download_file"><img src="images/down_arrow.png" width="16" height="16" />'+resolution+'</a></div>');
             }
         }
         if ($('#youtube_entry_res_'+vid+' a.video_link').length === 0){
@@ -1595,9 +1646,9 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
             var slink = "http://www.dailymotion.com/video/"+vid;
         }
         if (sublist === false) {
-            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
+            $('#youtube_entry_res_'+vid).append('<a class="open_in_browser" title="'+ _("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
         } else {
-            $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ myLocalize.translate("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
+            $('#youtube_entry_res_sub_'+vid).append('<a class="open_in_browser" title="'+ _("Open in ")+engine+'" href="'+slink+'"><img style="margin-top:8px;" src="images/export.png" />');
         }
         
     } catch(err){
@@ -1671,16 +1722,16 @@ function downloadFile(link,title,vid){
 		<strong>0%</strong> \
 	</p> \
 	<progress value="5" min="0" max="100">0%</progress> \
-	<a href="#" style="display:none;" class="convert" alt="" title="'+myLocalize.translate("Convert to mp3")+'"> \
+	<a href="#" style="display:none;" class="convert" alt="" title="'+_("Convert to mp3")+'"> \
 		<img src="images/video_convert.png"> \
 	</a> \
-	<a href="#" id="cancel_'+vid+'" style="display:none;" class="cancel" alt="" title="'+myLocalize.translate("Cancel")+'"> \
+	<a href="#" id="cancel_'+vid+'" style="display:none;" class="cancel" alt="" title="'+_("Cancel")+'"> \
 		<img src="images/close.png"> \
 	</a> \
-	<a class="open_folder" style="display:none;" title="'+ myLocalize.translate("Open Download folder")+'" href="#">\
+	<a class="open_folder" style="display:none;" title="'+ _("Open Download folder")+'" href="#">\
 		<img src="images/export.png" /> \
 	</a> \
-	<a href="#" style="display:none;" class="hide_bar" alt="" title="'+myLocalize.translate("Close")+'"> \
+	<a href="#" style="display:none;" class="hide_bar" alt="" title="'+_("Close")+'"> \
 		<img src="images/close.png"> \
 	</a> \
 	</div>';
@@ -1696,7 +1747,7 @@ function downloadFile(link,title,vid){
     });
     // start download
     canceled=false;
-    $('#progress_'+vid+' strong').html(myLocalize.translate('Waiting for connection...'));
+    $('#progress_'+vid+' strong').html(_('Waiting for connection...'));
     var opt = {};
     var val = $('#progress_'+vid+' progress').attr('value');
     opt.link = link;
@@ -1723,7 +1774,7 @@ function downloadFile(link,title,vid){
 				var contentLength = response.headers["content-length"];
 				if (parseInt(contentLength) === 0) {
 					$('#progress_'+vid+' a.cancel').hide();
-					$('#progress_'+vid+' strong').html(myLocalize.translate("can't download this file..."));
+					$('#progress_'+vid+' strong').html(_("can't download this file..."));
 					setTimeout(function(){pbar.hide()},5000);
 				}
 				var file = fs.createWriteStream(target);
@@ -1733,7 +1784,7 @@ function downloadFile(link,title,vid){
 					currentTime = (new Date()).getTime();
 					var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
 					var newVal= bytesDone*100/contentLength;
-					var txt = Math.floor(newVal)+'% '+ myLocalize.translate('done at')+' '+transfer_speed+' kb/s';
+					var txt = Math.floor(newVal)+'% '+ _('done at')+' '+transfer_speed+' kb/s';
 					$('#progress_'+vid+' progress').attr('value',newVal).text(txt);
 					$('#progress_'+vid+' strong').html(txt);
 				});
@@ -1747,7 +1798,7 @@ function downloadFile(link,title,vid){
 							}
 						});
 						$('#progress_'+vid+' a.cancel').hide();
-						$('#progress_'+vid+' strong').html(myLocalize.translate("Download canceled!"));
+						$('#progress_'+vid+' strong').html(_("Download canceled!"));
 						setTimeout(function(){pbar.hide()},5000);
 					} else {
 						fs.rename(target,download_dir+'/'+title.replace(/  /g,' '), function (err) {
@@ -1756,7 +1807,7 @@ function downloadFile(link,title,vid){
 								console.log('successfully renamed '+download_dir+'/'+title);
 							}
 						});
-						$('#progress_'+vid+' strong').html(myLocalize.translate('Download ended !'));
+						$('#progress_'+vid+' strong').html(_('Download ended !'));
 						if (title.match('.mp3') === null) {
 							$('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
 						}
@@ -1775,7 +1826,7 @@ function convertTomp3Win(file){
     var title = file.split('::')[0];
     var pbar = $('#progress_'+vid);
     var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
-    $('#progress_'+vid+' strong').html(myLocalize.translate("Converting video to mp3, please wait..."));
+    $('#progress_'+vid+' strong').html(_("Converting video to mp3, please wait..."));
 	var args = ['-y','-i', title, '-ab', '192k', target];
 	if (process.platform === 'win32') {
     	var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
@@ -1785,7 +1836,7 @@ function convertTomp3Win(file){
     console.log('Spawning ffmpeg ' + args.join(' ') +' --- ffmpeg path:'+exec_path+'/ffmpeg');
     ffmpeg.on('exit', function(){
 		console.log('ffmpeg exited');
-		$('#progress_'+vid+' strong').html(myLocalize.translate("video converted successfully !"));
+		$('#progress_'+vid+' strong').html(_("video converted successfully !"));
 	});
     ffmpeg.stderr.on('data', function(data) {
         console.log('grep stderr: ' + data);
@@ -1798,14 +1849,14 @@ function convertTomp3(file) {
         var title = file.split('::')[0];
         var pbar = $('#progress_'+vid);
         var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
-        $('#progress_'+vid+' strong').html(myLocalize.translate("Converting video to mp3, please wait..."));
+        $('#progress_'+vid+' strong').html(_("Converting video to mp3, please wait..."));
         var proc = new ffmpeg({ source: title })
           .withAudioBitrate('192k')
           .withAudioCodec('libmp3lame')
           .withAudioChannels(2)
           .toFormat('mp3')
           .saveToFile(target, function(stdout, stderr) {
-            $('#progress_'+vid+' strong').html(myLocalize.translate("video converted successfully !"));
+            $('#progress_'+vid+' strong').html(_("video converted successfully !"));
             fs.rename(target.replace(/ /,'\\ '),target, function (err) {
                 if (err) {
                     console.log(err);
@@ -1822,22 +1873,22 @@ function convertTomp3(file) {
 function init_pagination(total,byPages,browse,has_more) {
 	browse = browse;
 	if ((browse === false) && (pagination_init === false)) {
-		$("#search p").empty().append("<p>"+total+" "+myLocalize.translate("results found")+"</p>");
+		$("#search p").empty().append("<p>"+total+" "+_("results found")+"</p>");
 		$("#pagination").pagination({
 				items: total,
 				itemsOnPage: byPages,
 				displayedPages:5,
 				cssStyle: 'compact-theme',
 				edges:1,
-				revText : ''+myLocalize.translate("Prev")+'',
-				nextText : ''+myLocalize.translate("Next")+'',
+				revText : ''+_("Prev")+'',
+				nextText : ''+_("Next")+'',
 				onPageClick : changePage
 		});
 		pagination_init = true;
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else {
 		if ((browse === true) && (pagination_init === false)) {
-			$("#search p").empty().append("<p>"+myLocalize.translate("Browsing mode, use the pagination bar to navigate")+"</p><span></span>");
+			$("#search p").empty().append("<p>"+_("Browsing mode, use the pagination bar to navigate")+"</p><span></span>");
 			$("#pagination").pagination({
 					itemsOnPage : byPages,
 					pages: current_page+1,
@@ -1845,8 +1896,8 @@ function init_pagination(total,byPages,browse,has_more) {
 					displayedPages:5,
 					cssStyle: 'compact-theme',
 					edges:1,
-					prevText : ''+myLocalize.translate("Prev")+'',
-					nextText : ''+myLocalize.translate("Next")+'',
+					prevText : ''+_("Prev")+'',
+					nextText : ''+_("Next")+'',
 					onPageClick : changePage
 			});
 			if (has_more === true) {
