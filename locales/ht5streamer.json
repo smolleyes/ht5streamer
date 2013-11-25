@@ -97,5 +97,7 @@
     "Downloads" : "Downloads",
     "Open Download folder" : "Open Download folder",
     "Update files list..." : "Update files list...",
-    "Updating..." : "Updating..."
+    "Updating..." : "Updating...",
+    "Playing: ": "Lecture: ",
+    "Stopped...": "En attente..."
 }

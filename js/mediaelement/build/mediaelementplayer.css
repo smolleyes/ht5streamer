@@ -130,7 +130,7 @@
 	background: -o-linear-gradient(top, rgba(50,50,50,0.7), rgba(0,0,0,0.7)); 
 	background: -ms-linear-gradient(top, rgba(50,50,50,0.7), rgba(0,0,0,0.7)); 	
 	background: linear-gradient(rgba(50,50,50,0.7), rgba(0,0,0,0.7)); 	
-	height: 30px;
+	height: 60px;
 	width: 100%;
 }
 .mejs-container .mejs-controls  div {

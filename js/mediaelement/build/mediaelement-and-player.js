@@ -2185,8 +2185,9 @@ if (typeof jQuery != 'undefined') {
 				
 				// find parts
 				t.controls = t.container.find('.mejs-controls');
+				$('<p id="song-title" style="color: white;width: 100%;position: absolute;left:0;bottom: 0px;"></p>').appendTo(t.controls);
 				t.layers = t.container.find('.mejs-layers');
-
+				t.container.find('.mejs-controls');
 				// determine the size
 				
 				/* size priority:
@@ -3066,7 +3067,7 @@ if (typeof jQuery != 'undefined') {
 	// PLAY/pause BUTTON
 	$.extend(MediaElementPlayer.prototype, {
 		buildplaypause: function(player, controls, layers, media) {
-			
+			//$('<p style="color: white;width:100%;">Playing: trucccccc</p>').appendTo(controls);
 			$('<a href=""><div class="mejs-button mejs-back-btn" ></div></a>').appendTo(controls);
 			
 			var 

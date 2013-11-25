@@ -415,6 +415,7 @@ $(document).ready(function(){
 		video.dir = $(this).attr('dir');
 		video.title = $(this).attr('title');
 		video.next = $(this).parent().next();
+		$('#song-title').empty().append(_('Playing: ') +video.title);
 		if (playAirMedia === true) {
 			if ((settings.interface === undefined) || (settings.interface === '') || (settings.ipaddress === undefined) || (settings.ipaddress === '')) {
 				$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("please select a network interface in the configuration panel"),btnId:'ok',btnTitle:'ok',btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
@@ -445,6 +446,7 @@ $(document).ready(function(){
     // next vid
     player.media.addEventListener('ended', function () {
 		$("#cover").remove();
+		$('#song-title').empty().append(_('Stopped... '));
         if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
 			try {
 				engine.play_next();
@@ -770,6 +772,7 @@ $(document).ready(function(){
 	$('#dateTypes_select').hide();
     $('#items_container').hide();
     $('#search_results p').empty().append(_("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")).show();
+    $('#song-title').empty().append(_('Stopped...'));
     //startSearch('');
 
 });
@@ -802,6 +805,7 @@ function startPlay(media) {
 	var link = media.link;
 	var title = media.title;
 	initPlayer();
+	$('#song-title').empty().append(_('Playing: ') +title);
 	// check local files
 	var list = fs.readdirSync(download_dir);
 	var localLink = null;
@@ -851,6 +855,7 @@ function initPlayer() {
 	$(".mejs-layer").show();
 	$(".mejs-overlay-play").hide();
 	$(".mejs-overlay-loading").show();
+	$('#song-title').empty().append(_('Stopped...'));
 }
 
 function listPlugins() {

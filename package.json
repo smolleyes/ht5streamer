@@ -1,7 +1,7 @@
 {
 "name":"ht5streamer",
 "main":"config.html",
-"user-agent":"Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_2_1 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8G4 Safari/6533.18.5",
+"user-agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.48 Safari/537.36",
 "window": {
     "toolbar": false,
     "width": 1280,
