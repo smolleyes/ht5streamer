@@ -302,10 +302,12 @@ function play_on_fbx(url) {
             // check response
             if (resultObject.success === true) {
                 console.log('media started...');
+                airMediaPlaying = true;
                 $('.mejs-container p#fbxMsg').remove();
                 $('.mejs-container').append('<p id="fbxMsg" style="position:absolute;top:45%;margin:auto;color:white;font-size:30px;text-align:center;z-index:10000;right:125px;">Lecture en cours sur la freebox !</p>')
             } else {
                 console.log('can t start the media...', responseString);
+                airMediaPlaying = false;
             }
         });
     });
@@ -342,9 +344,11 @@ function stop_on_fbx() {
             // check response
             if (resultObject.success === true) {
                 console.log('media stopped...');
+                airMediaPlaying = false;
                 $('.mejs-container p#fbxMsg').remove();
             } else {
                 console.log('can t stop the media...');
+                airMediaPlaying = false;
             }
         });
     });

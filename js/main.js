@@ -98,6 +98,8 @@ var airMediaDevice;
 var server;
 var playFromHd = false;
 var serverSettings;
+var airMediaLink;
+var airMediaPlaying = false;
 
 // global var
 var search_engine = 'youtube';
@@ -212,7 +214,8 @@ var htmlStr = '<div id="menu"> \
         </div> \
 </div> \
 <div id="content"> \
-    <div id="left"> \
+<div class="split-pane fixed-left"> \
+    <div class="split-pane-component" style="min-width:360px;" id="left-component"> \
         <div id="wrapper"> \
             <div id="tabContainer"> \
                 <div class="tabs"> \
@@ -253,8 +256,9 @@ var htmlStr = '<div id="menu"> \
             </div> \
         </div> \
     </div> \
-    <div id="right"> \
-            <video class="mejs-ted" id="videoPlayer" width="100%" height="100%" src="t.mp4" controls></video> \
+     <div class="split-pane-divider" id="my-divider"></div> \
+    <div class="split-pane-component" id="right-component"> \
+         <video class="mejs-ted" id="videoPlayer" width="100%" height="100%" src="t.mp4" controls></video> \
     </div> \
     <div id="custom-menu"> \
 <ol> \
@@ -275,6 +279,7 @@ try {
 
 $(document).ready(function(){
     $('#main').append(htmlStr);
+    $('div.split-pane').splitPane();
     // load plugins
     listPlugins();
     // load and hide catgories
@@ -347,9 +352,11 @@ $(document).ready(function(){
     // pause/stop button
     $('.mejs-playpause-button').click(function(e) {
         if (playAirMedia === true) {
-            if ($('.mejs-play').length === 0) {
+            if (airMediaPlaying === true) {
                 stop_on_fbx();
-            }
+            } else {
+				play_on_fbx(airMediaLink);
+			}
         }
     });
     // previous signal and callback
@@ -400,7 +407,7 @@ $(document).ready(function(){
     });
     $('video').on('loadPlayer',function(e,video){
 		try {
-			if (playAirMedia === false) {
+			if ((playAirMedia === false) && (airMediaPlaying === true)) {
 				stop_on_fbx();
 			}
 		} catch(err) {
@@ -813,8 +820,8 @@ function startPlay(media) {
 	// play on airmedia
 	$('.mejs-container p#fbxMsg').remove();
 	if (playAirMedia === true) {
-		play_on_fbx(link);
-		$('.mejs-play').click();
+		airMediaLink = link;
+		$('.mejs-playpause-button').click();
 		$('.mejs-overlay-loading').hide();
 		return;
 	}
@@ -1036,7 +1043,7 @@ function onKeyPress(key) {
     } else if (key.key === 'Spacebar') {
         key.preventDefault();
         if (playAirMedia === false) {
-            if ($('.highlight').length !== 0) {
+            if ($('.mejs-play').length === 0) {
                 $('.mejs-playpause-button').click();
             }
         } else {
