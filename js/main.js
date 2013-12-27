@@ -214,8 +214,8 @@ var htmlStr = '<div id="menu"> \
         </div> \
 </div> \
 <div id="content"> \
-<div class="split-pane fixed-left"> \
-    <div class="split-pane-component" style="min-width:360px;" id="left-component"> \
+<div class="split-pane fixed-left" style="min-width:425px;"> \
+    <div class="split-pane-component" id="left-component"> \
         <div id="wrapper"> \
             <div id="tabContainer"> \
                 <div class="tabs"> \

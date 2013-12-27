@@ -43,6 +43,7 @@ html{
 
 body {
     font:12px/1.5 Tahoma, Arial, sans-serif;
+    background: white;
 }
 
 a {
@@ -86,6 +87,7 @@ video{
 #mep_0 {
 width:100%;
 height:calc(100% - 50px) !important;
+z-index:2000;
 }
 
 #menu {

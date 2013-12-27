@@ -38,7 +38,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
         var pos=$('#my-divider').position().left - 5;
         $('#items_container').width(pos);
         $('#DownloadsContainer').width(pos);
-        $('#search').width(pos + 10);
+        //$('#search').width(pos + 10);
         $('#search_results').width(pos);
 				var target = event.target === document ? window : event.target;
 				if (target === parent) {
