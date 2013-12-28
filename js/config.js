@@ -22,7 +22,7 @@ var gui = require('nw.gui');
 var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
-var version = "0.7.0";
+var version = "0.7.1";
 
 //localize
 var i18n = require("i18n");

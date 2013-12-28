@@ -348,8 +348,13 @@ $(document).ready(function(){
     // click on tab1 get focus
     $(document).on('click','#tabHeader_1',function(e) {
 		try {
-			var p = $('.highlight').position().top;
-			$(window).scrollTop(p-48);
+			if ((search_engine === 'youtube') || (search_engine === 'dailymotion')) {
+				var p = $('.highlight').position().top;
+				$('#left-component').scrollTop(p-41);
+			} else {
+				var p = $('.highlight').position().top;
+				$('#left-component').scrollTop(p+13);
+			}
 		} catch(err) {}
 	});
     // next signal and callback
@@ -417,8 +422,8 @@ $(document).ready(function(){
         video.next = next_vid;
         $('video').trigger('loadPlayer',video);
         if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
-            var p = $('#'+current_song).parent().parent().position().top;
-            $(window).scrollTop(p+16);
+            var p = $('.highlight').position().top;
+            $('#left-component').scrollTop(p+18);
         }
     });
     $('video').on('loadPlayer',function(e,video){
@@ -536,7 +541,7 @@ $(document).ready(function(){
                 current_search_page=1;
                 current_start_index=1;
                 $("#cover").remove();
-                $('#items_container').css({"border": "1px solid black","position": "relative","left": "5px","top": "95px"});
+                $('#items_container').css({"border": "1px solid black","position": "relative","left": "5px","top": "110px"});
 				$('#search').css({"position":"fixed","z-index": "500","top": "74px","width": "46%","background": "white","overflow": "auto","height":"70px"}).show();
 				$('#pagination').show();
                 try {
