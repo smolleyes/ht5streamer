@@ -214,7 +214,7 @@ var htmlStr = '<div id="menu"> \
         </div> \
 </div> \
 <div id="content"> \
-<div class="split-pane fixed-left" style="min-width:425px;"> \
+<div class="split-pane vertical-percent" style="min-width:425px;"> \
     <div class="split-pane-component" id="left-component"> \
         <div id="wrapper"> \
             <div id="tabContainer"> \
@@ -321,13 +321,29 @@ $(document).ready(function(){
         gui.Shell.showItemInFolder(settings.download_dir+'/ht5streamer');
     });
     // fullscreen signal and callback
+    var left;
+    var right;
     $(document).on('click','.mejs-fullscreen-button',function(e) {
         if (win.isFullscreen === true) {
-            $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+            //$('#left-component').width(left);
+            $('#right-component').width(right);
+            $('#my-divider').show();
+			//$('#left-component').show();
+			$('#menu').show();
+            $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
+            $('div.split-pane').splitPane();
+            win.toggleFullscreen();
         } else {
-            $('#mep_0').attr('style', 'height: 100% !important');
+			left = $('#left-component').width();
+			right = $('#right-component').width();
+			//$('#left-component').width(0);
+			$('#my-divider').hide();
+            //$('#left-component').hide();
+            $('#right-component').width(screen.width + 10);
+            $('#menu').hide();
+			$('#mep_0').attr('style','height:100% !important;top:0;');
+			win.toggleFullscreen();
         }
-        win.toggleFullscreen();
     });
     // click on tab1 get focus
     $(document).on('click','#tabHeader_1',function(e) {

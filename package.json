@@ -11,9 +11,5 @@
     "min_height": 200,
     "title":"ht5streamer",
     "show": false
-  },
-   "webkit": {
-    "plugin": true,
-    "java": true
   }
 }
