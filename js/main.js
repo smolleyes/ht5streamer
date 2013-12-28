@@ -341,7 +341,7 @@ $(document).ready(function(){
             $('#left-component').hide();
             $('#right-component').width(screen.width);
             $('#menu').hide();
-			$('#mep_0').attr('style','height:100% !important;top:0;padding-left:5px;width:calc(100% + 5px);');
+			$('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
 			win.toggleFullscreen();
         }
     });
@@ -1051,7 +1051,7 @@ function changePage() {
 function onKeyPress(key) {
     if (key.key === 'Esc') {
         if (win.isFullscreen === true) {
-           $('#mep_0').attr('style','height:calc(100% - 50px) !important');
+           $('#mep_0').attr('style','height:calc(100% - 37px) !important');
            win.toggleFullscreen();
         }
     } else if (key.key === 'f') {

@@ -9,10 +9,12 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 */
 .split-pane {
+/*
 	position: relative;
 	width: calc(100% + 5px);
   height:calc(100% + 5px);
 	overflow: hidden;
+*/
 }
 
 .split-pane.fixed-top > .split-pane-component,

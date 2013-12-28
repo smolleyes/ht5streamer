@@ -35,8 +35,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 			var element = this,
 				parent = $(this).parent().closest('.split-pane')[0] || window;
 			$(this).data(SPLITPANERESIZE_HANDLER, function(event) {
-        var pos=$('#my-divider').position().left - 5;
-        var w = $('#left-component').width() - 5;
+        var pos=$('#my-divider').position().left - 10;
         $('#items_container').width(pos);
         $('#search').width(pos + 10);
         $('#DownloadsContainer').width(pos);

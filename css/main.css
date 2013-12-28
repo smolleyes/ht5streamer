@@ -178,6 +178,10 @@ height : calc(100% - 37px) !important;
     height:90px;
 }
 
+#song-title {
+	margin-left:2px;
+}
+
 .highlight {
     background: -webkit-linear-gradient(top, rgba(226,226,226,1) 0%,rgba(219,219,219,1) 50%,rgba(209,209,209,1) 51%,rgba(254,254,254,1) 100%);
 }
@@ -208,7 +212,7 @@ height : calc(100% - 37px) !important;
 #items_container {
     border: 1px solid black;
     position: relative;
-    left:5px;
+    left:7px;
     top:110px;
 }
 
