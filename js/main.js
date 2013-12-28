@@ -328,7 +328,7 @@ $(document).ready(function(){
             //$('#left-component').width(left);
             $('#right-component').width(right);
             $('#my-divider').show();
-			//$('#left-component').show();
+			$('#left-component').show();
 			$('#menu').show();
             $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
             $('div.split-pane').splitPane();
@@ -338,10 +338,10 @@ $(document).ready(function(){
 			right = $('#right-component').width();
 			//$('#left-component').width(0);
 			$('#my-divider').hide();
-            //$('#left-component').hide();
-            $('#right-component').width(screen.width + 10);
+            $('#left-component').hide();
+            $('#right-component').width(screen.width);
             $('#menu').hide();
-			$('#mep_0').attr('style','height:100% !important;top:0;');
+			$('#mep_0').attr('style','height:100% !important;top:0;padding-left:5px;width:calc(100% + 5px);');
 			win.toggleFullscreen();
         }
     });
