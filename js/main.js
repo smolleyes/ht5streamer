@@ -56,6 +56,8 @@ var wrench = require("wrench");
 var os = require('os');
 var vidStreamer = require("vid-streamer");
 var wrench = require("wrench");
+var mega = require('mega');
+var exec = require("child_process").exec;
 
 //localize
 var i18n = require("i18n");
@@ -112,6 +114,11 @@ var searchDate = 'today';
 var pluginsDir;
 var current_download
 var downloads = [];
+var port = 8081;
+var megaName = '';
+var megaSize = '';
+var right;
+var left;
 
 // settings
 var confDir;
@@ -325,24 +332,21 @@ $(document).ready(function(){
     var right;
     $(document).on('click','.mejs-fullscreen-button',function(e) {
         if (win.isFullscreen === true) {
-            //$('#left-component').width(left);
+            win.toggleFullscreen();
+            $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
             $('#right-component').width(right);
             $('#my-divider').show();
-			$('#left-component').show();
-			$('#menu').show();
-            $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-            $('div.split-pane').splitPane();
-            win.toggleFullscreen();
+            $('#left-component').show();
+            $('#menu').show();
         } else {
-			left = $('#left-component').width();
-			right = $('#right-component').width();
-			//$('#left-component').width(0);
-			$('#my-divider').hide();
+            $('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
+            left = $('#left-component').width();
+            right = $('#right-component').width();
+            $('#my-divider').hide();
             $('#left-component').hide();
             $('#right-component').width(screen.width);
             $('#menu').hide();
-			$('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
-			win.toggleFullscreen();
+            win.toggleFullscreen();
         }
     });
     // click on tab1 get focus
@@ -1056,11 +1060,31 @@ function changePage() {
 function onKeyPress(key) {
     if (key.key === 'Esc') {
         if (win.isFullscreen === true) {
-           $('#mep_0').attr('style','height:calc(100% - 37px) !important');
-           win.toggleFullscreen();
+            $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
+            $('#right-component').width(right);
+            $('#my-divider').show();
+            $('#left-component').show();
+            $('#menu').show();
+            win.toggleFullscreen();
         }
     } else if (key.key === 'f') {
-      $('#fullscreen_btn').click();
+            if (win.isFullscreen === true) {
+                $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
+                $('#right-component').width(right);
+                $('#my-divider').show();
+                $('#left-component').show();
+                $('#menu').show();
+                win.toggleFullscreen();
+            } else {
+                $('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
+                left = $('#left-component').width();
+                right = $('#right-component').width();
+                $('#my-divider').hide();
+                $('#left-component').hide();
+                $('#right-component').width(screen.width);
+                $('#menu').hide();
+                win.toggleFullscreen();
+            }
     } else if (key.key === 'Spacebar') {
         key.preventDefault();
         if (playAirMedia === false) {
@@ -1624,7 +1648,7 @@ function fillPlaylist(items,sublist,sublist_id,engine) {
 
 function printVideoInfos(infos,solo,sublist,sublist_id,engine){
     try {
-        var title = infos.title.replace(/[\"\[\]\.\)\(\'']/g,'').replace(/  /g,' ');
+        var title = infos.title.replace(/[\"\[\]\.\)\(\''\*]/g,'').replace(/  /g,' ');
         var thumb = infos.thumb;
         var vid = infos.id;
         var seconds = secondstotime(infos.duration);
@@ -1890,7 +1914,7 @@ function convertTomp3(file) {
           .toFormat('mp3')
           .saveToFile(target, function(stdout, stderr) {
             $('#progress_'+vid+' strong').html(_("video converted successfully !"));
-            fs.rename(target.replace(/ /,'\\ '),target, function (err) {
+            fs.rename(target.replace(/[\"\[\]\.\)\(\''\*]/g,'').replace(/  /g,' '),target, function (err) {
                 if (err) {
                     console.log(err);
                 } else {
@@ -2010,4 +2034,63 @@ $.fn.setCursorPosition = function(pos) {
   });
   return this;
 };
+
+
+function getVideoLink(id) {
+  $.get('http://www.metacafe.com/embed/'+id+'/',function(resp) {
+    link=resp.match(/swfobject.embedSWF\('(.*?)'/)[1];
+    getStream(link);
+  });
+}
+  
+function getStream(link) {
+  console.log('link ' + link);
+    req = http.request(link,function(resp) {
+        var addr = decodeURIComponent(resp.headers.location);
+        var v=addr.match(/mediaData=(.*?)&errorDisplay/)[1];
+        var x=JSON.parse(v);
+        var url;
+        try { 
+          url = x.highDefinitionMP4.mediaURL;
+          player.setSrc(url);
+          player.play();
+        } catch(err) {
+            try {
+              url = x.MP4.mediaURL;
+              player.setSrc(url);
+              player.play();
+            } catch(err) {
+              return;
+            }
+        }
+    });
+    req.end()
+}
+
+var server2;
+function streamMega(link) {
+      try {
+        server2.close();
+      } catch(err) {}
+      server2 = http.createServer(function (req, res) {
+          var file = mega.file(link).loadAttributes(function(err, file) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(file);
+                var megaSize = file.size;
+                var megaName = file.name.replace(/ /g,'_');
+                res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/mp4' });
+                file.download().pipe(res);
+                var f = {};
+                f.title = megaName;
+                $('#song-title').html(_("Playing: ") + megaName);
+            }
+        });
+    }).listen(1337, '127.0.0.1','',function(){
+        player.setSrc('http://127.0.0.1:1337/');
+        player.play();
+    });
+    console.log('Server running at http://127.0.0.1:1337/');
+}
 

@@ -21,6 +21,12 @@ $(document).ready(function() {
 		bindType: "contextmenu",
 		delegateType: "contextmenu"
 	};
+  $(document).on("rightclick", "#left-component", function(e) {
+        var text = clipboard.get('text');
+        if (text.indexOf('https://mega.co.nz') !== -1) {
+            $('#custom-menu ol').empty().append('<li><a id="mega_link" href="#" alt="'+text+'">'+_("Open mega link")+'</a></li>');
+        }
+  });
 	$(document).on("rightclick", ".start_video", function(e) {
 		var evid = $(this).parent().closest('.youtube_item').find('div')[4].id;
 		var vid = '';
@@ -104,6 +110,14 @@ $(document).ready(function() {
 		youtube.getVideoInfos(ytlink,0,1,function(datas) {fillPlaylist(datas,false,'','youtube')});
 		$('#custom-menu').hide();
 	});
+  // open mega link
+	$(document).on('click','#mega_link',function(e) {
+		e.preventDefault();
+		var link = $(this).attr('alt');
+    streamMega(link);
+		$('#custom-menu').hide();
+	});
+  
 	// copy link
 	$(document).on('click','#copy_link',function(e) {
 		e.preventDefault();
