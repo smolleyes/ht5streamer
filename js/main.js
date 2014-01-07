@@ -119,6 +119,7 @@ var megaName = '';
 var megaSize = '';
 var right;
 var left;
+var megaServer;
 
 // settings
 var confDir;
@@ -806,6 +807,7 @@ $(document).ready(function(){
     $('#search_results p').empty().append(_("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")).show();
     $('#song-title').empty().append(_('Stopped...'));
     //startSearch('');
+    startMegaServer();
 
 });
 
@@ -2049,15 +2051,15 @@ function getStream(link) {
         var addr = decodeURIComponent(resp.headers.location);
         var v=addr.match(/mediaData=(.*?)&errorDisplay/)[1];
         var x=JSON.parse(v);
-        var url;
+        var Url;
         try { 
-          url = x.highDefinitionMP4.mediaURL;
-          player.setSrc(url);
+          Url = x.highDefinitionMP4.mediaURL;
+          player.setSrc(Url);
           player.play();
         } catch(err) {
             try {
-              url = x.MP4.mediaURL;
-              player.setSrc(url);
+              Url = x.MP4.mediaURL;
+              player.setSrc(Url);
               player.play();
             } catch(err) {
               return;
@@ -2067,30 +2069,46 @@ function getStream(link) {
     req.end()
 }
 
-var server2;
-function streamMega(link) {
-      try {
-        server2.close();
-      } catch(err) {}
-      server2 = http.createServer(function (req, res) {
-          var file = mega.file(link).loadAttributes(function(err, file) {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(file);
+function startMegaServer() {
+    try {
+      megaServer.close() 
+    } catch(err) {
+        megaServer = http.createServer(function (req, res) {
+            var link = decodeURIComponent(url.parse(req.url).href).replace('/?file=','');
+            var file = mega.file(link).loadAttributes(function(err, file) {
                 var megaSize = file.size;
                 var megaName = file.name.replace(/ /g,'_');
-                res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/mp4' });
-                file.download().pipe(res);
-                var f = {};
-                f.title = megaName;
-                $('#song-title').html(_("Playing: ") + megaName);
-            }
-        });
-    }).listen(1337, '127.0.0.1','',function(){
-        player.setSrc('http://127.0.0.1:1337/');
-        player.play();
-    });
-    console.log('Server running at http://127.0.0.1:1337/');
+                $('#song-title').empty().html(_('Playing: ')+megaName);
+                var ffmpeg = spawnFfmpeg(function (code) { // exit
+                  console.log('child process exited with code ' + code);
+                  res.end();
+                });
+                //res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
+                file.download().pipe(ffmpeg.stdin);
+                ffmpeg.stdout.pipe(res);
+          });
+      }).listen(8888);
+      console.log('Megaserver ready on port 8888');
+    }
+}
+
+
+function spawnFfmpeg(file,exitCallback) {
+  var args = ['-i','pipe:0','-f', 'matroska', '-vcodec', 'libx264', '-crf', '20', '-acodec', 'libvorbis', '-ab', '192k','-threads', '0', 'pipe:1'];
+  var ffmpeg;
+  if (process.platform === 'win32') {
+      var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
+  } else if (process.platform === 'darwin') {
+      var ffmpeg = spawn(exec_path+'/ffmpeg', args);
+  } else {
+      var ffmpeg = spawn('ffmpeg', args);
+  }
+	console.log('Spawning ffmpeg ' + args.join(' '));
+	
+	ffmpeg.stderr.on('data', function (data) {
+    console.log('grep stderr: ' + data);
+  });
+    
+  return ffmpeg;
 }
 
