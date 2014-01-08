@@ -2074,18 +2074,46 @@ function startMegaServer() {
       megaServer.close() 
     } catch(err) {
         megaServer = http.createServer(function (req, res) {
+          var baseLink = url.parse(req.url).href;
+          if (baseLink.indexOf('&direct') === -1){
+            var link = decodeURIComponent(url.parse(req.url).href).replace('/?file=','').replace('&direct','');
+          } else {
             var link = decodeURIComponent(url.parse(req.url).href).replace('/?file=','');
-            var file = mega.file(link).loadAttributes(function(err, file) {
-                var megaSize = file.size;
-                var megaName = file.name.replace(/ /g,'_');
-                $('#song-title').empty().html(_('Playing: ')+megaName);
-                var ffmpeg = spawnFfmpeg(function (code) { // exit
-                  console.log('child process exited with code ' + code);
+          }
+          console.log(link);
+          var file = mega.file(link).loadAttributes(function(err, file) {
+              try {
+                  var megaSize = file.size;
+                  var megaName = file.name.replace(/ /g,'_');
+              } catch(err) {
+                  $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
                   res.end();
-                });
-                //res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
-                file.download().pipe(ffmpeg.stdin);
-                ffmpeg.stdout.pipe(res);
+                  player.pause();
+                  return;
+              }
+              $('#song-title').empty().html(_('Playing: ')+megaName);
+              if (baseLink.indexOf('&direct') === -1){
+                  console.log('playing movie with transcoding');
+                  var ffmpeg = spawnFfmpeg(function (code) { // exit
+                    console.log('child process exited with code ' + code);
+                    res.end();
+                  });
+                  var x = file.download().pipe(ffmpeg.stdin);
+                  x.on('error',function(err) {
+                    console.log('ffmpeg stdin error...' + err);
+                    player.pause();
+                    res.end();
+                    var f={};
+                    f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
+                    f.title = megaName;
+                    return startPlay(f);
+                  });
+                  ffmpeg.stdout.pipe(res);
+              } else {
+                  res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
+                  console.log('playing movie without transcoding');
+                  file.download().pipe(res);
+              }
           });
       }).listen(8888);
       console.log('Megaserver ready on port 8888');
@@ -2093,7 +2121,7 @@ function startMegaServer() {
 }
 
 
-function spawnFfmpeg(file,exitCallback) {
+function spawnFfmpeg(link,name,exitCallback) {
   var args = ['-i','pipe:0','-f', 'matroska', '-vcodec', 'libx264', '-crf', '20', '-acodec', 'libvorbis', '-ab', '192k','-threads', '0', 'pipe:1'];
   var ffmpeg;
   if (process.platform === 'win32') {
@@ -2108,7 +2136,6 @@ function spawnFfmpeg(file,exitCallback) {
 	ffmpeg.stderr.on('data', function (data) {
     console.log('grep stderr: ' + data);
   });
-    
   return ffmpeg;
 }
 
