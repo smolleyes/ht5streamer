@@ -2110,7 +2110,7 @@ function startMegaServer() {
     try {
       megaServer.close() 
     } catch(err) {
-        var videoArray = new Array('.avi','.webm','.mp4','.flv','.mkv','.mpeg','.mp3','mpg','wmv','wma','mov','wav');
+        var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav');
         megaServer = http.createServer(function (req, res) {
           var baseLink = url.parse(req.url).href;
           if (baseLink.indexOf('&direct') === -1){
