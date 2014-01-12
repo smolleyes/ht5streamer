@@ -307,6 +307,10 @@
     },
     "Open mega link" : {
         "fr": "Ouvrir lien mega"
+    },
+    "<p>Around %s results found </p>" : {
+        "fr": "<p>Environ %s resultats trouvés</p>"
     }
 }
+
 

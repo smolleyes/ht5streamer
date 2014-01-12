@@ -1956,6 +1956,9 @@ function convertTomp3(file) {
 function init_pagination(total,byPages,browse,has_more,pageNumber) {
 	browse = browse;
   if (pageNumber !== 0) {
+    if (parseInt(total) > 0) {
+       $("#search_results p").empty().append(_("<p>Around %s results found </p>", total)); 
+    }
 		$("#pagination").pagination({
 				displayedPages:5,
         pages: pageNumber,
@@ -1969,7 +1972,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 		pagination_init = true;
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else if ((browse === false) && (pagination_init === false)) {
-		$("#search p").empty().append("<p>"+total+" "+_("results found")+"</p>");
+		$("#search_results p").empty().append(_("<p>Around %s results found </p>", total));
 		$("#pagination").pagination({
 				items: total,
 				itemsOnPage: byPages,
@@ -1984,7 +1987,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else {
 		if ((browse === true) && (pagination_init === false)) {
-			$("#search p").empty().append("<p>"+_("Browsing mode, use the pagination bar to navigate")+"</p><span></span>");
+			$("#search_results p").empty().append("<p>"+_("Browsing mode, use the pagination bar to navigate")+"</p><span></span>");
 			$("#pagination").pagination({
 					itemsOnPage : byPages,
 					pages: current_page+1,
@@ -2186,6 +2189,13 @@ function spawnFfmpeg(link,name,exitCallback) {
   });
   
   return ffmpeg;
+}
+
+function playTv() {
+    var f={};
+    var url = encodeURIComponent('rtsp://mafreebox.freebox.fr/fbxtv_pub/stream?namespace=1&service=202&flavour=sd')
+    f.link = 'http://'+ipaddress+':8888/?file='+url;
+    startPlay(f);
 }
 
 // extend array
