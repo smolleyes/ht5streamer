@@ -49,7 +49,11 @@ $(document).ready(function() {
 			content.addClass('opened');
 			searchRelated(vid,1,engine);
 			content.slideToggle();
-			$(this).html('- '+ _("Open related videos"));
+      if (engine === 'Mega-search') {
+        $(this).html('- '+ _("Links"));
+      } else {
+        $(this).html('- '+ _("Open related videos"));
+      }
 			$(window).scrollTop(pos+17);
 		}
 	});

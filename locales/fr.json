@@ -105,5 +105,6 @@
 	"Open mega link": "Ouvrir dans Mega-link",
 	"File not available on mega.co...": "Fichier non disponible sur mega.co...",
 	"Your mega.co link is valid but can't be played yet, (wait a few minutes...)": "Votre lien mega.co est valide mais ne peut pas encore être lu ou téléchargé, patientez quelques minutes...",
-	"<p>Around %s results found </p>": "<p>Environ %s résultats trouvés </p>"
+	"<p>Around %s results found </p>": "<p>Environ %s résultats trouvés </p>",
+	"Links": "Liens"
 }

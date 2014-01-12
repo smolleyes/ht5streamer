@@ -1265,8 +1265,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             var p = $('#loadmore_'+vid).attr('alt').split('::')[1];
             if (parseInt(p) === startPage) {
                 var string = $('#sublist_'+vid).parent().parent().find('a').first().text();
-                
-                    $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+_("Videos found")+')');
+                $('#sublist_'+vid).parent().parent().find('a').first().html(string + ' ('+totalResults+' '+_("Videos found")+')');
                 
             }
         } catch(err) {

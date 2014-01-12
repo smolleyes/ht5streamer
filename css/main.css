@@ -514,7 +514,7 @@ color: White;
     background: black;
     width: calc(100% + 21px);
     display: block;
-    margin: 0px 0px 0px -10px;
+    margin: -5px 0px 0px -10px;
     color: white !important;
     padding: 5px;
 }
