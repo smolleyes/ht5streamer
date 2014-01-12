@@ -102,8 +102,7 @@
 	"Playing: ": "Lecture: ",
 	"Stopped...": "En attente...",
 	"Stopped... ": "Stopped... ",
-	"Open mega link": "Open mega link",
-	"ERROR! :Output #0, matroska, to 'pipe:1':\n    Stream #0.0(eng): Video: libx264, yuv420p, 720x308 [PAR 1:1 DAR 180:77], q=-1--1, 90k tbn, 23.98 tbc (default)\n    Stream #0.1(fre): Audio: libvorbis, 48000 Hz, stereo, s16, 192 kb/s (default)\n    Metadata:\n      title           : French_AAC\n    Stream #0.2(fre): Subtitle: ass, 200 kb/s (default)\n    Metadata:\n      title           : French_forced\nStream mapping:\n  Stream #0.0 -> #0.0\n  Stream #0.1 -> #0.1\n  Stream #0.2 -> #0.2\nDecoder (codec id 94210) not found for input stream #0.2\n": "ERROR! :Output #0, matroska, to 'pipe:1':\n    Stream #0.0(eng): Video: libx264, yuv420p, 720x308 [PAR 1:1 DAR 180:77], q=-1--1, 90k tbn, 23.98 tbc (default)\n    Stream #0.1(fre): Audio: libvorbis, 48000 Hz, stereo, s16, 192 kb/s (default)\n    Metadata:\n      title           : French_AAC\n    Stream #0.2(fre): Subtitle: ass, 200 kb/s (default)\n    Metadata:\n      title           : French_forced\nStream mapping:\n  Stream #0.0 -> #0.0\n  Stream #0.1 -> #0.1\n  Stream #0.2 -> #0.2\nDecoder (codec id 94210) not found for input stream #0.2\n",
-	"File not available on mega.co... !": "File not available on mega.co... !",
-	"File not available on mega.co...": "File not available on mega.co..."
+	"Open mega link": "Ouvrir dans Mega-link",
+	"File not available on mega.co...": "Fichier non disponible sur mega.co...",
+	"Your mega.co link is valid but can't be played yet, (wait a few minutes...)": "Votre lien mega.co est valide mais ne peut pas encore être lu ou téléchargé, patientez quelques minutes..."
 }

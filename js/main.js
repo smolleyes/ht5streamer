@@ -28,7 +28,12 @@ onload = function() {
 						page.hide();
 						page.close(true);
 					} catch(err) {
-						page.close(true);
+            console.log(err);
+						try {
+              page.close(true);
+            } catch(err) {
+              process.exit();
+            }
 					}
 				}
 			});
@@ -169,7 +174,7 @@ var htmlStr = '<div id="menu"> \
         <label>'+_("Engine:")+'</label> \
         <select id="engines_select"> \
             <option value = "youtube">Youtube</option> \
-            <option value = "dailymotion">dailymotion</option> \
+            <option value = "dailymotion">Dailymotion</option> \
         </select> \
     </div> \
     <form id="video_search"> \
@@ -277,11 +282,17 @@ var htmlStr = '<div id="menu"> \
 try {
 	process.on('uncaughtException', function(err) {
 		try{
-			console.error(err.stack);
+			var error = err.stack;
+      if ((error.indexOf('Error: undefined is not a valid uri or options object.').length !== -1) && (search_engine = 'Mega-search')) {
+        $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:6000, content:_("Your mega.co link is valid but can't be played yet, (wait a few minutes...)"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+        initPlayer();
+      } else {
+        $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:6000, content: error,btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+      }
 		} catch(err){}
 	});
 } catch(err) {
-	console.log("exception error");
+	console.log("exception error" + err);
 }
 
 
@@ -289,7 +300,11 @@ $(document).ready(function(){
     $('#main').append(htmlStr);
     $('div.split-pane').splitPane();
     // load plugins
-    listPlugins();
+    init();
+    
+});
+
+function main() {
     // load and hide catgories
     getCategories();
     // start keyevent listener
@@ -546,12 +561,14 @@ $(document).ready(function(){
                 current_search_page=1;
                 current_start_index=1;
                 $("#cover").remove();
+                $("#searchFilters_select").hide();
+                $("#searchFilters_label").hide();
                 $('#items_container').css({"border": "1px solid black","position": "relative","left": "5px","top": "110px"});
 				$('#search').css({"position":"fixed","z-index": "500","top": "74px","width": "46%","background": "white","overflow": "auto","height":"70px"}).show();
-				$('#pagination').show();
+				$('#pagination').hide();
                 try {
 					engine = engines[search_engine];
-					engine.init(gui,win.window);
+					engine.init(gui,win.window,$.notif);
 					// hide not needed menus
 					$.each(selectTypes,function(index,type){
 						$("#"+type+"_select").empty();
@@ -672,6 +689,11 @@ $(document).ready(function(){
             current_prev_start_index = 1;
             current_page=1;
             current_search_page=1;
+            try {
+              engine.search_type_changed();
+            } catch(err) {
+                
+            }
         });
     });
     //search filters
@@ -695,8 +717,9 @@ $(document).ready(function(){
             current_page=1;
             current_search_page=1;
             try {
-				engine.search_type_changed();
-			} catch(err) {
+              engine.search_type_changed();
+            } catch(err) {
+              console.log(err);
 				if ((searchTypes_select === 'topRated') || (searchTypes_select === 'mostViewed')) {
 					$('#video_search_query').prop('disabled', true);
 					$('#orderBy_label').hide();
@@ -809,7 +832,7 @@ $(document).ready(function(){
     //startSearch('');
     startMegaServer();
 
-});
+}
 
 function AnimateRotate(angle) {
     // caching the object for performance reasons
@@ -892,7 +915,7 @@ function initPlayer() {
 	$('#song-title').empty().append(_('Stopped...'));
 }
 
-function listPlugins() {
+function init() {
 	pluginsDir = path.dirname(process.execPath)+'/plugins/';
 	wrench.readdirRecursive(pluginsDir, function (error, files) {
 		try {
@@ -914,6 +937,7 @@ function listPlugins() {
 			});
 		} catch(err) {}
 	});
+  main();
 }
 
 function createServer() {
@@ -1929,9 +1953,22 @@ function convertTomp3(file) {
     }
 }
 
-function init_pagination(total,byPages,browse,has_more) {
+function init_pagination(total,byPages,browse,has_more,pageNumber) {
 	browse = browse;
-	if ((browse === false) && (pagination_init === false)) {
+  if (pageNumber !== 0) {
+		$("#pagination").pagination({
+				displayedPages:5,
+        pages: pageNumber,
+        currentPage : current_page,
+				cssStyle: 'compact-theme',
+				edges:1,
+				revText : ''+_("Prev")+'',
+				nextText : ''+_("Next")+'',
+				onPageClick : changePage
+		});
+		pagination_init = true;
+		total_pages=$("#pagination").pagination('getPagesCount');
+	} else if ((browse === false) && (pagination_init === false)) {
 		$("#search p").empty().append("<p>"+total+" "+_("results found")+"</p>");
 		$("#pagination").pagination({
 				items: total,
@@ -2086,7 +2123,7 @@ function startMegaServer() {
                   var megaSize = file.size;
                   var megaName = file.name.replace(/ /g,'_');
               } catch(err) {
-                  $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+                  $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:5000,content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
                   res.end();
                   player.pause();
                   return;
@@ -2132,10 +2169,11 @@ function spawnFfmpeg(link,name,exitCallback) {
       var ffmpeg = spawn('ffmpeg', args);
   }
 	console.log('Spawning ffmpeg ' + args.join(' '));
-	
-	ffmpeg.stderr.on('data', function (data) {
+  
+  ffmpeg.stderr.on('data', function (data) {
     console.log('grep stderr: ' + data);
   });
+  
   return ffmpeg;
 }
 

@@ -113,8 +113,10 @@ $(document).ready(function() {
   // open mega link
 	$(document).on('click','#mega_link',function(e) {
 		e.preventDefault();
-		var link = $(this).attr('alt');
-    streamMega(link);
+		var vlink = $(this).attr('alt');
+    f={}
+    f.link='http://'+ipaddress+':8888/?file='+encodeURIComponent(vlink);
+    startPlay(f);
 		$('#custom-menu').hide();
 	});
   
