@@ -2110,6 +2110,7 @@ function startMegaServer() {
     try {
       megaServer.close() 
     } catch(err) {
+        var videoArray = new Array('.avi','.webm','.mp4','.flv','.mkv','.mpeg','.mp3','mpg','wmv','wma','mov','wav');
         megaServer = http.createServer(function (req, res) {
           var baseLink = url.parse(req.url).href;
           if (baseLink.indexOf('&direct') === -1){
@@ -2122,41 +2123,51 @@ function startMegaServer() {
               try {
                   var megaSize = file.size;
                   var megaName = file.name.replace(/ /g,'_');
+                  var megaType = megaName.split('.').pop();
               } catch(err) {
                   $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:5000,content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
                   res.end();
                   player.pause();
                   return;
               }
-              $('#song-title').empty().html(_('Playing: ')+megaName);
-              if (baseLink.indexOf('&direct') === -1){
-                  console.log('playing movie with transcoding');
-                  var ffmpeg = spawnFfmpeg(function (code) { // exit
-                    console.log('child process exited with code ' + code);
-                    res.end();
-                  });
-                  var x = file.download().pipe(ffmpeg.stdin);
-                  x.on('error',function(err) {
-                    console.log('ffmpeg stdin error...' + err);
-                    player.pause();
-                    res.end();
-                    var f={};
-                    f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
-                    f.title = megaName;
-                    return startPlay(f);
-                  });
-                  ffmpeg.stdout.pipe(res);
+              if (videoArray.contains(megaType)) {
+                $('#song-title').empty().html(_('Playing: ')+megaName);
+                if (baseLink.indexOf('&direct') === -1){
+                    console.log('playing movie with transcoding');
+                    var ffmpeg = spawnFfmpeg(function (code) { // exit
+                      console.log('child process exited with code ' + code);
+                      res.end();
+                    });
+                    var x = file.download().pipe(ffmpeg.stdin);
+                    x.on('error',function(err) {
+                      console.log('ffmpeg stdin error...' + err);
+                      player.pause();
+                      res.end();
+                      var f={};
+                      f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
+                      f.title = megaName;
+                      return startPlay(f);
+                    });
+                    ffmpeg.stdout.pipe(res);
+                } else {
+                    res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
+                    console.log('playing movie without transcoding');
+                    file.download().pipe(res);
+                }
               } else {
-                  res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
-                  console.log('playing movie without transcoding');
-                  file.download().pipe(res);
-              }
+                  console.log('fichier non video/audio ...' + megaType);
+                  initPlayer();
+;             }
           });
       }).listen(8888);
       console.log('Megaserver ready on port 8888');
     }
 }
 
+function downloadFromPipe(data) {
+    var file = fs.createWriteStream(data);
+    
+}
 
 function spawnFfmpeg(link,name,exitCallback) {
   var args = ['-i','pipe:0','-f', 'matroska', '-vcodec', 'libx264', '-crf', '20', '-acodec', 'libvorbis', '-ab', '192k','-threads', '0', 'pipe:1'];
@@ -2177,3 +2188,13 @@ function spawnFfmpeg(link,name,exitCallback) {
   return ffmpeg;
 }
 
+// extend array
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}

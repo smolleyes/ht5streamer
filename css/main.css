@@ -20,9 +20,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 .overlay {
 position: relative;
 left: -100px;
-height: 80;
+height: 80px;
+margin-right: -100px;
+top: 20px;
+padding:0;
+}
+
+.overlay-spin {
+position: relative;
+left: -100px;
+margin-right: -100px;
+top:30px;
+padding:0;
+margin-bottom:-30px;
+}
+
+.overlay-mini {
+left: -100px;
+height: 60px;
+width: 120px;
 margin-right: -100px;
 top: 5px;
+float: left;
+overflow: auto;
 }
 
 #left-component {
@@ -182,7 +202,7 @@ height : calc(100% - 37px) !important;
 .video_thumbnail {
     float:left;
     width:120px;
-    height:90px;
+    height:120px;
 }
 
 #song-title {
@@ -776,3 +796,191 @@ display: block;
 overflow-x: hidden;
 padding:0;
 }
+
+/** spinner **/
+
+#fountainG{
+position: relative;
+width: 100px;
+height: 12px;
+top: 45px;
+left: -10px;
+margin-right:-100px;
+padding:0;
+float:left;
+}
+
+.fountainG{
+position:absolute;
+top:0;
+background-color:#000000;
+width:13px;
+height:13px;
+-moz-animation-name:bounce_fountainG;
+-moz-animation-duration:1.3s;
+-moz-animation-iteration-count:infinite;
+-moz-animation-direction:linear;
+-moz-transform:scale(.3);
+-moz-border-radius:8px;
+-webkit-animation-name:bounce_fountainG;
+-webkit-animation-duration:1.3s;
+-webkit-animation-iteration-count:infinite;
+-webkit-animation-direction:linear;
+-webkit-transform:scale(.3);
+-webkit-border-radius:8px;
+-ms-animation-name:bounce_fountainG;
+-ms-animation-duration:1.3s;
+-ms-animation-iteration-count:infinite;
+-ms-animation-direction:linear;
+-ms-transform:scale(.3);
+-ms-border-radius:8px;
+-o-animation-name:bounce_fountainG;
+-o-animation-duration:1.3s;
+-o-animation-iteration-count:infinite;
+-o-animation-direction:linear;
+-o-transform:scale(.3);
+-o-border-radius:8px;
+animation-name:bounce_fountainG;
+animation-duration:1.3s;
+animation-iteration-count:infinite;
+animation-direction:linear;
+transform:scale(.3);
+border-radius:8px;
+}
+
+#fountainG_1{
+left:0;
+-moz-animation-delay:0.52s;
+-webkit-animation-delay:0.52s;
+-ms-animation-delay:0.52s;
+-o-animation-delay:0.52s;
+animation-delay:0.52s;
+}
+
+#fountainG_2{
+left:13px;
+-moz-animation-delay:0.65s;
+-webkit-animation-delay:0.65s;
+-ms-animation-delay:0.65s;
+-o-animation-delay:0.65s;
+animation-delay:0.65s;
+}
+
+#fountainG_3{
+left:25px;
+-moz-animation-delay:0.78s;
+-webkit-animation-delay:0.78s;
+-ms-animation-delay:0.78s;
+-o-animation-delay:0.78s;
+animation-delay:0.78s;
+}
+
+#fountainG_4{
+left:38px;
+-moz-animation-delay:0.91s;
+-webkit-animation-delay:0.91s;
+-ms-animation-delay:0.91s;
+-o-animation-delay:0.91s;
+animation-delay:0.91s;
+}
+
+#fountainG_5{
+left:50px;
+-moz-animation-delay:1.04s;
+-webkit-animation-delay:1.04s;
+-ms-animation-delay:1.04s;
+-o-animation-delay:1.04s;
+animation-delay:1.04s;
+}
+
+#fountainG_6{
+left:63px;
+-moz-animation-delay:1.17s;
+-webkit-animation-delay:1.17s;
+-ms-animation-delay:1.17s;
+-o-animation-delay:1.17s;
+animation-delay:1.17s;
+}
+
+#fountainG_7{
+left:75px;
+-moz-animation-delay:1.3s;
+-webkit-animation-delay:1.3s;
+-ms-animation-delay:1.3s;
+-o-animation-delay:1.3s;
+animation-delay:1.3s;
+}
+
+#fountainG_8{
+left:88px;
+-moz-animation-delay:1.43s;
+-webkit-animation-delay:1.43s;
+-ms-animation-delay:1.43s;
+-o-animation-delay:1.43s;
+animation-delay:1.43s;
+}
+
+@-moz-keyframes bounce_fountainG{
+0%{
+-moz-transform:scale(1);
+background-color:#000000;
+}
+
+100%{
+-moz-transform:scale(.3);
+background-color:#FFFFFF;
+}
+
+}
+
+@-webkit-keyframes bounce_fountainG{
+0%{
+-webkit-transform:scale(1);
+background-color:#000000;
+}
+
+100%{
+-webkit-transform:scale(.3);
+background-color:#FFFFFF;
+}
+
+}
+
+@-ms-keyframes bounce_fountainG{
+0%{
+-ms-transform:scale(1);
+background-color:#000000;
+}
+
+100%{
+-ms-transform:scale(.3);
+background-color:#FFFFFF;
+}
+
+}
+
+@-o-keyframes bounce_fountainG{
+0%{
+-o-transform:scale(1);
+background-color:#000000;
+}
+
+100%{
+-o-transform:scale(.3);
+background-color:#FFFFFF;
+}
+
+}
+
+@keyframes bounce_fountainG{
+0%{
+transform:scale(1);
+background-color:#000000;
+}
+
+100%{
+transform:scale(.3);
+background-color:#FFFFFF;
+}
+
+} - See more at: http://cssload.net/#sthash.A7iBHGew.dpuf
