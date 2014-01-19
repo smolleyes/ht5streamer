@@ -67,7 +67,7 @@ var exec = require("child_process").exec;
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
-var localeList = ['en', 'fr'];
+var localeList = ['en', 'fr','es'];
 var locale = 'en';
 
 //engines
@@ -395,6 +395,7 @@ function main() {
         if (playAirMedia === true) {
             if (airMediaPlaying === true) {
                 stop_on_fbx();
+                initPlayer();
             } else {
 				play_on_fbx(airMediaLink);
 			}
@@ -450,6 +451,7 @@ function main() {
 		try {
 			if ((playAirMedia === false) && (airMediaPlaying === true)) {
 				stop_on_fbx();
+        initPlayer();
 			}
 		} catch(err) {
 		}
@@ -547,8 +549,12 @@ function main() {
     //cancel download
     $(document).on('click','.cancel',function(e) {
 		canceled=true;
-		var id = this.id.replace('cancel_',''); 
-		current_download[id].abort();
+		var id = this.id.replace('cancel_','');
+    try {
+      current_download[id].abort();
+    } catch(err) {
+      current_download[id].end();
+    }
 	});
     //engine select
     $("select#engines_select").change(function () {
@@ -1900,7 +1906,6 @@ function downloadFile(link,title,vid){
 				});
 			}
 		});
-		current_download[vid].end();
 }
 
 function convertTomp3Win(file){
@@ -2115,64 +2120,247 @@ function startMegaServer() {
         var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav');
         megaServer = http.createServer(function (req, res) {
           var baseLink = url.parse(req.url).href;
-          if (baseLink.indexOf('&direct') === -1){
-            var link = decodeURIComponent(url.parse(req.url).href).replace('/?file=','').replace('&direct','');
-          } else {
-            var link = decodeURIComponent(url.parse(req.url).href).replace('/?file=','');
+          var tv = false;
+          var megaKey;
+          var link;
+          var megaSize;
+          var parsedLink = decodeURIComponent(url.parse(req.url).href);
+          var linkParams = parsedLink.split('&');
+          var link = linkParams[0].replace('/?file=','');
+          if (baseLink.indexOf('&key') !== -1){
+            megaKey = linkParams[1].replace('key=','');
           }
-          console.log(link);
-          var file = mega.file(link).loadAttributes(function(err, file) {
-              try {
-                  var megaSize = file.size;
-                  var megaName = file.name.replace(/ /g,'_');
-                  var megaType = megaName.split('.').pop();
-              } catch(err) {
-                  $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:5000,content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-                  res.end();
-                  player.pause();
-                  return;
-              }
-              if (videoArray.contains(megaType)) {
-                $('#song-title').empty().html(_('Playing: ')+megaName);
-                if (baseLink.indexOf('&direct') === -1){
-                    console.log('playing movie with transcoding');
-                    var ffmpeg = spawnFfmpeg(function (code) { // exit
-                      console.log('child process exited with code ' + code);
-                      res.end();
-                    });
-                    var x = file.download().pipe(ffmpeg.stdin);
-                    x.on('error',function(err) {
+          if (baseLink.indexOf('&size') !== -1){
+            megaSize = linkParams[2].replace('size=','');
+          }
+          var megaName = $('#song-title').text().replace(_('Playing: '),'');
+          var megaType = megaName.split('.').pop().toLowerCase();
+          //if mega userstorage link
+          console.log(link,megaKey);
+          if (link.indexOf('userstorage.mega.co.nz') !== -1) {
+            console.log('LIEN USER MEGA....');
+            if (videoArray.contains(megaType)) {
+              if (baseLink.indexOf('&direct') === -1){
+                var ffmpeg = spawnFfmpeg('',function (code) { // exit
+                        console.log('child process exited with code ' + code);
+                        res.end();
+                });
+                var x = downloadFromMega(link,megaKey,megaSize).pipe(ffmpeg.stdin);
+                x.on('error',function(err) {
                       console.log('ffmpeg stdin error...' + err);
-                      player.pause();
-                      res.end();
                       var f={};
                       f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
                       f.title = megaName;
-                      return startPlay(f);
-                    });
-                    ffmpeg.stdout.pipe(res);
-                } else {
-                    res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
-                    console.log('playing movie without transcoding');
-                    file.download().pipe(res);
-                }
+                      res.end();
+                      if (playAirMedia === true) {
+                        res.end();
+                        stop_on_fbx();
+                        setTimeout(function() { 
+                          startPlay(f);
+                        },2000);
+                      } else {
+                        return startPlay(f);
+                      }
+                });
+                ffmpeg.stdout.pipe(res);
               } else {
-                  console.log('fichier non video/audio ...' + megaType);
-                  initPlayer();
-;             }
-          });
+                 console.log('playing movie without transcoding');
+                 downloadFromMega(link,megaKey).pipe(res);
+              }
+            } else {
+              console.log('fichier non video/audio ...' + megaType);
+              initPlayer();
+              downloadFileFromMega(megaName,link,megaKey,true,megaSize,''); 
+            }
+          //normal mega link
+          } else {
+            var file = mega.file(link).loadAttributes(function(err, file) {
+            try {
+                megaSize = file.size;
+                megaName = file.name.replace(/ /g,'_');
+                megaType = megaName.split('.').pop().toLowerCase();
+            } catch(err) {
+                $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:5000,content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+                res.end();
+                initPlayer();
+                return;
+            }
+            if (videoArray.contains(megaType)) {
+              $('#song-title').empty().html(_('Playing: ')+megaName);
+              if (baseLink.indexOf('&direct') === -1){
+                  console.log('playing movie with transcoding');
+                  var ffmpeg = spawnFfmpeg('',function (code) { // exit
+                    console.log('child process exited with code ' + code);
+                    res.end();
+                  });
+                  var x = file.download().pipe(ffmpeg.stdin);
+                  x.on('error',function(err) {
+                    console.log('ffmpeg stdin error...' + err);
+                    res.end();
+                    var f={};
+                    f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
+                    f.title = megaName;
+                    if (playAirMedia === true) {
+                        res.end();
+                        stop_on_fbx();
+                        setTimeout(function() { 
+                          startPlay(f);
+                        },2000);
+                    } else {
+                        return startPlay(f);
+                    }
+                  });
+                  ffmpeg.stdout.pipe(res);
+              } else {
+                  res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
+                  console.log('playing movie without transcoding');
+                  file.download().pipe(res);
+              }
+            } else {
+                console.log('fichier non video/audio ...' + megaType);
+                initPlayer();
+                downloadFileFromMega(megaName,'','',false,megaSize,file);
+            }
+        });
+      }
       }).listen(8888);
       console.log('Megaserver ready on port 8888');
     }
 }
 
-function downloadFromPipe(data) {
-    var file = fs.createWriteStream(data);
-    
+function downloadFileFromMega(title,link,key,fromMegacypter,length,stream) {
+  if ($('.tabActiveHeader').attr('id') !== 'tabHeader_4') {
+        $("#tabHeader_4").click();
+    }
+  var vid = ((Math.random() * 1e6) | 0);
+	var html='<div id="progress_'+vid+'" class="progress" style="display:none;"> \
+	<p><b>'+title+'</b></p> \
+	<p> \
+		<strong>0%</strong> \
+	</p> \
+	<progress value="5" min="0" max="100">0%</progress> \
+	<a href="#" style="display:none;" class="convert" alt="" title="'+_("Convert to mp3")+'"> \
+		<img src="images/video_convert.png"> \
+	</a> \
+	<a href="#" id="cancel_'+vid+'" style="display:none;" class="cancel" alt="" title="'+_("Cancel")+'"> \
+		<img src="images/close.png"> \
+	</a> \
+	<a class="open_folder" style="display:none;" title="'+ _("Open Download folder")+'" href="#">\
+		<img src="images/export.png" /> \
+	</a> \
+	<a href="#" style="display:none;" class="hide_bar" alt="" title="'+_("Close")+'"> \
+		<img src="images/close.png"> \
+	</a> \
+	</div>';
+	$('#DownloadsContainer').append(html).show();
+    var pbar = $('#progress_'+vid);
+    // remove file if already exist
+    fs.unlink(download_dir+'/'+title, function (err) {
+        if (err) {
+        } else {
+            console.log('successfully deleted '+download_dir+'/'+title);
+        }
+    });
+    // start download
+    try {
+      canceled=false;
+      var opt = {};
+      var val = $('#progress_'+vid+' progress').attr('value');
+      opt.link = link;
+      opt.title = title;
+      opt.vid = vid;
+      var currentTime;
+      var startTime = (new Date()).getTime();
+      var target = download_dir+'/'+title+'.'+startTime;
+      var file = fs.createWriteStream(target);
+      var contentLength = length;
+      if (fromMegacypter === true) {
+        current_download[vid] = downloadFromMega(link,key,length);
+        current_download[vid].pipe(file);
+      } else {
+        current_download[vid] = stream.download();
+        current_download[vid].pipe(file);
+      }
+      pbar.show();
+      $('#progress_'+vid+' a.cancel').show();
+      current_download[vid].on('data',function (chunk) {
+        var bytesDone = file.bytesWritten;
+        currentTime = (new Date()).getTime();
+        var transfer_speed = (bytesDone / ( currentTime - startTime)).toFixed(2);
+        var newVal= bytesDone*100/contentLength;
+        var txt = Math.floor(newVal)+'% '+ _('done at')+' '+transfer_speed+' kb/s';
+        $('#progress_'+vid+' progress').attr('value',newVal).text(txt);
+        $('#progress_'+vid+' strong').html(txt);
+      });
+      current_download[vid].on('error', function(err) {
+          console.log('error: ' + err);
+          file.end();
+          if (canceled === true) {
+            fs.unlink(target, function (err) {
+              if (err) {
+              } else {
+                console.log('successfully deleted '+target);
+              }
+            });
+            $('#progress_'+vid+' a.cancel').hide();
+            $('#progress_'+vid+' strong').html(_("Download canceled!"));
+            setTimeout(function(){pbar.hide()},5000);
+          }
+      });
+      current_download[vid]('end', function() {
+        file.end();
+        if (canceled === true) {
+          fs.unlink(target, function (err) {
+            if (err) {
+            } else {
+              console.log('successfully deleted '+target);
+            }
+          });
+          $('#progress_'+vid+' a.cancel').hide();
+          $('#progress_'+vid+' strong').html(_("Download canceled!"));
+          setTimeout(function(){pbar.hide()},5000);
+        } else {
+          fs.rename(target,download_dir+'/'+title.replace(/  /g,' '), function (err) {
+            if (err) {
+            } else {
+              console.log('successfully renamed '+download_dir+'/'+title);
+            }
+          });
+          $('#progress_'+vid+' strong').html(_('Download ended !'));
+          if (title.match('.mp3') === null) {
+            $('#progress_'+vid+' a.convert').attr('alt',download_dir+'/'+title+'::'+vid).show();
+          }
+          $('#progress_'+vid+' a.open_folder').show();
+          $('#progress_'+vid+' a.hide_bar').show();
+          $('#progress_'+vid+' a.cancel').hide();
+        }
+      });
+    } catch(err){
+        console.log("downloadFileFromMega error: " + err);
+    }
 }
 
-function spawnFfmpeg(link,name,exitCallback) {
-  var args = ['-i','pipe:0','-f', 'matroska', '-vcodec', 'libx264', '-crf', '20', '-acodec', 'libvorbis', '-ab', '192k','-threads', '0', 'pipe:1'];
+function downloadFromMega(link,key,size) {
+  var id = ((Math.random() * 1e6) | 0);
+  var m = new mega.File({downloadId:id,key:key});
+  var stream = mega.decrypt(m.key);
+  var r = request(link);
+  r.pipe(stream);
+  var i = 0;
+  r.on('data', function(d) {
+    i += d.length;
+    stream.emit('progress', {bytesLoaded: i, bytesTotal: size })
+  });
+  return stream
+}
+
+
+function spawnFfmpeg(link,exitCallback) {
+  if (link === '') {
+    var args = ['-i','pipe:0','-f', 'matroska', '-vcodec', 'libx264', '-acodec', 'libvorbis','-threads', '0', 'pipe:1'];
+  } else {
+    var args = ['-i',link,'-f', 'matroska', '-vcodec', 'libx264', '-acodec', 'libvorbis','-threads', '0', 'pipe:0'];
+  }
   var ffmpeg;
   if (process.platform === 'win32') {
       var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);

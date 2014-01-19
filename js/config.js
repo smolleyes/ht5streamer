@@ -27,7 +27,7 @@ var version = "0.7.1";
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
-var localeList = ['en', 'fr'];
+var localeList = ['en', 'fr', 'es'];
 var locale = 'en';
 
 var settings = {};
@@ -101,6 +101,7 @@ var htmlConfig='<div style="height:36px;"> \
 		<select name="countries" id="countries" style="width:300px;"> \
 		  <option value="en" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag gb" data-title="England">English</option> \
 		  <option value="fr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag fr" data-title="France">French</option> \
+      <option value="es" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag es" data-title="Spain">Spanish</option> \
 		</select> \
 	    </div> \
             <div style="height:36px;"> \
