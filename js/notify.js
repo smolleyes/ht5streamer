@@ -25,10 +25,12 @@ $(document).ready(function(){
 					return;
 				}
                 if (online_version === settings.version) {
-                    $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:_("Your software is up to date !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
+                    $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:_("Your software is up to date !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+                    
                 } else {
                     $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("A new version is available !"),btnId:'updateBtn',btnTitle:_('Update'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
                 }
+                $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',timeout:7000,content:_("Please DONATE if you like this software !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
             });
         });
     } catch (err) {

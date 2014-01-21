@@ -107,6 +107,7 @@ var playFromHd = false;
 var serverSettings;
 var airMediaLink;
 var airMediaPlaying = false;
+var ffmpeg;
 
 // global var
 var search_engine = 'youtube';
@@ -244,7 +245,9 @@ var htmlStr = '<div id="menu"> \
                     <div class="tabpage" id="tabpage_1"> \
                         <div id="loading" style="display:None;"><img style="float:left;width:28px;height:28px;margin-right:10px;"src="images/spinner.gif" /><p>'+_(" Loading videos...")+'</p></div> \
                          <div id="search"> \
-                            <div id="search_results"><p></p></div> \
+                            <div id="search_results"><p> \
+                            '+_("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")+' \
+                            </p></div> \
                             <div id="pagination"></div> \
                         </div> \
                         <div id="items_container"></div> \
@@ -283,11 +286,10 @@ try {
 	process.on('uncaughtException', function(err) {
 		try{
 			var error = err.stack;
-      if ((error.indexOf('Error: undefined is not a valid uri or options object.').length !== -1) && (search_engine = 'Mega-search')) {
+      console.log(error);
+      if ((error.indexOf('Error: undefined is not a valid uri or options object.') !== -1) && (search_engine = 'Mega-search')) {
         $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:6000, content:_("Your mega.co link is valid but can't be played yet, (wait a few minutes...)"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
         initPlayer();
-      } else {
-        $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:6000, content: error,btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
       }
 		} catch(err){}
 	});
@@ -831,9 +833,8 @@ function main() {
     $('#searchFilters_label').show();
     $('#searchFilters_select').show();
     $('#dateTypes_label').hide();
-	$('#dateTypes_select').hide();
+    $('#dateTypes_select').hide();
     $('#items_container').hide();
-    $('#search_results p').empty().append(_("Welcome to Ht5streamer !<br><br>Make a new search or select a category to start...")).show();
     $('#song-title').empty().append(_('Stopped...'));
     //startSearch('');
     startMegaServer();
@@ -910,6 +911,11 @@ function startPlay(media) {
 function initPlayer() {
 	player.pause();
 	player.setSrc('');
+  try {
+    ffmpeg.kill('SIGKILL');
+  } catch(err) {
+    console.log('No ffmpeg process to kill...' + err);
+  }
 	player.currentTime = 0;
 	player.current[0].style.width = 0;
 	player.loaded[0].style.width = 0;
@@ -2117,8 +2123,13 @@ function startMegaServer() {
     try {
       megaServer.close() 
     } catch(err) {
-        var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav');
+        var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg');
         megaServer = http.createServer(function (req, res) {
+          try {
+            ffmpeg.kill('SIGKILL');
+          } catch(err) {
+            console.log('No ffmpeg process to kill...' + err);
+          }
           var baseLink = url.parse(req.url).href;
           var tv = false;
           var megaKey;
@@ -2139,7 +2150,7 @@ function startMegaServer() {
           console.log(link,megaKey);
           if (link.indexOf('userstorage.mega.co.nz') !== -1) {
             console.log('LIEN USER MEGA....');
-            if (videoArray.contains(megaType)) {
+            if ((videoArray.contains(megaType)) && (baseLink.indexOf('&download') === -1)) {
               if (baseLink.indexOf('&direct') === -1){
                 var ffmpeg = spawnFfmpeg('',function (code) { // exit
                         console.log('child process exited with code ' + code);
@@ -2168,7 +2179,7 @@ function startMegaServer() {
                  downloadFromMega(link,megaKey).pipe(res);
               }
             } else {
-              console.log('fichier non video/audio ...' + megaType);
+              console.log('fichier non video/audio ou téléchargement demandé...' + megaType);
               initPlayer();
               downloadFileFromMega(megaName,link,megaKey,true,megaSize,''); 
             }
@@ -2185,7 +2196,7 @@ function startMegaServer() {
                 initPlayer();
                 return;
             }
-            if (videoArray.contains(megaType)) {
+            if ((videoArray.contains(megaType)) && (baseLink.indexOf('&download') === -1)) {
               $('#song-title').empty().html(_('Playing: ')+megaName);
               if (baseLink.indexOf('&direct') === -1){
                   console.log('playing movie with transcoding');
@@ -2217,7 +2228,7 @@ function startMegaServer() {
                   file.download().pipe(res);
               }
             } else {
-                console.log('fichier non video/audio ...' + megaType);
+                console.log('fichier non video/audio ou téléchargement demandé...' + megaType);
                 initPlayer();
                 downloadFileFromMega(megaName,'','',false,megaSize,file);
             }
@@ -2229,6 +2240,7 @@ function startMegaServer() {
 }
 
 function downloadFileFromMega(title,link,key,fromMegacypter,length,stream) {
+  initPlayer();
   if ($('.tabActiveHeader').attr('id') !== 'tabHeader_4') {
         $("#tabHeader_4").click();
     }
@@ -2307,7 +2319,7 @@ function downloadFileFromMega(title,link,key,fromMegacypter,length,stream) {
             setTimeout(function(){pbar.hide()},5000);
           }
       });
-      current_download[vid]('end', function() {
+      current_download[vid].on('end', function() {
         file.end();
         if (canceled === true) {
           fs.unlink(target, function (err) {
@@ -2361,13 +2373,12 @@ function spawnFfmpeg(link,exitCallback) {
   } else {
     var args = ['-i',link,'-f', 'matroska', '-vcodec', 'libx264', '-acodec', 'libvorbis','-threads', '0', 'pipe:0'];
   }
-  var ffmpeg;
   if (process.platform === 'win32') {
-      var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
+      ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
   } else if (process.platform === 'darwin') {
-      var ffmpeg = spawn(exec_path+'/ffmpeg', args);
+      ffmpeg = spawn(exec_path+'/ffmpeg', args);
   } else {
-      var ffmpeg = spawn('ffmpeg', args);
+      ffmpeg = spawn('ffmpeg', args);
   }
 	console.log('Spawning ffmpeg ' + args.join(' '));
   
