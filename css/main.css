@@ -178,7 +178,7 @@ height : calc(100% - 37px) !important;
 	left: 5px;
 }
 
-.video_link, .download_file {
+.video_link, .download_file,  .download_megafile{
     display:inline-block;
     vertical-align: middle;
     margin-right:10px;
@@ -202,7 +202,7 @@ height : calc(100% - 37px) !important;
 .video_thumbnail {
     float:left;
     width:120px;
-    height:120px;
+    height:102px;
 }
 
 #song-title {
@@ -368,8 +368,8 @@ height : calc(100% - 37px) !important;
     background: rgba(0, 0, 0, 0.6);
     color: white;
     position: relative;
-    left: -65px;
-    top: 92px;
+    left: -63px;
+    top: 104px;
     padding: 2px 5px;
 }
 

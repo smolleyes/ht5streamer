@@ -1854,8 +1854,8 @@ function downloadFile(link,title,vid){
     var host = link.match('http://(.*?)/(.*)')[1];
     var path = '/'+link.match('http://(.*?)/(.*)')[2];
     current_download[opt] = opt;
-	current_download[vid] = http.request(link,
-		function (response) {
+    current_download[vid] = http.request(link);
+    current_download[vid].on('response' ,function(response) {
 			if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
 				// The location for some (most) redirects will only contain the path,  not the hostname;
 				// detect this and add the host to the path.
@@ -1912,6 +1912,7 @@ function downloadFile(link,title,vid){
 				});
 			}
 		});
+    current_download[vid].end();
 }
 
 function convertTomp3Win(file){
