@@ -286,7 +286,6 @@ try {
 	process.on('uncaughtException', function(err) {
 		try{
 			var error = err.stack;
-      console.log(error);
       if ((error.indexOf('Error: undefined is not a valid uri or options object.') !== -1) && (search_engine = 'Mega-search')) {
         $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:6000, content:_("Your mega.co link is valid but can't be played yet, (wait a few minutes...)"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
         initPlayer();
@@ -909,11 +908,6 @@ function startPlay(media) {
 function initPlayer() {
 	player.pause();
 	player.setSrc('');
-  try {
-    ffmpeg.kill('SIGKILL');
-  } catch(err) {
-    console.log('No ffmpeg process to kill...');
-  }
 	player.currentTime = 0;
 	player.current[0].style.width = 0;
 	player.loaded[0].style.width = 0;
@@ -923,6 +917,11 @@ function initPlayer() {
 	$(".mejs-overlay-play").hide();
 	$(".mejs-overlay-loading").show();
 	$('#song-title').empty().append(_('Stopped...'));
+  try {
+    ffmpeg.kill('SIGKILL');
+  } catch(err) {
+    console.log("no ffmpeg process to kill...");
+  }
 }
 
 function init() {
@@ -2127,11 +2126,6 @@ function startMegaServer() {
     } catch(err) {
         var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg');
         megaServer = http.createServer(function (req, res) {
-          try {
-            ffmpeg.kill('SIGKILL');
-          } catch(err) {
-            console.log('No ffmpeg process to kill...' + err);
-          }
           var baseLink = url.parse(req.url).href;
           var tv = false;
           var megaKey;
@@ -2161,6 +2155,9 @@ function startMegaServer() {
                 var x = downloadFromMega(link,megaKey,megaSize).pipe(ffmpeg.stdin);
                 x.on('error',function(err) {
                       console.log('ffmpeg stdin error...' + err);
+                      if (err.stack.match('ECONNRESET') !== null) {
+                        return;
+                      }
                       var f={};
                       f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
                       f.title = megaName;
@@ -2213,6 +2210,9 @@ function startMegaServer() {
                   var x = file.download().pipe(ffmpeg.stdin);
                   x.on('error',function(err) {
                     console.log('ffmpeg stdin error...' + err);
+                    if (err.stack.match('ECONNRESET') !== null) {
+                        return;
+                    }
                     res.end();
                     var f={};
                     f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
