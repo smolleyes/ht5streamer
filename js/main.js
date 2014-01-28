@@ -397,7 +397,6 @@ function main() {
         if (playAirMedia === true) {
             if (airMediaPlaying === true) {
                 stop_on_fbx();
-                initPlayer();
             } else {
 				play_on_fbx(airMediaLink);
 			}
@@ -453,7 +452,6 @@ function main() {
 		try {
 			if ((playAirMedia === false) && (airMediaPlaying === true)) {
 				stop_on_fbx();
-        initPlayer();
 			}
 		} catch(err) {
 		}
@@ -914,7 +912,7 @@ function initPlayer() {
   try {
     ffmpeg.kill('SIGKILL');
   } catch(err) {
-    console.log('No ffmpeg process to kill...' + err);
+    console.log('No ffmpeg process to kill...');
   }
 	player.currentTime = 0;
 	player.current[0].style.width = 0;
@@ -1134,6 +1132,9 @@ function onKeyPress(key) {
                 $('.mejs-pause').click();
             }
         }
+    } else if (key.key === 'd') {
+        key.preventDefault();
+        win.showDevTools();
     }
 }
 
@@ -2193,6 +2194,10 @@ function startMegaServer() {
                 megaType = megaName.split('.').pop().toLowerCase();
             } catch(err) {
                 $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:5000,content:_("File not available on mega.co..."),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+                var url = $('.highlight .open_in_browser').attr("href");
+                var reportLink = $('.highlight #reportLink').attr("href");
+                var name = $($('.highlight b')[0]).text();
+                engine.sendMail(name,url,reportLink);
                 res.end();
                 initPlayer();
                 return;
@@ -2379,7 +2384,7 @@ function spawnFfmpeg(link,exitCallback) {
   } else if (process.platform === 'darwin') {
       ffmpeg = spawn(exec_path+'/ffmpeg', args);
   } else {
-      ffmpeg = spawn('ffmpeg', args);
+      ffmpeg = spawn(exec_path+'/ffmpeg', args);
   }
 	console.log('Spawning ffmpeg ' + args.join(' '));
   
