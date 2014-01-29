@@ -413,11 +413,13 @@ function main() {
               stop_on_fbx();
               if (currentMedia.link !== currentAirMedia.link) {
                 setTimeout(function(){
-                    startPlay(currentMedia.link);
+                    $('.mejs-overlay-button').hide();
+                    play_on_fbx(currentMedia.link);
                 },2000);
               }
             } else {
-              play_on_fbx(currentMedia);
+              $('.mejs-overlay-button').hide();
+              play_on_fbx(currentMedia.link);
             }
         }
     });
@@ -894,9 +896,16 @@ function startPlay(media) {
 	$('.mejs-container p#fbxMsg').remove();
 	if (playAirMedia === true) {
 		airMediaLink = link;
-		$('.mejs-playpause-button').click();
-		$('.mejs-overlay-loading').hide();
-		return;
+    if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1)) {
+        currentMedia.link=media.link+"&direct";
+        $('.mejs-playpause-button').click();
+        $('.mejs-overlay-loading').hide();
+        return;
+    } else {
+        $('.mejs-playpause-button').click();
+        $('.mejs-overlay-loading').hide();
+        return;
+    }
 	}
 	if (playFromHd === false) {
     fs.readdir(download_dir, function (err, filenames) {
@@ -2186,13 +2195,13 @@ function startStreaming(req,res) {
                 if (err.stack.indexOf('codec') === -1) {
                   console.log("Arret demandé !!!");
                   res.end();
-                  return;
+                } else {
+                  var f={};
+                  f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
+                  f.title = megaName;
+                  res.end();
+                  startPlay(f);
                 }
-                var f={};
-                f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
-                f.title = megaName;
-                res.end();
-                startPlay(f);
           });
           ffmpeg.stdout.pipe(res);
         } else {
@@ -2234,13 +2243,13 @@ function startStreaming(req,res) {
                 if (err.stack.indexOf('codec') === -1) {
                     console.log("Arret demandé !!!!!!!!!!!!!!!!!!!!!!!!!!!!", megaName);
                     res.end();
-                    return;
+                } else {
+                  var f={};
+                  f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
+                  f.title = megaName;
+                  res.end();
+                  startPlay(f);
                 }
-                res.end();
-                var f={};
-                f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
-                f.title = megaName;
-                startPlay(f);
               });
               ffmpeg.stdout.pipe(res);
           } else {

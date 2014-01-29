@@ -351,6 +351,7 @@ function stop_on_fbx() {
                 console.log('media stopped...');
                 airMediaPlaying = false;
                 $('.mejs-container p#fbxMsg').remove();
+                initPlayer();
             } else {
                 console.log('can t stop the media...');
                 airMediaPlaying = false;
