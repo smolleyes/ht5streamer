@@ -307,7 +307,7 @@ function play_on_fbx(url) {
                 console.log('media started...');
                 airMediaPlaying = true;
                 $('.mejs-container p#fbxMsg').remove();
-                $('.mejs-container').append('<p id="fbxMsg" style="position:absolute;top:45%;margin:0 auto;color:white;font-size:30px;text-align:center;z-index:10000;">Lecture en cours sur la freebox !</p>')
+                $('.mejs-container').append('<p id="fbxMsg" style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 30px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;">Lecture en cours sur la freebox !</p>')
                 currentAirMedia.link = url;
             } else {
                 console.log('can t start the media...', responseString);
