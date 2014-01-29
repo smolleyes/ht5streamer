@@ -274,6 +274,9 @@ function getAirMediaReceivers() {
 
 
 function play_on_fbx(url) {
+    if (typeof(url) === "object") {
+        url = url.link;
+    }
     var params = {"action": "start","media_type": "video","media": url,"password": ""}
     var paramString = JSON.stringify(params);
     
@@ -304,10 +307,12 @@ function play_on_fbx(url) {
                 console.log('media started...');
                 airMediaPlaying = true;
                 $('.mejs-container p#fbxMsg').remove();
-                $('.mejs-container').append('<p id="fbxMsg" style="position:absolute;top:45%;margin:auto;color:white;font-size:30px;text-align:center;z-index:10000;right:125px;">Lecture en cours sur la freebox !</p>')
+                $('.mejs-container').append('<p id="fbxMsg" style="position:absolute;top:45%;margin:0 auto;color:white;font-size:30px;text-align:center;z-index:10000;">Lecture en cours sur la freebox !</p>')
+                currentAirMedia.link = url;
             } else {
                 console.log('can t start the media...', responseString);
                 airMediaPlaying = false;
+                stop_on_fbx();
             }
         });
     });
