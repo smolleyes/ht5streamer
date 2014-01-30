@@ -304,7 +304,7 @@ function play_on_fbx(url) {
             var resultObject = JSON.parse(responseString);
             // check response
             if (resultObject.success === true) {
-                console.log('media started...');
+                console.log('media started... : '+url);
                 airMediaPlaying = true;
                 $('.mejs-container p#fbxMsg').remove();
                 $('.mejs-container').append('<p id="fbxMsg" style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 30px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;">Lecture en cours sur la freebox !</p>')

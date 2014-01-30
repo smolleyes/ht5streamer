@@ -17,6 +17,28 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+
+#mep_0 {
+  overflow:auto;
+  color:white ! important;
+}
+
+#mep_0 a {
+  color: orange;
+}
+
+#mep_0 a:hover {
+  color: white;
+}
+
+.mejs-controls {
+z-index:10;
+}
+
+.bbc_color, .bbc_table {
+  color:white !important;
+}
+
 .overlay {
 position: relative;
 left: -100px;
@@ -108,7 +130,9 @@ height : calc(100% - 37px) !important;
     background: white;
     padding: 10px 10px 0 0;
     margin-left: -8px;
-    background: -webkit-linear-gradient(top, rgba(226,226,226,1) 0%,rgba(219,219,219,1) 50%,rgba(209,209,209,1) 51%,rgba(254,254,254,1) 100%);
+    background: -webkit-linear-gradient(top, rgba(58,60,59,1) 0%,rgba(37,37,37,1) 50%,rgba(4,4,4,1) 51%,rgba(3,3,3,1) 100%);
+    color:white;
+    -webkit-box-shadow: 0px 0px 10px 0px rgba(255, 255, 255, .50);
 }
 
 #loading {

@@ -139,6 +139,7 @@ var right;
 var left;
 var megaServer;
 var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg');
+var transcodeArray = new Array('avi','flv','mkv','mpeg','mpg','wmv','wma','mov','wav','ogg');
 var currentMedia;
 var currentAirMedia = {};
 
@@ -885,58 +886,68 @@ function AnimateRotate(angle) {
 
 function startPlay(media) {
   initPlayer();
-	next_vid = media.next;
-	var link = media.link;
-  currentMedia = media;
-	var title = media.title;
-	$('#song-title').empty().append(_('Playing: ') +decodeURIComponent(title));
-	// check local files
-	var localLink = null;
-	// play on airmedia
-	$('.mejs-container p#fbxMsg').remove();
-	if (playAirMedia === true) {
-		airMediaLink = link;
-    if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1)) {
-        currentMedia.link=media.link+"&direct";
-        $('.mejs-playpause-button').click();
-        $('.mejs-overlay-loading').hide();
-        return;
-    } else {
-        $('.mejs-playpause-button').click();
-        $('.mejs-overlay-loading').hide();
-        return;
-    }
-	}
-	if (playFromHd === false) {
-    fs.readdir(download_dir, function (err, filenames) {
-      var i;
-      count = filenames.length;
-      console.log(filenames)
-      if ((err) || (count === 0)) {
-        player.setSrc(link);
-        player.play();
+  try {
+    next_vid = media.next;
+    var link = media.link;
+    currentMedia = media;
+    var title = media.title;
+    $('#song-title').empty().append(_('Playing: ') +decodeURIComponent(title));
+    // check local files
+    var localLink = null;
+    // play on airmedia
+    $('.mejs-container p#fbxMsg').remove();
+    if (playAirMedia === true) {
+      airMediaLink = link;
+      if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1) && (link.indexOf('265') !== -1) && (link.indexOf('vp9') == -1)) {
+          currentMedia.link=media.link+"&direct";
+          $('.mejs-playpause-button').click();
+          $('.mejs-overlay-loading').hide();
+          return;
       } else {
-        for (i = 0; i < filenames.length; i++) {
-          ftitle = filenames[i];
-          if ((title+'.mp4' === ftitle) || (title+'.webm' === ftitle) || (title+'.mp3' === ftitle)) {
-            localLink = 'file://'+encodeURI(download_dir+'/'+ftitle);
-          }
-          count--;
-          if (count === 0) {
-            if (localLink !== null) {
-              player.setSrc(localLink);
-            } else {
-              player.setSrc(link);
+          $('.mejs-playpause-button').click();
+          $('.mejs-overlay-loading').hide();
+          return;
+      }
+    }
+    if (playFromHd === false) {
+      fs.readdir(download_dir, function (err, filenames) {
+        var i;
+        count = filenames.length;
+        if ((err) || (count === 0)) {
+          player.setSrc(link);
+          player.play();
+        } else {
+          for (i = 0; i < filenames.length; i++) {
+            ftitle = filenames[i];
+            if ((title+'.mp4' === ftitle) || (title+'.webm' === ftitle) || (title+'.mp3' === ftitle)) {
+              localLink = 'file://'+encodeURI(download_dir+'/'+ftitle);
             }
-            player.play();
+            count--;
+            if (count === 0) {
+              if (localLink !== null) {
+                player.setSrc(localLink);
+              } else {
+                player.setSrc(link);
+              }
+              player.play();
+            }
           }
         }
+      });
+    } else {
+      var ext = link.split('.').pop().toLowerCase();
+      if (transcodeArray.contains(ext)){
+          console.log('link '+link+' need transcoding');
+          player.setSrc('http://'+ipaddress+':8888/?file='+link);
+          player.play();
+      } else {
+        player.setSrc(link);
+        player.play();
       }
-    });
-	} else {
-		player.setSrc(link);
-		player.play();
-	}
+    }
+  } catch(err) {
+      console.log("error startPlay: " + err);
+  }
 }
 
 function initPlayer() {
@@ -955,6 +966,9 @@ function initPlayer() {
   } catch(err) {
     console.log("no ffmpeg process to kill...");
   }
+  try {
+    $('#fbxMsg').remove();
+  } catch(err) {}
 }
 
 function init() {
@@ -2180,6 +2194,29 @@ function startStreaming(req,res) {
     }
     var megaName = $('#song-title').text().replace(_('Playing: '),'');
     var megaType = megaName.split('.').pop().toLowerCase();
+    // if local file
+    if (link.indexOf('file:') !== -1) {
+      console.log('megaServer: '+link);
+      var ffmpeg = spawnFfmpeg('',function (code) { // exit
+                  console.log('child process exited with code ' + code);
+                  res.end();
+        });
+        var x = fs.createReadStream(link.replace('file://','')).pipe(ffmpeg.stdin);
+        x.on('error',function(err) {
+            console.log('ffmpeg stdin error...' + err);
+            if (err.stack.indexOf('codec') === -1) {
+              console.log("Arret demandé !!!");
+              res.end();
+            } else {
+              var f={};
+              f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
+              f.title = megaName;
+              res.end();
+              startPlay(f);
+            }
+        });
+        ffmpeg.stdout.pipe(res);
+    }
     //if mega userstorage link
     if (link.indexOf('userstorage.mega.co.nz') !== -1) {
       console.log('LIEN USER MEGA....');
@@ -2401,8 +2438,6 @@ function spawnFfmpeg(link,exitCallback) {
   }
   if (process.platform === 'win32') {
       ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
-  } else if (process.platform === 'darwin') {
-      ffmpeg = spawn(exec_path+'/ffmpeg', args);
   } else {
       ffmpeg = spawn(exec_path+'/ffmpeg', args);
   }
