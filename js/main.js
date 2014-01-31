@@ -898,7 +898,7 @@ function startPlay(media) {
     $('.mejs-container p#fbxMsg').remove();
     if (playAirMedia === true) {
       airMediaLink = link;
-      if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1) && (link.indexOf('265') !== -1) && (link.indexOf('vp9') == -1)) {
+      if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1) && (title.indexOf('265') === -1) && (title.indexOf('vp9') === -1)) {
           currentMedia.link=media.link+"&direct";
           $('.mejs-playpause-button').click();
           $('.mejs-overlay-loading').hide();
