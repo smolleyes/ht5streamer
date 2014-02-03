@@ -100,6 +100,7 @@ function onSelectedItem(data) {
 }
 
 function renameItem(item) {
+  console.log(item);
 	var attr = item.rslt.obj[0].lastChild.attributes;
 	var old_name = item.rslt.old_name;
 	var new_name = item.rslt.new_name;

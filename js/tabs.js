@@ -51,4 +51,10 @@ function displayPage() {
   this.setAttribute("class","tabActiveHeader");
   document.getElementById("tabpage_" + ident).style.display="block";
   this.parentNode.setAttribute("data-current",ident);
+  //disable keyboard shortcuts
+  if(ident !== '1') {
+    document.removeEventListener("keydown",fn, false);
+  } else {
+    document.addEventListener("keydown",fn, false );
+  }
 }
