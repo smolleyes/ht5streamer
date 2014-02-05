@@ -120,7 +120,52 @@ function renameItem(item) {
 
 function removeItem(item) {
 	var id = item.id.value;
-	removeFromDb(id);
+  if (id.indexOf('_rootnode') !== -1) {
+    console.log("removing dir");
+    removeDir(id.split('_rootnode')[0]);
+  } else {
+    removeFromDb(id);
+  }
+}
+
+function removeDir(name) {
+  bongo.db('ht5').collection('Library').find({
+    parent: name }).toArray(function(error,results) {
+    if(!error) {
+      console.log(results, results.length)
+      if (results.length === 0) {
+        bongo.db('ht5').collection('Library').find({
+          title: name }).toArray(function(error,results) {
+            if(!error) {
+              console.log("directory "+name+" removed successfully");
+              removeFromDb(results[0]._id);
+            }
+        });
+      } else {
+        $.each(results,function(index,res){
+          if(res.type === 'folder') {
+              removeDir(res.title);
+              removeFromDb(res._id);
+          } else {
+            removeFromDb(res._id);
+          }
+          if (index+1 === results.length) {
+              bongo.db('ht5').collection('Library').find({
+                title: name }).toArray(function(error,results) {
+                  if(!error) {
+                    console.log("directory "+name+" removed successfully");
+                    try {
+                      removeFromDb(results[0]._id);
+                    } catch(err) {}
+                  }
+              });
+          }
+        });
+      }
+    } else { 
+      console.log(error);
+    }
+  });
 }
 
 function onCreateItem(item) {

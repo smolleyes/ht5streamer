@@ -22,7 +22,7 @@ var gui = require('nw.gui');
 var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
-var version = "0.9";
+var version = "0.9.1";
 
 //localize
 var i18n = require("i18n");
@@ -33,6 +33,7 @@ var locale = 'en';
 var settings = {};
 var selected_interface;
 var shared_length = 0;
+var pluginsList = ['vimeo','grooveshark','mega-search','mega','mega-files','songza'];
 
 // settings
 var confdir;
@@ -95,7 +96,6 @@ if ($.inArray(settings.locale, localeList) >-1) {
 	i18n.setLocale('en');
 }
 
-
 var htmlConfig='<div style="height:36px;"> \
 		<label>'+_("Language:")+'</label> \
 		<select name="countries" id="countries" style="width:300px;"> \
@@ -103,26 +103,67 @@ var htmlConfig='<div style="height:36px;"> \
 		  <option value="fr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag fr" data-title="France">French</option> \
       <option value="es" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag es" data-title="Spain">Spanish</option> \
 		</select> \
-	    </div> \
-            <div style="height:36px;"> \
-		<label>'+_("Maximum resolution:")+'</label> \
-		<select id="resolutions_select"> \
+    </div> \
+    <div style="height:36px;"> \
+      <label>'+_("Maximum resolution:")+'</label> \
+      <select id="resolutions_select"> \
 		    <option value = "1080p">1080p</option> \
 		    <option value = "720p">720p</option> \
 		    <option value = "480p">480p</option> \
 		    <option value = "360p">360p</option> \
-		</select> \
-	    </div> \
-	    <div style="height:36px;"> \
-		<label>'+_("Download directory:")+'</label> \
-		<input type="text" id="download_path"></input><button id="choose_download_dir">'+_("Select")+'</button> \
-	    </div> \
-	    <div> \
+      </select> \
+    </div> \
+    <div style="height:36px;"> \
+      <label>'+_("Download directory:")+'</label> \
+      <input type="text" id="download_path"></input><button id="choose_download_dir">'+_("Select")+'</button> \
+    </div> \
+    <div> \
 			<label>'+_("Local network interface:")+'</label> \
 			<select id="interface_select"> \
 			</select> \
-	    </div>\
-	    <div style="height:240px;margin-top:30px;"> \
+    </div>\
+    <div> \
+      <p>'+_("<b><u>Gmail account (optional... used to report some errors) : </u></b>")+'</p> \
+			<label>'+_("Username: ")+'</label> \
+			<input type="text" id="gmailUser"></input> \
+      <br> \
+      <label>'+_("Password: ")+'</label> \
+			<input type="text" id="gmailPass"></input> \
+    </div>\
+    <div> \
+      <p> \
+        <b><u>'+_("Plugins choice:")+'</u></b> \
+        <br> \
+        '+_("Please read the disclaimer here : <u><a id='disclaimer' style='color:red;' href='#'>disclaimer</a></u>")+' \
+      </p> \
+      <div style="border: 1px solid black;height:34px;"> \
+        <div class="ItemCheckbox left">\
+          <label for="vimeo">Vimeo</label>\
+          <input class="pluginCheckBox" type="checkbox" id="vimeo" name="vimeo">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="songza">Songza</label>\
+          <input class="pluginCheckBox" type="checkbox" id="songza" name="songza">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="grooveshark">Grooveshark</label>\
+          <input class="pluginCheckBox" type="checkbox" id="grooveshark" name="grooveshark">\
+        </div>\
+        <div class="ItemCheckbox">\
+          <label for="mega-search">Mega-search.ws</label>\
+          <input class="pluginCheckBox" type="checkbox" id="mega-search" name="mega-search">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="mega">Mega-search.me</label>\
+          <input class="pluginCheckBox" type="checkbox" id="mega" name="mega">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="mega-files">Mega-files</label>\
+          <input class="pluginCheckBox" type="checkbox" id="mega-files" name="mega-files">\
+        </div>\
+      </div>\
+    </div> \
+    <div style="height:240px;margin-top:30px;"> \
 			<p>'+_("Add or remove directories to scan for your local library:")+'</p> \
 			<select id="shared_dir_select" multiple name="shared_dir"> \
 			</select> \
@@ -131,10 +172,9 @@ var htmlConfig='<div style="height:36px;"> \
 				<button id="add_shared_dir">'+_("Add")+'</button> \
 				<button id="remove_shared_dir" >'+_("Remove")+'</button> \
 		</div>\
-	    <br\><br\> \
-	    <button id="valid_config">'+_("Save")+'</button> \
+    <br\><br\> \
+    <button id="valid_config">'+_("Save")+'</button> \
 ';
-
 
 $(document).ready(function() {
     $('#main_config').empty().append(htmlConfig);
@@ -143,8 +183,12 @@ $(document).ready(function() {
     // start flags
     $('#download_path').val(settings.download_dir);
     $("select#countries").change(function () {
-	$("select#countries option:selected").each(function () {
+    $("select#countries option:selected").each(function () {
 			locale = $(this).val();
+      settings.locale = locale;
+      settings.edit = true;
+      saveSettings();
+      confWin.reload();
 		});
     });
     getInterfaces();
@@ -194,8 +238,76 @@ $(document).ready(function() {
 		});
 	}
 	$('#countries').val(settings.locale);
-    $("#countries").msDropdown();
-    initCheck();
+  $("#countries").msDropdown();
+  
+  //gmail
+  guser = $("#gmailUser").val();
+  gpass = $("#gmailPass").val();
+  if ((settings.gmailUser === '') || (settings.gmailUser === undefined)) {
+      settings.gmailUser = '';
+  } else {
+      $("#gmailUser").val(settings.gmailUser);
+  }
+  if ((settings.gmailPass === '') || (settings.gmailPass === undefined)) {
+      settings.gmailPass = '';
+  }else {
+      $("#gmailPass").val(settings.gmailPass);
+  }
+  //disclaimer
+  $('#disclaimer').click(function(){
+      var msg = _("The following are terms and conditions for use of Ht5streamer including all \
+services offered.\n \
+\n \
+The service is offered to you conditioned on your acceptance without  \
+modification of the terms, conditions, and notices contained herein. By  \
+visiting and using Ht5streamer or any of its affiliate sites and \
+services, you are acknowledging your full compliance to the terms listed \
+here. \n \
+\n \
+Ht5streamer is based on its links to third party sites. The linked sites \
+are not under the control of Ht5streamer and Ht5streamer is not \
+responsible for the content of any linked sites or any links contained in a \
+linked site. Ht5streamer is providing these links to you only as a \
+convenience, and the inclusion of any link does not imply endorsement by \
+Ht5streamer of the site or any association with their operators. \n \
+\n \
+Ht5streamer's team do not assume any responsibility or liability for the \
+audio file, from completeness to legalities.\n \
+\n \
+Ht5streamer user agrees that Ht5streamer is hereby absolved from any and  \
+all liabilities, losses, costs and claims, including attorney's fees \
+asserted against Ht5streamer, its agents, officers, employees, or \
+associates, that may arise or result from any service provided, performed, \
+be agreed to be performed by Ht5streamer. \n \
+\n \
+Ht5streamer team makes no warranties, expressed or implied, for the \
+services we provide. Ht5streamer will not be held responsible for any \
+damages you or your business may suffer from using Ht5streamer services.\
+Ht5streamer will not be held responsible for any interruptions, delays, \
+failures, inaccuracies, or typographical errors \n \
+\n \
+Ht5streamer team does not represent or warrant that the Service or the \
+server that makes it available, are free of viruses or other harmful \
+components. Ht5streamer does not warrant or represent that the use or the \
+results of the use of the Service or the materials made available as part of \
+the Service will be correct, accurate, timely, or otherwise reliable \n\
+\n \
+Ht5streamer team reserves the right to update this policy at any time \
+without notice.");
+      alert(msg);
+  });
+  
+  //plugins
+  if (settings.plugins === undefined) {
+      settings.plugins = new Array();
+  } else {
+    var list = settings.plugins;
+    $.each(list,function(index,name) {
+        $('input[name='+name+']').attr('checked','checked');
+    });
+  }
+  // init
+  initCheck();
 });
 
 function getUserHome() {
@@ -222,7 +334,7 @@ function makeConfdir(confdir) {
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false}', function(err) {
+    fs.writeFile(confdir+'/ht5conf.json', '{"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false,"gmailUser":"","gmailPass":"","plugins":[]}', function(err) {
         if(err) {
             console.log(err);
 	    return;
@@ -329,14 +441,43 @@ function getIpaddress() {
 }
 
 function savePopConf() {
-	var fromPopup = settings.fromPopup;
+    var fromPopup = settings.fromPopup;
     settings.edit=false;
     settings.fromPopup = false;
+    var plugins_length = settings.plugins.length;
     var locale_changed = false;
     if (locale !== settings.locale) {
 		locale_changed= true;
 		settings.locale=locale;
 	}
+  //gmail
+  guser = $("#gmailUser").val();
+  gpass = $("#gmailPass").val();
+  if (settings.gmailUser === '') {
+      settings.gmailUser = guser;
+  }
+  if (settings.gmailPass === '') {
+      settings.gmailPass = gpass;
+  }
+  //plugins
+  var list = $('.pluginCheckBox');
+  settings.plugins = [];
+  $.each(list,function(index,plugin){
+      var name = $(this).attr('name');
+      if ($('input[name="'+name+'"]').is(':checked') === true) {
+        settings.plugins.push(name);
+      }
+      //reload plugins if needed
+      if (index+1 === list.length) {
+        if (fromPopup === true){
+          if(settings.plugins.length !== plugins_length) {
+              window.haveParent.window.settings=settings;
+              window.haveParent.window.reloadPlugins();
+          }
+        }
+      }
+  });
+  
     if (settings.download_dir === '') {
 		$('#download_path').val('REQUIRED!!!').css({'color':'red'});
 		return;
@@ -345,7 +486,6 @@ function savePopConf() {
         if(err) {
             console.log(err);
         } else {
-			console.log(confWin, window)
 			if (fromPopup === true){
 				if (locale_changed === true) {
 					window.haveParent.reload();
@@ -380,5 +520,16 @@ function saveSettings() {
             console.log(err);
         }
     });
+}
+
+// extend array
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+    return false;
 }
 

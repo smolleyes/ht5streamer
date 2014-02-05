@@ -203,8 +203,12 @@ function createRootNodes(cb) {
 		}).bind('before.jstree', function(event, data){
 			if(data.plugin == 'contextmenu'){
 				var settings = data.inst._get_settings();
-				if((data.inst._get_parent(data.args[0])==-1) || (data.args[0].id === '')){ 
-					settings.contextmenu.items.remove._disabled = true;
+				if((data.inst._get_parent(data.args[0])==-1) || (data.args[0].id === '')){
+          if (data.args[0].innerHTML.indexOf(_('Library')) === -1) {
+              settings.contextmenu.items.remove._disabled = false;
+          } else {
+              settings.contextmenu.items.remove._disabled = true;
+          }
 					settings.contextmenu.items.rename._disabled = true;
 					settings.contextmenu.items.create._disabled = false;
 				} else {

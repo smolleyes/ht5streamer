@@ -76,6 +76,9 @@ var wrench = require("wrench");
 var mega = require('mega');
 var exec = require("child_process").exec;
 var cp = require("child_process");
+var chdir = require('chdir');
+var gitpull = require('git-pull');
+var git = require('gift');
 
 //localize
 var i18n = require("i18n");
@@ -147,6 +150,7 @@ var transcodeArray = new Array('avi','flv','mkv','mpeg','mpg','wmv','wma','mov',
 var currentMedia;
 var currentAirMedia = {};
 var fn;
+var pluginsList = ['vimeo','grooveshark','mega-search','mega','mega-files','songza'];
 
 // settings
 var confDir;
@@ -319,14 +323,16 @@ try {
 
 
 $(document).ready(function(){
-    $('#main').append(htmlStr);
-    $('div.split-pane').splitPane();
+    $('#main').append(htmlStr).hide();
+    $('#loadingApp').empty().append('<img style="float:left;width:28px;height:28px;margin-right:10px;"src="images/spinner.gif" /><span>'+_("Loading ht5streamer...")+'</span>').show();
     // load plugins
     init();
-    
 });
 
 function main() {
+    $('#loadingApp').remove();
+    $('#main').show();
+    $('div.split-pane').splitPane();
     // load and hide catgories
     getCategories();
     // start keyevent listener
@@ -865,7 +871,6 @@ function main() {
     $('#song-title').empty().append(_('Stopped...'));
     //startSearch('');
     startMegaServer();
-
 }
 
 function AnimateRotate(angle) {
@@ -969,9 +974,9 @@ function initPlayer() {
   $(".mejs-overlay-loading").hide();
 	$('#song-title').empty().append(_('Stopped...'));
   try {
-    ffmpeg.kill('SIGKILL');
+    cleanffar();
   } catch(err) {
-    console.log("no ffmpeg process to kill...");
+    console.log(err);
   }
   try {
     $('#fbxMsg').remove();
@@ -979,26 +984,82 @@ function initPlayer() {
 }
 
 function init() {
-	pluginsDir = path.dirname(process.execPath)+'/plugins/';
-	wrench.readdirRecursive(pluginsDir, function (error, files) {
-		try {
-			$.each(files,function(index,file) {
-				if (file.match("node_modules") !== null) {
-					return;
-				}
-				var name = path.basename(file);
-				if (name == 'main.js') {
-					try {
-						var eng = require(pluginsDir+file);
-						engines[eng.engine_name] = eng;
-					} catch(err) {
-						console.log("can't load plugin "+file+", error:" + err)
-					}
-					// add entry to main gui menu
-					$('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
-				}
-			});
-		} catch(err) {}
+	pluginsDir = confDir+'/plugins/';
+  chdir(confDir, function() {
+      console.log('cwd[0]=' + confDir);
+      var simpleGit = require('simple-git');
+      gitpull('plugins', function (err, consoleOutput) {
+          if (err) {
+              $('#loadingApp span').empty().append(_('Downloading plugins...'));
+              git.clone('https://github.com/smolleyes/ht5streamer-plugins.git', pluginsDir, function(err,rep) {
+                  console.log(err,rep);
+                  loadApp();
+              });
+          } else {
+              console.log("Success!", consoleOutput);
+              loadApp();
+          }
+      });
+  });
+}
+
+function reloadPlugins() {
+  console.log('Reloading plugins');
+  $('#engines_select').empty();
+  $('#engines_select').append('<option value="youtube">Youtube</option>');
+  $('#engines_select').append('<option value="dailymotion">Dailymotion</option>');
+  var currentEngine = search_engine;
+  engines = {};
+  wrench.readdirRecursive(pluginsDir, function (error, files) {
+  try {
+    $.each(files,function(index,file) {
+      if (file.match("node_modules") !== null) {
+        return;
+      }
+      var name = path.basename(file);
+      if (name == 'main.js') {
+        try {
+          var eng = require(pluginsDir+file);
+          if ((pluginsList.contains(eng.engine_name.toLowerCase()) === false) || (settings.plugins.contains(eng.engine_name.toLowerCase()))) {
+            engines[eng.engine_name] = eng;
+            // add entry to main gui menu
+            $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
+          } 
+        } catch(err) {
+          console.log("can't load plugin "+file+", error:" + err)
+        }
+      }
+      if (index+1 === files.length) {
+          engine = currentEngine;
+          $("#engines_select option[value='"+currentEngine+"']").attr('selected','selected');
+      }
+    });
+  } catch(err) {}
+	});
+}
+
+function loadApp() {
+  wrench.readdirRecursive(pluginsDir, function (error, files) {
+  try {
+    $.each(files,function(index,file) {
+      if (file.match("node_modules") !== null) {
+        return;
+      }
+      var name = path.basename(file);
+      if (name == 'main.js') {
+        try {
+          var eng = require(pluginsDir+file);
+          if ((pluginsList.contains(eng.engine_name.toLowerCase()) === false) || (settings.plugins.contains(eng.engine_name.toLowerCase()))) {
+            engines[eng.engine_name] = eng;
+            // add entry to main gui menu
+            $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
+          }
+        } catch(err) {
+          console.log("can't load plugin "+file+", error:" + err)
+        }
+      }
+    });
+  } catch(err) {}
 	});
   main();
 }
@@ -2110,7 +2171,7 @@ function editSettings() {
             var new_win = gui.Window.open('config.html', {
               "position": 'center',
               "width": 680,
-              "height": 580,
+              "height": 670,
               "toolbar": false
             });
             new_win.on('close', function() {
@@ -2224,8 +2285,8 @@ function startStreaming(req,res) {
                   $(document).on("change","select#tvList",function(e) { \
                     $("select#tvList option:selected").each(function () { \
                       var link = $(this).val(); \
-                      $("#vlcLink").attr("href",link); \
-                      $("#vlcLink")[0].click(); \
+                      $("#vlcLink").attr("href",link).show(); \
+                      $("#vlcLink2").attr("href",decodeURIComponent(link.replace("vlc://",""))).show(); \
                     }); \
                   }); \
                 }); \
@@ -2242,14 +2303,14 @@ function startStreaming(req,res) {
                     var link =  'vlc://'+encodeURIComponent('http://'+req.headers["host"]+'/?file='+infos.link+'&tv');
                     html+='<option class="loadTv" value="'+link+'">'+infos.canal+' - '+infos.titre+'</option>';
                     if (index+1 === list.length) {
-                        html+='</select><p id="selectedChannel"></p><p id="videoLink"></p><a id="vlcLink" href="" style="display:none;"></a><br><br><p style="color:red">Sur android vous devez utiliser la derniere version de vlc disponible ici: <a href="http://nightlies.videolan.org/">vlc nightly build</a> (prenez la bonne version pour votre cpu)</p></body></html>';
+                        html+='</select><p id="selectedChannel"></p><p id="videoLink"></p><a id="vlcLink" href="" style="display:none;">Ouvrir directement dans vlc</a><br><a style="display:none;" id="vlcLink2" href="" style="">Lien de secours à copier dans vlc</a><br><br><p style="color:red">Sur android vous devez utiliser la derniere version de vlc disponible ici: <a href="http://nightlies.videolan.org/">vlc nightly build</a> (prenez la bonne version pour votre cpu)</p></body></html>';
                         res.writeHead(200,{'Content-type': 'text/html'});
                         res.end(html, 'utf-8');
                         return;
                     }
                   } else{
                       if (index+1 === list.length) {
-                        html+='</select><p id="selectedChannel"></p><p id="videoLink"></p><a id="vlcLink" href="" style="display:none;"></a><br><br><p style="color:red">Sur android vous devez utiliser la derniere version de vlc disponible ici: <a href="http://nightlies.videolan.org/">vlc nightly build</a> (prenez la bonne version pour votre cpu)</p></body></html>';
+                        html+='</select><p id="selectedChannel"></p><p id="videoLink"></p><a id="vlcLink" href="" style="display:none;">Ouvrir directement dans vlc</a><br><a style="display:none;" id="vlcLink2" href="" style="">Lien de secours à copier dans vlc</a><br><br><p style="color:red">Sur android vous devez utiliser la derniere version de vlc disponible ici: <a href="http://nightlies.videolan.org/">vlc nightly build</a> (prenez la bonne version pour votre cpu)</p></body></html>';
                         res.writeHead(200,{'Content-type': 'text/html'});
                         res.end(html, 'utf-8');
                         return;

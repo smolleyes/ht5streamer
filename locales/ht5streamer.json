@@ -98,5 +98,13 @@
 	"Update files list...": "Update files list...",
 	"Updating...": "Updating...",
 	"Stopped...": "Stopped...",
-	"Your mega.co link is valid but can't be played yet, (wait a few minutes...)": "Your mega.co link is valid but can't be played yet, (wait a few minutes...)"
+  "Open mega link": "Open mega link",
+	"File not available on mega.co...": "File not available on mega.co...",
+	"<p>Around %s results found </p>": "<p>Around %s results found </p>",
+	"Your mega.co link is valid but can't be played yet, (wait a few minutes...)": "Your mega.co link is valid but can't be played yet, (wait a few minutes...)",
+  "Loading ht5streamer...": "Loading ht5streamer...",
+	"Downloading plugins...": "Downloading plugins...",
+  "<b><u>Gmail account (optional... used to report some errors) : </u></b>":"<b><u>Gmail account (optional... used to report some errors) : </u></b>",
+  "Username: ":"Username: ",
+  "Password: ":"Password: "
 }

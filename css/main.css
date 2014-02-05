@@ -18,6 +18,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
+.ItemInput,.ItemCheckbox, ItemCheckbox > label{
+    display:inline-block;
+    vertical-align:top;
+    line-height:14px;
+}
+
+.ItemCheckbox, ItemCheckbox > label {
+    margin-left:10px; /* Or whatever you want */
+    line-height:14px;
+}
+
+.pluginCheckBox {
+  position: relative;
+  top: 8px;
+}
+
 #mep_0 {
   overflow:auto;
   color:white ! important;
@@ -344,7 +360,7 @@ height : calc(100% - 37px) !important;
 }
 
 
-#download_path {
+#download_path, #gmailUser, #gmailPass {
     position: absolute;
     left:200px;
     width:305px;
