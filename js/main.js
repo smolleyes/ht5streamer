@@ -77,8 +77,8 @@ var mega = require('mega');
 var exec = require("child_process").exec;
 var cp = require("child_process");
 var chdir = require('chdir');
-var gitpull = require('git-pull');
-var git = require('gift');
+var AdmZip = require('adm-zip');
+var util = require('util');
 
 //localize
 var i18n = require("i18n");
@@ -984,24 +984,65 @@ function initPlayer() {
 }
 
 function init() {
-	pluginsDir = confDir+'/plugins/';
+	pluginsDir = confDir+'/plugins/ht5streamer-plugins-master/';
   chdir(confDir, function() {
       console.log('cwd[0]=' + confDir);
-      var simpleGit = require('simple-git');
-      gitpull('plugins', function (err, consoleOutput) {
-          if (err) {
-              $('#loadingApp span').empty().append(_('Downloading plugins...'));
-              git.clone('https://github.com/smolleyes/ht5streamer-plugins.git', pluginsDir, function(err,rep) {
-                  console.log(err,rep);
-                  loadApp();
-              });
-          } else {
-              console.log("Success!", consoleOutput);
-              loadApp();
-          }
-      });
+      $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
+			var lastRev = $('.sha',res).text();
+			console.log(lastRev);
+			fs.exists(confDir+'/rev.txt', function (exists) {
+			  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
+			});
+	  });
   });
 }
+
+function writeRevFile(lastRev) {
+	console.log("Creating rev file...");
+	fs.writeFile(confDir+'/rev.txt', lastRev, { overwrite: true },function (err) {
+	  if (err) return console.log(err);
+	  console.log(lastRev +' > rev.txt');
+	  updatePlugins('https://github.com/smolleyes/ht5streamer-plugins/archive/master.zip');
+	});
+}
+
+function compareRev(lastRev){
+	console.log("Compare rev file...");
+	fs.readFile(confDir+'/rev.txt', function (err, data) {
+		if (err) throw err;
+		var rev = data.toString();
+		if(rev === lastRev) {
+			loadApp();
+		} else {
+			updatePlugins('https://github.com/smolleyes/ht5streamer-plugins/archive/master.zip');
+		}
+	});
+}
+
+function updatePlugins(url) {
+	console.log("Updating plugins");
+	$('#loadingApp span').empty().append(_('Downloading plugins...'));
+	var req = https.request(url);
+	req.on('response', function(resp){
+		if (resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location) {
+			return updatePlugins(resp.headers.location);
+		}
+		var file = fs.createWriteStream(confDir+'/master.zip',{flags: 'w'});
+		resp.on('data', function(chunk){
+			file.write(chunk);
+		}).on("end", function(e) {
+			console.log("update terminated");
+			file.end();
+			var zip = new AdmZip(confDir+'/master.zip');
+			zip.extractAllTo(confDir+"/plugins",true);
+			loadApp();
+		});
+	}).on("error", function(e){
+		console.log("Got error: " + e.message);
+	});
+	req.end();
+}
+
 
 function reloadPlugins() {
   console.log('Reloading plugins');
