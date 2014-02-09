@@ -79,6 +79,7 @@ var cp = require("child_process");
 var chdir = require('chdir');
 var AdmZip = require('adm-zip');
 var util = require('util');
+var deviceType = require('ua-device-type');
 
 //localize
 var i18n = require("i18n");
@@ -989,7 +990,6 @@ function init() {
       console.log('cwd[0]=' + confDir);
       $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
 			var lastRev = $('.sha',res).text();
-			console.log(lastRev);
 			fs.exists(confDir+'/rev.txt', function (exists) {
 			  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
 			});
@@ -1014,7 +1014,7 @@ function compareRev(lastRev){
 		if(rev === lastRev) {
 			loadApp();
 		} else {
-			updatePlugins('https://github.com/smolleyes/ht5streamer-plugins/archive/master.zip');
+			writeRevFile(lastRev);
 		}
 	});
 }
@@ -2302,7 +2302,8 @@ function startStreaming(req,res) {
       var link;
       var megaSize;
       var parsedLink = decodeURIComponent(url.parse(req.url).href);
-      //if (req.headers['user-agent'].indexOf('Mobile') !== -1) {
+      var device = deviceType(req.headers['user-agent']);
+      console.log("Device: " + device);
       try {
         cleanffar();
       } catch(err) {

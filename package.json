@@ -1,15 +1,18 @@
 {
-"name":"ht5streamer",
-"main":"config.html",
-"user-agent":"Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.48 Safari/537.36",
-"window": {
+  "name": "ht5streamer",
+  "main": "config.html",
+  "user-agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.48 Safari/537.36",
+  "window": {
     "toolbar": false,
     "width": 1300,
     "height": 670,
     "position": "center",
     "min_width": 588,
     "min_height": 200,
-    "title":"ht5streamer",
+    "title": "ht5streamer",
     "show": false
+  },
+  "dependencies": {
+    "mobile-detect": "~0.1.0"
   }
 }
