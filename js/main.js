@@ -2283,9 +2283,7 @@ function startMegaServer() {
       megaServer.close();
     } catch(err) {
       megaServer = http.createServer(function (req, res) {
-        console.log(req.url)
         if((req.url !== "/favicon.ico") && (req.url !== "/")) {
-          console.log(tvLink);
             tvLink = req.url;
             startStreaming(req,res);
         }
@@ -2313,11 +2311,6 @@ function startStreaming(req,res) {
           console.log("tv freebox demandée");
           device='other';
           host='http://'+req.headers['host'];
-          if (req.headers["user-agent"].indexOf('iPhone') !== -1) {
-            device='iphone';
-          } else if ((req.headers["user-agent"].indexOf('iPad') !== -1) || (req.headers["user-agent"].indexOf('GT-') !== -1)) {
-            device='tablette';
-          }
           var list;
           $.get('http://mafreebox.freebox.fr/freeboxtv/playlist.m3u',function(resp){
               list = resp.split('#EXTINF');
@@ -2326,7 +2319,9 @@ function startStreaming(req,res) {
               <script>$(document).on("ready",function() { \
                   $(document).on("change","select#tvList",function(e) { \
                     $("select#tvList option:selected").each(function () { \
-                      var link = $(this).val(); \
+                      var width = screen.width; \
+                      var height = screen.height; \
+                      var link = $(this).val()+"&screen="+width+"x"+height; \
                       $("#vlcLink").attr("href",link).show(); \
                       $("#vlcLink2").attr("href",decodeURIComponent(link.replace("vlc://",""))).show(); \
                     }); \
@@ -2365,16 +2360,30 @@ function startStreaming(req,res) {
           });
       }
       var linkParams = parsedLink.split('&');
-      if (baseLink.indexOf('&tv') !== -1) {
-        var link = decodeURIComponent(url.parse(req.url).href).replace('/?file=','').replace('&tv','');
+      var swidth;
+      var sheight;
+      if (device === 'phone') {
+        if (parseInt(swidth) > 800) {
+            device = 'tablet';
+        } 
+      }
+      try {
+        swidth = linkParams.slice(-1)[0].replace('screen=',"").split('x')[0];
+        sheight = linkParams.slice(-1)[0].replace('screen=',"").split('x')[1];
+      } catch(err) {
+        swidth=640;
+        sheight=480;
+      }
+      if (parsedLink.indexOf('&tv') !== -1) {
+        var link = parsedLink.replace('/?file=','').replace(/&tv(.*)/,'');
         tv = true;
       } else {
         var link = linkParams[0].replace('/?file=','');
       }
-      if (baseLink.indexOf('&key') !== -1){
+      if (parsedLink.indexOf('&key') !== -1){
         megaKey = linkParams[1].replace('key=','');
       }
-      if (baseLink.indexOf('&size') !== -1){
+      if (parsedLink.indexOf('&size') !== -1){
         megaSize = linkParams[2].replace('size=','');
       }
       var megaName = $('#song-title').text().replace(_('Playing: '),'');
@@ -2384,23 +2393,23 @@ function startStreaming(req,res) {
           res.writeHead(200, {'Content-Type': 'video/mp4', 'Connection': 'keep-alive'});
           var args;
           host = req.headers['host'];
-          if (device === "iphone") {
+          if (device === "phone") {
             if (host.indexOf('192.') !== -1) {
-              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "800k",'-c:a', 'libvorbis','-s','432x320', '-b:a','256k', '-threads', '0', '-'];
+              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis','-s',swidth+'x'+sheight, '-b:a','192k', '-threads', '0', '-'];
             } else {
-              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "180k",'-c:a', 'libvorbis','-s','432x320', '-b:a','128k', '-threads', '0', '-'];
+              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "256k",'-c:a', 'libvorbis','-s',swidth+'x'+sheight, '-b:a','128k', '-threads', '0', '-'];
             }
-          } else if (device === 'tablette') {
+          } else if (device === 'tablet') {
             if (host.indexOf('192.') !== -1) {
-              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "800k",'-c:a', 'libvorbis','-s','1024x768', '-b:a','256k', '-threads', '0', '-'];
+              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "800k",'-c:a', 'libvorbis','-s',swidth+'x'+sheight, '-b:a','192k', '-threads', '0', '-'];
             } else {
-              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "480k",'-c:a', 'libvorbis','-s','1024x768', '-b:a','128k', '-threads', '0', '-'];
+              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis','-s',swidth+'x'+sheight, '-b:a','128k', '-threads', '0', '-'];
             }
           } else {
             if (host.indexOf('192.') !== -1) {
-              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "800k",'-c:a', 'libvorbis','-s','1024x768', '-b:a','256k', '-threads', '0', '-'];
+              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis','-s',swidth+'x'+sheight, '-b:a','192k', '-threads', '0', '-'];
             } else {
-              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "180k",'-c:a', 'libvorbis','-s','432x320', '-b:a','128k', '-threads', '0', '-'];
+              args = ['-i',link,'-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "256k",'-c:a', 'libvorbis','-s',swidth+'x'+sheight, '-b:a','128k', '-threads', '0', '-'];
             }
           }
           if (process.platform === 'win32') {
@@ -2432,8 +2441,7 @@ function startStreaming(req,res) {
       }
       // if local file
       if (link.indexOf('file:') !== -1) {
-        console.log('megaServer: '+link);
-        var ffmpeg = spawnFfmpeg('',function (code) { // exit
+        var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
                     console.log('child process exited with code ' + code);
                     res.end();
           });
@@ -2456,9 +2464,9 @@ function startStreaming(req,res) {
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
         console.log('LIEN USER MEGA....');
-        if ((videoArray.contains(megaType)) && (baseLink.indexOf('&download') === -1)) {
-          if (baseLink.indexOf('&direct') === -1){
-            var ffmpeg = spawnFfmpeg('',function (code) { // exit
+        if ((videoArray.contains(megaType)) && (parsedLink.indexOf('&download') === -1)) {
+          if (parsedLink.indexOf('&direct') === -1){
+            var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
                     console.log('child process exited with code ' + code);
                     res.end();
             });
@@ -2487,6 +2495,7 @@ function startStreaming(req,res) {
         }
       //normal mega link
       } else {
+        console.log("opening file: "+ link);
         var file = mega.file(link).loadAttributes(function(err, file) {
           try {
               megaSize = file.size;
@@ -2502,11 +2511,11 @@ function startStreaming(req,res) {
               initPlayer();
               return;
           }
-          if ((videoArray.contains(megaType)) && (baseLink.indexOf('&download') === -1)) {
+          if ((videoArray.contains(megaType)) && (parsedLink.indexOf('&download') === -1)) {
             $('#song-title').empty().html(_('Playing: ')+megaName);
-            if (baseLink.indexOf('&direct') === -1){
+            if (parsedLink.indexOf('&direct') === -1){
                 console.log('playing movie with transcoding');
-                var ffmpeg = spawnFfmpeg('',function (code) { // exit
+                var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
                   console.log('child process exited with code ' + code);
                   res.end();
                 });
@@ -2668,12 +2677,37 @@ function downloadFromMega(link,key,size) {
   return stream
 }
 
-function spawnFfmpeg(link,exitCallback) {
-  if (link === '') {
-    var args = ['-i','pipe:0','-f', 'matroska', '-vcodec', 'libx264', '-acodec', 'libvorbis','-threads', '0', 'pipe:1'];
+function spawnFfmpeg(link,device,host,exitCallback) {
+  console.log(link,device,host)
+  if (host === undefined) {
+    //local file...
+    args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-threads', '0', 'pipe:1'];
   } else {
-    //var args = ['-i', link, '-lavdopts','lowres=1:fast:skiploopfilter=all','-f', 'matroska', '-vcodec', 'libx264', '-acodec', 'libvorbis','-threads', '0', 'pipe:0'];
-    var args = ['-i',link,'-f', 'matroska','-vcodec', 'libx264', '-acodec', 'libvorbis','-s','320x240', '-b:v', '180k', '-ac', '1', '-ab', '48k', '-threads', '0', '-'];
+    if (device === "phone") {
+      if (host.indexOf('192.') !== -1) {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis','-b:a','192k', '-threads', '0', 'pipe:1'];
+        } else {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "256k",'-c:a', 'libvorbis','-b:a','128k', '-threads', '0', 'pipe:1'];
+        }
+    } else if (device === 'tablet') {
+        if (host.indexOf('192.') !== -1) {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "800k",'-c:a', 'libvorbis','-b:a','192k', '-threads', '0', 'pipe:1'];
+        } else {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis','-b:a','128k', '-threads', '0', 'pipe:1'];
+        }
+    } else if (device === 'desktop') {
+        if (host.indexOf('192.') !== -1) {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-threads', '0', 'pipe:1'];
+        } else {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        }
+    } else {
+        if (host.indexOf('192.') !== -1) {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "512k",'-c:a', 'libvorbis','-b:a','192k', '-threads', '0', 'pipe:1'];
+        } else {
+          args = ['-i','pipe:0','-f', 'matroska','-sn','-c:v', 'libx264', "-b:v", "256k",'-c:a', 'libvorbis','-b:a','128k', '-threads', '0', 'pipe:1'];
+        }
+    }
   }
   if (process.platform === 'win32') {
       ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
@@ -2699,14 +2733,6 @@ function cleanffar() {
         ffar = [];
       }
     });
-}
-
-function playTv() {
-    var f={};
-    var url = 'rtsp://mafreebox.freebox.fr/fbxtv_pub/stream?namespace=1&service=201&flavour=ld&tv';
-    f.title='france2';
-    f.link = 'http://'+ipaddress+':8888/?file='+url;
-    startPlay(f);
 }
 
 // extend array

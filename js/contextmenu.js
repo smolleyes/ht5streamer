@@ -116,6 +116,7 @@ $(document).ready(function() {
 		var vlink = $(this).attr('alt');
     f={}
     f.link='http://'+ipaddress+':8888/?file='+encodeURIComponent(vlink);
+    f.title='';
     startPlay(f);
 		$('#custom-menu').hide();
 	});
