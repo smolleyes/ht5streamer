@@ -20,7 +20,9 @@ var i18n = require("i18n");
 var _ = i18n.__;
 var localeList = ['en', 'fr'];
 var locale = 'en';
+var util = require('util');
 // settings
+var fileList;
 
 var confDir;
 if (process.platform === 'win32') {
@@ -178,11 +180,10 @@ function loadLocalDb() {
 	});	
 }
 
-
-function scanForDirs(dir,parent) {
+function scanForDirs(dir,parent,list) {
 	try {
 		fs.readdir(dir, function (error, files) {
-			$.each(files,function(err,file) {
+			$.each(files,function(index,file) {
 				var target = dir+'/'+file;
 				if (fs.lstatSync(target).isDirectory()) {
 					var id = Math.floor(Math.random()*1000000);
@@ -192,11 +193,11 @@ function scanForDirs(dir,parent) {
 						"children" : []
 					}
 					$("#fileBrowserContent").jstree("create", $("#"+parent+"_rootnode"), "inside", obj, function() {}, true);
-					scanForDirs(target,id);
+					scanForDirs(target,id,list);
 				} else {
 					var id = Math.floor(Math.random()*1000000);
 					var ext = path.extname(file);
-					if ((ext === '.webm') || (ext === '.mp4') || (ext === '.wav') || (ext === '.mpg') || (ext === '.avi') || (ext === '.mpeg') || (ext === '.mkv') || (ext === '.mp3') || (ext === '.ogg')) {
+					if ((ext === '.webm') || (ext === '.mp4') || (ext === '.wav') || (ext === '.mpg') || (ext === '.opus') || (ext === '.avi') || (ext === '.mpeg') || (ext === '.mkv') || (ext === '.mp3') || (ext === '.ogg')) {
 							var obj = {
 							"attr" : { "id" : id },
 							"icon" : "js/jstree/themes/default/movie_file.png",
@@ -206,7 +207,7 @@ function scanForDirs(dir,parent) {
 							}
 						}
 					} else {
-						return;
+						return true;
 					}
 					$("#fileBrowserContent").jstree("create", $("#"+parent+"_rootnode"), "inside",  obj, function() { }, true);
 					$("#fileBrowserContent").jstree('close_all');

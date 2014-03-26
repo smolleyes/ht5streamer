@@ -25,6 +25,8 @@ $(document).ready(function() {
         var text = clipboard.get('text');
         if (text.indexOf('https://mega.co.nz') !== -1) {
             $('#custom-menu ol').empty().append('<li><a id="mega_link" href="#" alt="'+text+'">'+_("Open mega link")+'</a></li>');
+        } else if (text.indexOf('.torrent') !== -1){
+            $('#custom-menu ol').empty().append('<li><a id="torrent_link" href="#" alt="'+text+'">'+_("Open Torrent")+'</a></li>');
         }
   });
 	$(document).on("rightclick", ".start_video", function(e) {
@@ -120,6 +122,18 @@ $(document).ready(function() {
     startPlay(f);
 		$('#custom-menu').hide();
 	});
+  // open torrent link
+	$(document).on('click','#torrent_link',function(e) {
+		e.preventDefault();
+		var vlink = $(this).attr('alt');
+    if(vlink.indexOf('file://') !== -1) {
+      vlink = decodeURIComponent(vlink).replace("file://",'');
+    }
+    console.log(vlink);
+    getTorrent(vlink);
+		$('#custom-menu').hide();
+	});
+  
   
 	// copy link
 	$(document).on('click','#copy_link',function(e) {

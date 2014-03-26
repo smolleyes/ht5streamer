@@ -1,0 +1,244 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'buffertools' ]
+2 info using npm@1.3.15
+3 info using node@v0.11.9
+4 warn package.json ht5streamer@ No repository field.
+5 warn package.json crypto@0.0.3 crypto is also the name of a node core module.
+6 warn package.json util@0.4.9 util is also the name of a node core module.
+7 warn package.json zlib@1.0.5 zlib is also the name of a node core module.
+8 verbose readDependencies using package.json deps
+9 verbose cache add [ 'buffertools', null ]
+10 verbose cache add name=undefined spec="buffertools" args=["buffertools",null]
+11 verbose parsed url { protocol: null,
+11 verbose parsed url   slashes: null,
+11 verbose parsed url   auth: null,
+11 verbose parsed url   host: null,
+11 verbose parsed url   port: null,
+11 verbose parsed url   hostname: null,
+11 verbose parsed url   hash: null,
+11 verbose parsed url   search: null,
+11 verbose parsed url   query: null,
+11 verbose parsed url   pathname: 'buffertools',
+11 verbose parsed url   path: 'buffertools',
+11 verbose parsed url   href: 'buffertools' }
+12 silly lockFile 01c6fc88-buffertools buffertools
+13 verbose lock buffertools /home/smo/.npm/01c6fc88-buffertools.lock
+14 silly lockFile 01c6fc88-buffertools buffertools
+15 silly lockFile 01c6fc88-buffertools buffertools
+16 verbose addNamed [ 'buffertools', '' ]
+17 verbose addNamed [ null, '*' ]
+18 silly lockFile 192bcd32-buffertools buffertools@
+19 verbose lock buffertools@ /home/smo/.npm/192bcd32-buffertools.lock
+20 silly addNameRange { name: 'buffertools', range: '*', hasData: false }
+21 verbose url raw buffertools
+22 verbose url resolving [ 'https://registry.npmjs.org/', './buffertools' ]
+23 verbose url resolved https://registry.npmjs.org/buffertools
+24 info trying registry request attempt 1 at 14:32:01
+25 http GET https://registry.npmjs.org/buffertools
+26 http 200 https://registry.npmjs.org/buffertools
+27 silly registry.get cb [ 200,
+27 silly registry.get   { date: 'Wed, 26 Mar 2014 13:32:00 GMT',
+27 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R14B04)',
+27 silly registry.get     etag: '"52OSSG94PY8MJ5VMBTKTWZXRR"',
+27 silly registry.get     'content-type': 'application/json',
+27 silly registry.get     via: '1.1 varnish',
+27 silly registry.get     'cache-control': 'max-age=1',
+27 silly registry.get     'content-length': '24636',
+27 silly registry.get     'accept-ranges': 'bytes',
+27 silly registry.get     age: '3059',
+27 silly registry.get     'x-served-by': 'cache-v42-ASH, cache-fra1230-FRA',
+27 silly registry.get     'x-cache': 'MISS, MISS',
+27 silly registry.get     'x-cache-hits': '0, 0',
+27 silly registry.get     'x-timer': 'S1395821148.131288290,VS0,VS-248,VE-154,VE19572154',
+27 silly registry.get     vary: 'Accept',
+27 silly registry.get     connection: 'close' } ]
+28 silly addNameRange number 2 { name: 'buffertools', range: '*', hasData: true }
+29 silly addNameRange versions [ 'buffertools',
+29 silly addNameRange   [ '1.0.0',
+29 silly addNameRange     '1.0.1',
+29 silly addNameRange     '1.0.2',
+29 silly addNameRange     '1.0.3',
+29 silly addNameRange     '1.0.4',
+29 silly addNameRange     '1.0.5',
+29 silly addNameRange     '1.0.6',
+29 silly addNameRange     '1.0.7',
+29 silly addNameRange     '1.0.8',
+29 silly addNameRange     '1.0.9',
+29 silly addNameRange     '1.1.0',
+29 silly addNameRange     '1.1.1',
+29 silly addNameRange     '2.0.0',
+29 silly addNameRange     '2.0.1',
+29 silly addNameRange     '2.1.0',
+29 silly addNameRange     '2.1.1' ] ]
+30 verbose addNamed [ 'buffertools', '2.1.1' ]
+31 verbose addNamed [ '2.1.1', '2.1.1' ]
+32 silly lockFile cec9332a-buffertools-2-1-1 buffertools@2.1.1
+33 verbose lock buffertools@2.1.1 /home/smo/.npm/cec9332a-buffertools-2-1-1.lock
+34 silly lockFile 53cc5574-uffertools-buffertools-2-1-1-tgz https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz
+35 verbose lock https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz /home/smo/.npm/53cc5574-uffertools-buffertools-2-1-1-tgz.lock
+36 verbose addRemoteTarball [ 'https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz',
+36 verbose addRemoteTarball   '10d54433f27ef419e845338a3c6bc6dd2c1f311c' ]
+37 info retry fetch attempt 1 at 14:32:02
+38 verbose fetch to= /home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/tmp.tgz
+39 http GET https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz
+40 http 200 https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz
+41 verbose tar unpack /home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/tmp.tgz
+42 silly lockFile aed39f9a-2011-0-22547107422724366-package tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+43 verbose lock tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package /home/smo/.npm/aed39f9a-2011-0-22547107422724366-package.lock
+44 silly lockFile b405769f-2011-0-22547107422724366-tmp-tgz tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/tmp.tgz
+45 verbose lock tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/tmp.tgz /home/smo/.npm/b405769f-2011-0-22547107422724366-tmp-tgz.lock
+46 silly gunzTarPerm modes [ '755', '644' ]
+47 silly gunzTarPerm extractEntry package.json
+48 silly gunzTarPerm extractEntry .npmignore
+49 silly gunzTarPerm extractEntry README.md
+50 silly gunzTarPerm extractEntry LICENSE
+51 silly gunzTarPerm extractEntry buffertools.js
+52 silly gunzTarPerm extractEntry test.js
+53 silly gunzTarPerm extractEntry binding.gyp
+54 silly gunzTarPerm extractEntry buffertools.cc
+55 silly gunzTarPerm extractEntry .mailmap
+56 silly gunzTarPerm extractEntry AUTHORS
+57 silly gunzTarPerm extractEntry BoyerMoore.h
+58 silly gunzTarPerm extractEntry wscript
+59 silly lockFile aed39f9a-2011-0-22547107422724366-package tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+60 silly lockFile aed39f9a-2011-0-22547107422724366-package tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+61 silly lockFile b405769f-2011-0-22547107422724366-tmp-tgz tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/tmp.tgz
+62 silly lockFile b405769f-2011-0-22547107422724366-tmp-tgz tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/tmp.tgz
+63 verbose tar pack [ '/home/smo/.npm/buffertools/2.1.1/package.tgz',
+63 verbose tar pack   '/home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package' ]
+64 verbose tarball /home/smo/.npm/buffertools/2.1.1/package.tgz
+65 verbose folder /home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+66 silly lockFile aed39f9a-2011-0-22547107422724366-package tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+67 verbose lock tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package /home/smo/.npm/aed39f9a-2011-0-22547107422724366-package.lock
+68 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+69 verbose lock tar:///home/smo/.npm/buffertools/2.1.1/package.tgz /home/smo/.npm/57b660ec-pm-buffertools-2-1-1-package-tgz.lock
+70 silly lockFile aed39f9a-2011-0-22547107422724366-package tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+71 silly lockFile aed39f9a-2011-0-22547107422724366-package tar:///home/smo/tmp/npm-28770-9QJ5nM_G/1395840722011-0.22547107422724366/package
+72 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+73 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+74 silly lockFile e0cb8013-mo-npm-buffertools-2-1-1-package /home/smo/.npm/buffertools/2.1.1/package
+75 verbose lock /home/smo/.npm/buffertools/2.1.1/package /home/smo/.npm/e0cb8013-mo-npm-buffertools-2-1-1-package.lock
+76 silly lockFile e0cb8013-mo-npm-buffertools-2-1-1-package /home/smo/.npm/buffertools/2.1.1/package
+77 silly lockFile e0cb8013-mo-npm-buffertools-2-1-1-package /home/smo/.npm/buffertools/2.1.1/package
+78 verbose tar unpack /home/smo/.npm/buffertools/2.1.1/package.tgz
+79 silly lockFile 0074965d-mo-npm-buffertools-2-1-1-package tar:///home/smo/.npm/buffertools/2.1.1/package
+80 verbose lock tar:///home/smo/.npm/buffertools/2.1.1/package /home/smo/.npm/0074965d-mo-npm-buffertools-2-1-1-package.lock
+81 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+82 verbose lock tar:///home/smo/.npm/buffertools/2.1.1/package.tgz /home/smo/.npm/57b660ec-pm-buffertools-2-1-1-package-tgz.lock
+83 silly gunzTarPerm modes [ '755', '644' ]
+84 silly gunzTarPerm extractEntry package.json
+85 silly gunzTarPerm extractEntry .npmignore
+86 silly gunzTarPerm extractEntry README.md
+87 silly gunzTarPerm extractEntry LICENSE
+88 silly gunzTarPerm extractEntry buffertools.js
+89 silly gunzTarPerm extractEntry test.js
+90 silly gunzTarPerm extractEntry binding.gyp
+91 silly gunzTarPerm extractEntry buffertools.cc
+92 silly gunzTarPerm extractEntry .mailmap
+93 silly gunzTarPerm extractEntry AUTHORS
+94 silly gunzTarPerm extractEntry BoyerMoore.h
+95 silly gunzTarPerm extractEntry wscript
+96 silly lockFile 0074965d-mo-npm-buffertools-2-1-1-package tar:///home/smo/.npm/buffertools/2.1.1/package
+97 silly lockFile 0074965d-mo-npm-buffertools-2-1-1-package tar:///home/smo/.npm/buffertools/2.1.1/package
+98 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+99 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+100 verbose chmod /home/smo/.npm/buffertools/2.1.1/package.tgz 644
+101 verbose chown /home/smo/.npm/buffertools/2.1.1/package.tgz [ 1000, 1000 ]
+102 silly lockFile 53cc5574-uffertools-buffertools-2-1-1-tgz https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz
+103 silly lockFile 53cc5574-uffertools-buffertools-2-1-1-tgz https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz
+104 silly lockFile cec9332a-buffertools-2-1-1 buffertools@2.1.1
+105 silly lockFile cec9332a-buffertools-2-1-1 buffertools@2.1.1
+106 silly lockFile 192bcd32-buffertools buffertools@
+107 silly lockFile 192bcd32-buffertools buffertools@
+108 silly resolved [ { name: 'buffertools',
+108 silly resolved     main: 'buffertools',
+108 silly resolved     version: '2.1.1',
+108 silly resolved     keywords: [ 'buffer', 'buffers' ],
+108 silly resolved     description: 'Working with node.js buffers made easy.',
+108 silly resolved     homepage: 'https://github.com/bnoordhuis/node-buffertools',
+108 silly resolved     author:
+108 silly resolved      { name: 'Ben Noordhuis',
+108 silly resolved        email: 'info@bnoordhuis.nl',
+108 silly resolved        url: 'http://bnoordhuis.nl/' },
+108 silly resolved     repository:
+108 silly resolved      { type: 'git',
+108 silly resolved        url: 'https://github.com/bnoordhuis/node-buffertools.git' },
+108 silly resolved     engines: { node: '>=0.3.0' },
+108 silly resolved     scripts: { test: 'node test.js', install: 'node-gyp rebuild' },
+108 silly resolved     license: 'ISC',
+108 silly resolved     readmeFilename: 'README.md',
+108 silly resolved     gypfile: true,
+108 silly resolved     contributors: [ [Object], [Object], [Object], [Object], [Object] ],
+108 silly resolved     readme: '# node-buffertools\n\nUtilities for manipulating buffers.\n\n## Installing the module\n\nEasy! With [npm](http://npmjs.org/):\n\n\tnpm install buffertools\n\nFrom source:\n\n\tnode-gyp configure\n\tnode-gyp build\n\nNow you can include the module in your project.\n\n\trequire(\'buffertools\').extend();  // extend Buffer.prototype\n\tvar buf = new Buffer(42);         // create a 42 byte buffer\n\tbuf.clear();                      // clear it!\n\nIf you don\'t want to extend the Buffer class\'s prototype (recommended):\n\n\tvar buffertools = require(\'buffertools\');\n\tvar buf = new Buffer(42);\n\tbuffertools.clear(buf);\n\n## Methods\n\nNote that most methods that take a buffer as an argument, will also accept a string.\n\n### buffertools.extend([object], [object...])\n\nExtend the arguments with the buffertools methods.  If called without arguments,\ndefaults to `[Buffer.prototype, SlowBuffer.prototype]`.  Extending prototypes\nonly makes sense for classes that derive from `Buffer`.\n\nbuffertools v1.x extended the `Buffer` prototype by default.  In v2.x, it is\nopt-in.  The reason for that is that buffertools was originally developed for\nnode.js v0.3 (or maybe v0.2, I don\'t remember exactly when buffers were added)\nwhere the `Buffer` class was devoid of any useful methods.  Over the years, it\nhas grown a number of utility methods, some of which conflict with the\nbuffertools methods of the same name, like `Buffer#fill()`.\n\n### Buffer#clear()\n### buffertools.clear(buffer)\n\nClear the buffer. This is equivalent to `Buffer#fill(0)`.\nReturns the buffer object so you can chain method calls.\n\n### Buffer#compare(buffer|string)\n### buffertools.compare(buffer, buffer|string)\n\nLexicographically compare two buffers. Returns a number less than zero\nif a < b, zero if a == b or greater than zero if a > b.\n\nBuffers are considered equal when they are of the same length and contain\nthe same binary data.\n\nSmaller buffers are considered to be less than larger ones. Some buffers\nfind this hurtful.\n\n### Buffer#concat(a, b, c, ...)\n### buffertools.concat(a, b, c, ...)\n\nConcatenate two or more buffers/strings and return the result. Example:\n\n\t// identical to new Buffer(\'foobarbaz\')\n\ta = new Buffer(\'foo\');\n\tb = new Buffer(\'bar\');\n\tc = a.concat(b, \'baz\');\n\tconsole.log(a, b, c); // "foo bar foobarbaz"\n\n\t// static variant\n\tbuffertools.concat(\'foo\', new Buffer(\'bar\'), \'baz\');\n\n### Buffer#equals(buffer|string)\n### buffertools.equals(buffer, buffer|string)\n\nReturns true if this buffer equals the argument, false otherwise.\n\nBuffers are considered equal when they are of the same length and contain\nthe same binary data.\n\nCaveat emptor: If your buffers contain strings with different character encodings,\nthey will most likely *not* be equal.\n\n### Buffer#fill(integer|string|buffer)\n### buffertools.fill(buffer, integer|string|buffer)\n\nFill the buffer (repeatedly if necessary) with the argument.\nReturns the buffer object so you can chain method calls.\n\n### Buffer#fromHex()\n### buffertools.fromHex(buffer)\n\nAssumes this buffer contains hexadecimal data (packed, no whitespace)\nand decodes it into binary data. Returns a new buffer with the decoded\ncontent. Throws an exception if non-hexadecimal data is encountered.\n\n### Buffer#indexOf(buffer|string, [start=0])\n### buffertools.indexOf(buffer, buffer|string, [start=0])\n\nSearch this buffer for the first occurrence of the argument, starting at\noffset `start`. Returns the zero-based index or -1 if there is no match.\n\n### Buffer#reverse()\n### buffertools.reverse(buffer)\n\nReverse the content of the buffer in place. Example:\n\n\tb = new Buffer(\'live\');\n\tb.reverse();\n\tconsole.log(b); // "evil"\n\n### Buffer#toHex()\n### buffertools.toHex(buffer)\n\nReturns the contents of this buffer encoded as a hexadecimal string.\n\n## Classes\n\nSingular, actually. To wit:\n\n## WritableBufferStream\n\nThis is a regular node.js [writable stream](http://nodejs.org/docs/v0.3.4/api/streams.html#writable_Stream)\nthat accumulates the data it receives into a buffer.\n\nExample usage:\n\n\t// slurp stdin into a buffer\n\tprocess.stdin.resume();\n\tostream = new WritableBufferStream();\n\tutil.pump(process.stdin, ostream);\n\tconsole.log(ostream.getBuffer());\n\nThe stream never emits \'error\' or \'drain\' events.\n\n### WritableBufferStream.getBuffer()\n\nReturn the data accumulated so far as a buffer.\n\n## TODO\n\n* Logical operations on buffers (AND, OR, XOR).\n* Add lastIndexOf() functions.\n\n## License\n\nCopyright (c) 2010, Ben Noordhuis <info@bnoordhuis.nl>\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n',
+108 silly resolved     bugs: { url: 'https://github.com/bnoordhuis/node-buffertools/issues' },
+108 silly resolved     _id: 'buffertools@2.1.1',
+108 silly resolved     dist: { shasum: '10d54433f27ef419e845338a3c6bc6dd2c1f311c' },
+108 silly resolved     _from: 'buffertools@',
+108 silly resolved     _resolved: 'https://registry.npmjs.org/buffertools/-/buffertools-2.1.1.tgz' } ]
+109 info install buffertools@2.1.1 into /home/smo/Documents/appjs/ht5streamer
+110 info installOne buffertools@2.1.1
+111 info /home/smo/Documents/appjs/ht5streamer/node_modules/buffertools unbuild
+112 verbose tar unpack /home/smo/.npm/buffertools/2.1.1/package.tgz
+113 silly lockFile 8c204c10-treamer-node-modules-buffertools tar:///home/smo/Documents/appjs/ht5streamer/node_modules/buffertools
+114 verbose lock tar:///home/smo/Documents/appjs/ht5streamer/node_modules/buffertools /home/smo/.npm/8c204c10-treamer-node-modules-buffertools.lock
+115 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+116 verbose lock tar:///home/smo/.npm/buffertools/2.1.1/package.tgz /home/smo/.npm/57b660ec-pm-buffertools-2-1-1-package-tgz.lock
+117 silly gunzTarPerm modes [ '755', '644' ]
+118 silly gunzTarPerm extractEntry package.json
+119 silly gunzTarPerm extractEntry .npmignore
+120 silly gunzTarPerm extractEntry README.md
+121 silly gunzTarPerm extractEntry LICENSE
+122 silly gunzTarPerm extractEntry buffertools.js
+123 silly gunzTarPerm extractEntry test.js
+124 silly gunzTarPerm extractEntry binding.gyp
+125 silly gunzTarPerm extractEntry buffertools.cc
+126 silly gunzTarPerm extractEntry .mailmap
+127 silly gunzTarPerm extractEntry AUTHORS
+128 silly gunzTarPerm extractEntry BoyerMoore.h
+129 silly gunzTarPerm extractEntry wscript
+130 silly lockFile 8c204c10-treamer-node-modules-buffertools tar:///home/smo/Documents/appjs/ht5streamer/node_modules/buffertools
+131 silly lockFile 8c204c10-treamer-node-modules-buffertools tar:///home/smo/Documents/appjs/ht5streamer/node_modules/buffertools
+132 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+133 silly lockFile 57b660ec-pm-buffertools-2-1-1-package-tgz tar:///home/smo/.npm/buffertools/2.1.1/package.tgz
+134 info preinstall buffertools@2.1.1
+135 verbose readDependencies using package.json deps
+136 verbose readDependencies using package.json deps
+137 silly resolved []
+138 verbose about to build /home/smo/Documents/appjs/ht5streamer/node_modules/buffertools
+139 info build /home/smo/Documents/appjs/ht5streamer/node_modules/buffertools
+140 verbose linkStuff [ false,
+140 verbose linkStuff   false,
+140 verbose linkStuff   false,
+140 verbose linkStuff   '/home/smo/Documents/appjs/ht5streamer/node_modules' ]
+141 info linkStuff buffertools@2.1.1
+142 verbose linkBins buffertools@2.1.1
+143 verbose linkMans buffertools@2.1.1
+144 verbose rebuildBundles buffertools@2.1.1
+145 info install buffertools@2.1.1
+146 verbose unsafe-perm in lifecycle true
+147 info buffertools@2.1.1 Failed to exec install script
+148 info /home/smo/Documents/appjs/ht5streamer/node_modules/buffertools unbuild
+149 info preuninstall buffertools@2.1.1
+150 info uninstall buffertools@2.1.1
+151 verbose true,/home/smo/Documents/appjs/ht5streamer/node_modules,/home/smo/Documents/appjs/ht5streamer/node_modules unbuild buffertools@2.1.1
+152 info postuninstall buffertools@2.1.1
+153 error buffertools@2.1.1 install: `node-gyp rebuild`
+153 error Exit status 1
+154 error Failed at the buffertools@2.1.1 install script.
+154 error This is most likely a problem with the buffertools package,
+154 error not with npm itself.
+154 error Tell the author that this fails on your system:
+154 error     node-gyp rebuild
+154 error You can get their info via:
+154 error     npm owner ls buffertools
+154 error There is likely additional logging output above.
+155 error System Linux 3.12.0-031200rc7-generic
+156 error command "/usr/local/bin/node" "/usr/local/bin/npm" "install" "buffertools"
+157 error cwd /home/smo/Documents/appjs/ht5streamer
+158 error node -v v0.11.9
+159 error npm -v 1.3.15
+160 error code ELIFECYCLE
+161 verbose exit [ 1, true ]

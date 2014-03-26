@@ -136,3 +136,33 @@ totem-video-thumbnailer couldn't open file 'file:///home/smo/Vid%C3%A9os/ht5stre
 (totem-video-thumbnailer:28272): Gtk-WARNING **: Theme parsing error: nautilus.css:9:17: Junk at end of value
 
 (totem-video-thumbnailer:28272): Gtk-WARNING **: Theme parsing error: nautilus.css:19:21: Junk at end of value
+
+(nautilus:10196): Gtk-WARNING **: Theme parsing error: nautilus.css:9:17: Junk at end of value
+
+(nautilus:10196): Gtk-WARNING **: Theme parsing error: nautilus.css:19:21: Junk at end of value
+
+(nautilus:10196): GLib-GObject-CRITICAL **: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+
+(nautilus:10196): GLib-GObject-CRITICAL **: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+Nautilus-Share-Message: Called "net usershare info" but it failed: « net usershare » a retourné l'erreur 255 : net usershare: cannot open usershare directory /var/lib/samba/usershares. Error Aucun fichier ou dossier de ce type
+Please ask your system administrator to enable user sharing.
+
+
+(totem-video-thumbnailer:10664): Gtk-WARNING **: Theme parsing error: nautilus.css:9:17: Junk at end of value
+
+(totem-video-thumbnailer:10664): Gtk-WARNING **: Theme parsing error: nautilus.css:19:21: Junk at end of value
+
+(nautilus:10196): GnomeDesktop-WARNING **: Unable to create loader for mime type application/ogg: Format d'image non reconnu
+
+(nautilus:10196): GnomeDesktop-WARNING **: Error creating thumbnail for file:///home/smo/T%C3%A9l%C3%A9chargements/andalouvibe.opus: Format d'image non reconnu
+
+(nautilus:10867): Gtk-WARNING **: Theme parsing error: nautilus.css:9:17: Junk at end of value
+
+(nautilus:10867): Gtk-WARNING **: Theme parsing error: nautilus.css:19:21: Junk at end of value
+
+(nautilus:10867): GLib-GObject-CRITICAL **: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+
+(nautilus:10867): GLib-GObject-CRITICAL **: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+Nautilus-Share-Message: Called "net usershare info" but it failed: « net usershare » a retourné l'erreur 255 : net usershare: cannot open usershare directory /var/lib/samba/usershares. Error Aucun fichier ou dossier de ce type
+Please ask your system administrator to enable user sharing.
+

@@ -2498,6 +2498,7 @@ if (typeof jQuery != 'undefined') {
 					// resizer
 					if (t.options.enableAutosize) {
 						t.media.addEventListener('loadedmetadata', function(e) {
+              console.log(t,e)
 							// if the <video height> was not set and the options.videoHeight was not set
 							// then resize to the real dimensions
 							if (t.options.videoHeight <= 0 && t.domNode.getAttribute('height') === null && !isNaN(e.target.videoHeight)) {
@@ -3123,7 +3124,7 @@ if (typeof jQuery != 'undefined') {
 		buildstop: function(player, controls, layers, media) {
 			var t = this,
 				stop = 
-				$('<div class="mejs-button mejs-stop-button mejs-stop">' +
+				$('<div class="mejs-button mejs-stop-button mejs-stop" id="stopBtn">' +
 					'<button type="button" aria-controls="' + t.id + '" title="' + t.options.stopText + '" aria-label="' + t.options.stopText + '"></button>' +
 				'</div>')
 				.appendTo(controls)
@@ -3190,7 +3191,6 @@ if (typeof jQuery != 'undefined') {
 						} else if (x > width + offset.left) {
 							x = width + offset.left;
 						}
-						
 						pos = x - offset.left;
 						percentage = (pos / width);
 						newTime = (percentage <= 0.02) ? 0 : percentage * media.duration;
@@ -3259,7 +3259,6 @@ if (typeof jQuery != 'undefined') {
 				player.setCurrentRail(e);
 			}, false);
 			
-			
 			// store for later use
 			t.loaded = loaded;
 			t.total = total;
@@ -3267,7 +3266,6 @@ if (typeof jQuery != 'undefined') {
 			t.handle = handle;
 		},
 		setProgressRail: function(e) {
-
 			var
 				t = this,
 				target = (e != undefined) ? e.target : t.media,
