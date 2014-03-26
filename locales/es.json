@@ -104,5 +104,6 @@
 	"Username: ": "Username: ",
 	"Password: ": "Password: ",
 	"Plugins choice:": "Plugins choice:",
-	"Please read the disclaimer here : <u><a id='disclaimer' href='#'>disclaimer</a></u>": "Please read the disclaimer here : <u><a id='disclaimer' href='#'>disclaimer</a></u>"
+	"Please read the disclaimer here : <u><a id='disclaimer' href='#'>disclaimer</a></u>": "Please read the disclaimer here : <u><a id='disclaimer' href='#'>disclaimer</a></u>",
+  "open torrent" : "Abrir torrent"
 }
