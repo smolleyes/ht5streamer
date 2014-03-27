@@ -133,6 +133,7 @@ var ffar = [];
 var torrentsArr = [];
 var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 var torrentsFolder = path.join(os.tmpDir(), 'Popcorn-Time');
+var torrentsFolder2 = path.join(os.tmpDir(), 'torrent-stream');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 if( ! fs.existsSync(torrentsFolder) ) { fs.mkdir(torrentsFolder); }
 
@@ -909,13 +910,12 @@ function stopTorrent() {
   $.each(torrentsArr,function(index,torrent) {
     wipeTmpFolder();
     clearTimeout(loadedTimeout);
-    refresh = false;
+    //refresh = false;
     try {
     videoStreamer = null;
     console.log("stopping torrent :" + torrent.name);
     var flix = torrent.obj;
     torrentsArr.pop(index,1);
-    flix.clearCache();
     flix.destroy();
     delete flix;
   } catch(err) {
@@ -2681,7 +2681,7 @@ function startStreaming(req,res) {
         'Date':date.toUTCString(),
         'Connection':'close',
         'Cache-Control':'private',
-        'Content-Type':'video/x-matroska',
+        'Content-Type':'video/x-h264',
         'Content-Length':end - start,
         'Content-Range':'bytes '+start+'-'+end+'/'+stat.size,
         'Accept-Ranges':'bytes',
@@ -2783,7 +2783,7 @@ function startStreaming(req,res) {
                 });
                 ffmpeg.stdout.pipe(res);
             } else {
-                res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/matroska' });
+                res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/h264' });
                 console.log('playing movie without transcoding');
                 file.download().pipe(res);
             }
@@ -2984,7 +2984,8 @@ function cleanffar() {
     });
 }
 
-// extend array
+
+//// extend array
 Array.prototype.contains = function(obj) {
     var i = this.length;
     while (i--) {

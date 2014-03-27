@@ -1,44 +1,58 @@
 var torrentStream = require('torrent-stream');
-var os = require('os');
-var request = require('request');
-var os = require('os');
-var sys = require('sys');
-var path = require('path');
-var fs = require('fs');
-var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg');
-var transcodeArray = new Array('avi','flv','mkv','mpeg','mpg','wmv','wma','mov');
 
 MIN_PERCENTAGE_LOADED = 0.5;
 //// Minimum bytes loaded to open video
 MIN_SIZE_LOADED = 10 * 1024 * 1024;
 var selected;
-var torEngine;
 var loadedTimeout;
 
-function streamTorrent(link) {
-  //wipeTmpFolder();
+
+function getTorrent(link) {
+  stopTorrent();
   if(link.indexOf('magnet:?xt') !== -1 ) {
       startTorrent(link);
   } else {
     console.log("link is not a magnet")
     // if url is given, it will be downloaded
-    request({url:link, encoding:null}, function (err, response, body) {
-        if(err) {
-            console.log(err);
-            return;
-        }
-        startTorrent(body);
-    });
+    if((link.indexOf('http://') === -1)  && (link.indexOf('https://') === -1)) {
+      try {
+          var readTorrent = require('read-torrent');
+          readTorrent(link, function(err, torrent) {
+              startTorrent(torrent);
+          });
+      } catch(err) {
+          console.log(err);
+      }
+    } else {
+      console.log(link);
+      request({url:link, encoding:null}, function (err, response, body) {
+          if(err) {
+              console.log(err);
+              return;
+          }
+          startTorrent(body);
+      });
+    }
   }
 }
 
 function startTorrent(link) {
-  console.log("torrent started");
+  console.log("torrent started", link);
+
   torEngine = torrentStream(link,{
-    connections: 100,     // Max amount of peers to be connected to.
-    verify: true,         // Verify previously stored data before starting
-    dht: true             // Whether or to use the dht to find peers.
+    connections: 100
   });
+  
+  if ($('#preloadTorrent').length < 1 ) {
+      $('.mejs-overlay-button').hide();
+      $('#preloadTorrent').remove();
+      $('.mejs-container').append('<div id="preloadTorrent" \
+      style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 12px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;"> \
+      <p><b id="preloadProgress"></b></p> \
+      <progress value="5" min="0" max="100">0%</progress> \
+      </div>');
+  }
+  
   torEngine.on('ready', function() {
     var started = Date.now();
     var needTranscode = false;
@@ -68,8 +82,8 @@ function streamFile(file) {
     stream.pipe(out);
     
     var obj = {};
-    obj.file = selected;
-    obj.torrent = torEngine;
+    obj.name = selected;
+    obj.obj = torEngine;
     torrentsArr.push(obj);
     
     autoRefresh();
@@ -83,16 +97,6 @@ function streamFile(file) {
 function autoRefresh() {
     loadedTimeout ? clearTimeout(loadedTimeout) : null;
     
-    if ($('#preloadTorrent').length < 1 ) {
-      $('.mejs-overlay-button').hide();
-      $('#preloadTorrent').remove();
-      $('.mejs-container').append('<div id="preloadTorrent" \
-      style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 12px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;"> \
-      <p><b id="preloadProgress"></b></p> \
-      <progress value="5" min="0" max="100">0%</progress> \
-      </div>');
-    }
-    
     var now = torEngine.swarm.downloaded,
     total = selected.length,
     // There's a minimum size before we start playing the video.
@@ -105,10 +109,15 @@ function autoRefresh() {
     var downloaded = bytesToSize(torEngine.swarm.downloaded, 2);
     var uploaded = bytesToSize(torEngine.swarm.uploaded, 2);
     var downloadRate = bytesToSize(torEngine.swarm.downloadSpeed(), 2);
-    if (percent < 100) { 
-        console.log('Chargement: '+ percent +' % effectué à '+ downloadRate +'/s');
-        $('#preloadProgress').empty().append('Chargement  '+ percent +' % effectué à '+ downloadRate +'/s');
-        $('#preloadTorrent progress').attr('value',percent).text(percent);
+    if (percent < 100) {
+        if (percent > 0) {
+          console.log('Chargement: '+ percent +' % effectué à '+ downloadRate +'/s');
+          $('#preloadProgress').empty().append('Chargement  '+ percent +' % effectué à '+ downloadRate +'/s');
+          $('#preloadTorrent progress').attr('value',percent).text(percent);
+        } else {
+          $('#preloadProgress').empty().append('Connexion... merci de patienter');
+          console.log('Connexion... merci de patienter');
+        }
         loadedTimeout = setTimeout(autoRefresh, 500);
     } else {
         $('#preloadTorrent').remove();
@@ -166,6 +175,3 @@ function in_array(needle, haystack){
     }
     return -1;
 }
-
-//streamTorrent('magnet:?xt=urn:btih:548050a5e84aa6daf3e0f4628e1f73fc4547a8dc&dn=The Counselor (2013) THEATRICAL FRENCH BRRip XviD SEXPISTROLL&tr=udp://mgtracker.org:2710/announce&tr=udp://open.demonii.com:1337/announce&tr=udp://tracker.coppersurfer.tk:6969/announce&tr=udp://tracker.istole.it:80/announce&tr=udp://tracker.openbittorrent.com/announce&tr=udp://tracker.publicbt.com/announce');
-//streamTorrent('http://www.silvertorrent.org/download.php?id=131472e23635b1d2c9382f1a152d3a823626deab&f=Tinker%20Bell%20And%20The%20Pirate%20Fairy%202014%20FRENCH%20720p%20BluRay%20x264-CARPEDIEM.torrent');

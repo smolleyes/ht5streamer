@@ -17,13 +17,14 @@ MIN_PERCENTAGE_LOADED = 0.5;
 // Minimum bytes loaded to open video
 MIN_SIZE_LOADED = 10 * 1024 * 1024;
 
-function getTorrent(file) {
+function getTorrent(link) {
+  try {
   stopTorrent();
   var videoStreamer = null;
   
   // Create a unique file to cache the video (with a microtimestamp) to prevent read conflicts
-  var tmpFilename = ( file.toLowerCase().split('/').pop().split('.torrent').shift() ).slice(0,100);
-  tmpFilename = tmpFilename.replace(/([^a-zA-Z0-9-_])/g, '_') + '.mp4';
+  var tmpFilename = ( link.toLowerCase().split('/').pop().split('.torrent').shift() ).slice(0,100);
+  tmpFilename = tmpFilename.replace(/([^a-zA-Z0-9-_])/g, '_').replace(/ /g,'_') + '.mp4';
   var tmpFile = path.join(tmpFolder, tmpFilename);
 
   var numCores = (os.cpus().length > 0) ? os.cpus().length : 1;
@@ -37,9 +38,11 @@ function getTorrent(file) {
   <progress value="5" min="0" max="100">0%</progress> \
   </div>');
   
-  videoStreamer = popcornflix(file, {
+  videoStreamer = popcornflix(link, {
     // Set the custom temp file
-    path: tmpFile,
+    //path: tmpFile,
+    dht: true,
+    verify: true,
     //port: 554,
     buffer: (1.5 * 1024 * 1024).toString(),
     connections: numConnections
@@ -98,6 +101,10 @@ function getTorrent(file) {
     });
     
 });
+
+}catch(err) {
+    console.log(err);
+  }
 
 }
 
