@@ -158,7 +158,7 @@ var transcodeArray = new Array('avi','flv','mkv','mpeg','mpg','wmv','wma','mov')
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['vimeo','grooveshark','mega-search','mega','mega-files','songza'];
+var pluginsList = ['vimeo','grooveshark','mega-search','mega','mega-files','omgtorrent','songza'];
 var loadedTimeout;
 
 // settings
