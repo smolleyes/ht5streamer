@@ -430,8 +430,7 @@ function main() {
     });
     // stop button
     $(document).on('click','#stopBtn',function(e) {
-            stopTorrent();
-            initPlayer();
+        initPlayer();
     });
     // pause/stop button
     $('.mejs-playpause-button').click(function(e) {
@@ -442,11 +441,13 @@ function main() {
                 setTimeout(function(){
                     $('.mejs-overlay-button').hide();
                     play_on_fbx(currentMedia.link);
+                    playFromHttp = false;
                 },2000);
               }
             } else {
               $('.mejs-overlay-button').hide();
               play_on_fbx(currentMedia.link);
+              playFromHttp=false;
             }
         }
     });
@@ -906,19 +907,20 @@ function main() {
 }
 
 function stopTorrent() {
-  initPlayer();
   $.each(torrentsArr,function(index,torrent) {
     wipeTmpFolder();
     clearTimeout(loadedTimeout);
-    //refresh = false;
     try {
     videoStreamer = null;
     console.log("stopping torrent :" + torrent.name);
     var flix = torrent.obj;
     torrentsArr.pop(index,1);
+    flix.clearCache();
     flix.destroy();
     delete flix;
+    playFromHttp = false;
   } catch(err) {
+      playFromHttp = false;
       console.log(err);
   }
   });
@@ -995,6 +997,7 @@ function startPlay(media) {
         player.setSrc(link);
         player.play();
       }
+      playFromHttp = false;
     } else if (playFromHd === false) {
       fs.readdir(download_dir, function (err, filenames) {
         var i;
@@ -1057,6 +1060,9 @@ function initPlayer() {
   try {
     $('#fbxMsg').remove();
   } catch(err) {}
+  if(playFromHttp === false) {
+      stopTorrent();
+  }
 }
 
 function init() {
@@ -2654,8 +2660,8 @@ function startStreaming(req,res) {
             'Content-Type': 'video/mp4'
           });
           var ffmpeg = spawnFfmpeg(link,device,'','',function (code) { // exit
-                    console.log('child process exited with code ' + code);
-                    res.end();
+              console.log('child process exited with code ' + code);
+              res.end();
           });
           ffmpeg.stdout.pipe(res);
       }

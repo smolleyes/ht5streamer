@@ -40,6 +40,7 @@ function startTorrent(link) {
   console.log("torrent started", link);
 
   torEngine = torrentStream(link,{
+    buffer: (1.5 * 1024 * 1024).toString(),
     connections: 100
   });
   
@@ -48,7 +49,7 @@ function startTorrent(link) {
       $('#preloadTorrent').remove();
       $('.mejs-container').append('<div id="preloadTorrent" \
       style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 12px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;"> \
-      <p><b id="preloadProgress"></b></p> \
+      <p><b id="preloadProgress">Connexion... merci de patienter</b></p> \
       <progress value="5" min="0" max="100">0%</progress> \
       </div>');
   }

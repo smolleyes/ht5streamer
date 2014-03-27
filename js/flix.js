@@ -19,7 +19,7 @@ MIN_SIZE_LOADED = 10 * 1024 * 1024;
 
 function getTorrent(link) {
   try {
-  stopTorrent();
+  initPlayer();
   var videoStreamer = null;
   
   // Create a unique file to cache the video (with a microtimestamp) to prevent read conflicts
@@ -34,7 +34,7 @@ function getTorrent(link) {
   $('#preloadTorrent').empty().remove();
   $('.mejs-container').append('<div id="preloadTorrent" \
   style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 12px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;"> \
-  <p><b id="preloadProgress">Chargement du torrent : 0 % effectué</b></p> \
+  <p><b id="preloadProgress">Connexion... merci de patienter</b></p> \
   <progress value="5" min="0" max="100">0%</progress> \
   </div>');
   
@@ -61,6 +61,8 @@ function getTorrent(link) {
       item.name = flix.selected.name;
       item.obj = flix;
       torrentsArr.push(item);
+      var maxTry = 90;
+      var tried = 0;
       
       var checkLoadingProgress = function () {
         try {
@@ -75,7 +77,7 @@ function getTorrent(link) {
 
           percent = (now / targetLoaded * 100.0).toFixed(2);
           var downloaded = bytesToSize(flix.downloaded, 2);
-          
+          var downloadRate = bytesToSize(flix.speed(), 2);
           if (now > targetLoaded) {
             clearTimeout(loadedTimeout);
             $('#preloadTorrent').remove();
@@ -86,11 +88,21 @@ function getTorrent(link) {
             stream.title = flix.selected.name;
             startPlay(stream);
           } else {
-            console.log("wait loading " + percent + '% loaded');
-            $('#preloadProgress').empty().append('Chargement du torrent : '+ percent +' % effectué');
-            $('#preloadTorrent progress').attr('value',percent).text(percent);
+            if (percent > 0) {
+              $('#preloadProgress').empty().append('Chargement  '+ percent +' % effectué à '+ downloadRate +'/s');
+              $('#preloadTorrent progress').attr('value',percent).text(percent);
+            } else {
+              tried += 1;
+              if (tried === 90) {
+                  clearTimeout(loadedTimeout);
+                  $('#preloadProgress').empty().append('Connexion impossible, mauvais torrent...');
+                  setTimeout(stopTorrent,5000);
+              } else {
+                  $('#preloadProgress').empty().append('Connexion... merci de patienter (essai '+tried+'/'+maxTry+')');
+              }
+            }
             if (refresh === true) {
-              loadedTimeout = setTimeout(checkLoadingProgress, 500);
+              loadedTimeout = setTimeout(checkLoadingProgress, 1000);
             }
           }
           } catch(err) {
