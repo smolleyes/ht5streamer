@@ -20,6 +20,7 @@ MIN_SIZE_LOADED = 10 * 1024 * 1024;
 function getTorrent(link) {
   try {
   initPlayer();
+  stopTorrent();
   var videoStreamer = null;
   
   // Create a unique file to cache the video (with a microtimestamp) to prevent read conflicts

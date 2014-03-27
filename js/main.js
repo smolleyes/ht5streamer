@@ -2594,6 +2594,7 @@ function startStreaming(req,res) {
       }
       var megaName = $('#song-title').text().replace(_('Playing: '),'');
       var megaType = megaName.split('.').pop().toLowerCase();
+      host = req.headers['host'];
       //if freeboxtv
       var date = new Date();
       if (tv === true) {
@@ -2773,6 +2774,7 @@ function startStreaming(req,res) {
                   console.log('child process exited with code ' + code);
                   res.end();
                 });
+                console.log(file,ffmpeg)
                 var x = file.download().pipe(ffmpeg.stdin);
                 x.on('error',function(err) {
                   console.log('ffmpeg stdin error...' + err);
@@ -2789,7 +2791,7 @@ function startStreaming(req,res) {
                 });
                 ffmpeg.stdout.pipe(res);
             } else {
-                res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/h264' });
+                res.writeHead(200, { 'Content-Length': megaSize, 'Content-Type': 'video/mp4' });
                 console.log('playing movie without transcoding');
                 file.download().pipe(res);
             }
@@ -2929,7 +2931,6 @@ function downloadFromMega(link,key,size) {
   r.pipe(stream);
   var i = 0;
   r.on('data', function(d) {
-    console.log('get data')
     i += d.length;
     stream.emit('progress', {bytesLoaded: i, bytesTotal: size })
   });
