@@ -2475,23 +2475,10 @@ function startMegaServer() {
               startStreaming(req,res);
             }
         }
-      }).listen(8888,"::");
+      }).listen(8888,"0.0.0.0");
       console.log('Megaserver ready on port 8888');
     }
 }
-
-var ffmpeg2 = spawn(exec_path+'/ffmpeg', [
-            '-re','-i',"pipe:0",
-            '-sn',
-            '-c:v',
-            'h264',
-            '-c:a',
-            'libmp3lame',
-            '-profile:v', 
-            'baseline',
-            '-f','matroska',
-            'pipe:1']);
-
 
 function startStreaming(req,res) {
     try {
@@ -2603,7 +2590,6 @@ function startStreaming(req,res) {
             'Server':'Ht5treamer/0.0.1'
           });
           var args;
-          console.log(req.headers);
           link = link.replace(/\+/g,' ');
           host = req.headers['host'];
           if (device === "phone") {
@@ -2668,35 +2654,15 @@ function startStreaming(req,res) {
       }
       // if local file
       if (link.indexOf('file:') !== -1) {
-        
-        var stat = fs.statSync(link.replace('file://',''));
-        if (!stat.isFile()) return;
-        var start = 0;
-        var end = 0;
-        var range = req.headers['range'];
-        if (range != null) {
-            start = parseInt(range.slice(range.indexOf('bytes=')+6,
-            range.indexOf('-')));
-            end = parseInt(range.slice(range.indexOf('-')+1,
-            range.length));
-        }
-        if (isNaN(end) || end == 0) end = stat.size-1;
-        if (start > end) return;
-        var date = new Date();
- 
-       res.writeHead(206, { // NOTE: a partial http response
-        'Date':date.toUTCString(),
-        'Connection':'close',
-        'Cache-Control':'private',
-        'Content-Type':'video/mp4',
-        'Content-Length':end - start,
-        'Content-Range':'bytes '+start+'-'+end+'/'+stat.size,
-        'Accept-Ranges':'bytes',
-        'Server':'ht5Streamer/0.0.1',
-        'Transfer-Encoding':'chunked'
+        res.writeHead(200, {
+            'Content-Type': 'video/mp4'
         });
-        
-        var x = fs.createReadStream(link.replace('file://',''), {start: start, end: end}).pipe(ffmpeg2.stdin);
+        var link = link.replace('file://','');
+        var ffmpeg = spawnFfmpeg(link,device,'','',function (code) { // exit
+          console.log('child process exited with code ' + code);
+          res.end();
+        });
+        var x = fs.createReadStream(link).pipe(ffmpeg.stdin);
         x.on('error',function(err) {
               console.log('ffmpeg stdin error...' + err);
               if (err.stack.indexOf('codec') === -1) {
@@ -2710,11 +2676,7 @@ function startStreaming(req,res) {
                 startPlay(f);
               }
         });
-        ffmpeg2.stdout.pipe(res);
-        
-        ffmpeg2.stderr.on('data', function (data) {
-          console.log('grep stderr: ' + data);
-        });
+        ffmpeg.stdout.pipe(res);
       }
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
