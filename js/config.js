@@ -33,7 +33,7 @@ var locale = 'en';
 var settings = {};
 var selected_interface;
 var shared_length = 0;
-var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza'];
+var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza','cpasbien'];
 
 // settings
 var confdir;
@@ -160,6 +160,10 @@ var htmlConfig='<div style="height:36px;"> \
         <div class="ItemCheckbox left">\
           <label for="omgtorrent">Omgtorrent</label>\
           <input class="pluginCheckBox" type="checkbox" id="omgtorrent" name="omgtorrent">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="cpasbien">Cpasbien</label>\
+          <input class="pluginCheckBox" type="checkbox" id="cpasbien" name="cpasbien">\
         </div>\
       </div>\
     </div> \

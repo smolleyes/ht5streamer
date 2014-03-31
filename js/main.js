@@ -607,6 +607,12 @@ function main() {
     }
 	});
   
+  //hide preview
+  $(document).on('click','#closePreview',function(e) {
+    e.preventDefault();
+		$('#fbxMsg').empty().remove();
+	});
+  
     //engine select
     $("select#engines_select").change(function () {
         $("select#engines_select option:selected").each(function () {
