@@ -133,7 +133,6 @@ var ffar = [];
 var torrentsArr = [];
 var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 var torrentsFolder = path.join(os.tmpDir(), 'Popcorn-Time');
-var torrentsFolder2 = path.join(os.tmpDir(), 'torrent-stream');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 if( ! fs.existsSync(torrentsFolder) ) { fs.mkdir(torrentsFolder); }
 
@@ -153,12 +152,12 @@ var megaSize = '';
 var right;
 var left;
 var megaServer;
-var videoArray = new Array('avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg');
-var transcodeArray = new Array('avi','flv','mkv','mpeg','mpg','wmv','wma','mov');
+var videoArray = ['avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg'];
+var transcodeArray = ['avi','flv','mkv','mpeg','mpg','wmv','wma','mov'];
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['vimeo','grooveshark','mega-search','mega','mega-files','omgtorrent','songza'];
+var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','cpasbien','songza','cpasbien'];
 var loadedTimeout;
 
 // settings
@@ -2349,7 +2348,6 @@ function getVideoLink(id) {
 }
   
 function getStream(link) {
-  console.log('link ' + link);
     req = http.request(link,function(resp) {
         var addr = decodeURIComponent(resp.headers.location);
         var v=addr.match(/mediaData=(.*?)&errorDisplay/)[1];
@@ -2387,12 +2385,9 @@ function getLocalDb(res) {
   var fileList = [];
   var total = dirs.length;
 	$.each(dirs,function(index,dir){
-    console.log("dir: " + dir)
     if (dir === "") {
       if (index+1 === dirs.length) {
-        console.log(fileList);
         var body = JSON.stringify(fileList);
-        console.log(body);
         res.writeHead(200, {"Content-Type": "application/json;charset=utf-8"});
         res.end(body);
       }
@@ -2401,7 +2396,6 @@ function getLocalDb(res) {
       fileList.push(dirTree(dir));
       if (index+1 === dirs.length) {
         var body = JSON.stringify(fileList);
-        console.log(body);
         res.writeHead(200, {"Content-Type": "application/json;charset=utf-8"});
         res.end(body);
       }
@@ -2441,7 +2435,6 @@ function startMegaServer() {
       megaServer = http.createServer(function (req, res) {
         if((req.url !== "/favicon.ico") && (req.url !== "/")) {
             if (req.url.indexOf("/getPlaylist") !== -1) {
-                console.log(req.url);
                 var html="";
                 var json = {};
                 json.channels = [];
@@ -2687,7 +2680,7 @@ function startStreaming(req,res) {
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
         console.log('LIEN USER MEGA....');
-        if ((videoArray.contains(megaType)) && (parsedLink.indexOf('&download') === -1)) {
+        if ((in_array(megaType,videoArray)) && (parsedLink.indexOf('&download') === -1)) {
           if (parsedLink.indexOf('&direct') === -1){
             var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
                     console.log('child process exited with code ' + code);
@@ -2959,6 +2952,14 @@ function cleanffar() {
     });
 }
 
+function in_array(needle, haystack){
+    var found = 0;
+    for (var i=0, len=haystack.length;i<len;i++) {
+        if (haystack[i] == needle) return i;
+            found++;
+    }
+    return -1;
+}
 
 //// extend array
 Array.prototype.contains = function(obj) {

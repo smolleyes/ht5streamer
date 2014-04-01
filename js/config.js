@@ -22,7 +22,7 @@ var gui = require('nw.gui');
 var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
-var version = "0.9.7";
+var version = "0.9.8";
 
 //localize
 var i18n = require("i18n");
@@ -33,7 +33,7 @@ var locale = 'en';
 var settings = {};
 var selected_interface;
 var shared_length = 0;
-var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza','cpasbien'];
+var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','cpasbien','songza','cpasbien'];
 
 // settings
 var confdir;
