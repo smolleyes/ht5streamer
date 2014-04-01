@@ -2680,7 +2680,7 @@ function startStreaming(req,res) {
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
         console.log('LIEN USER MEGA....');
-        if ((in_array(megaType,videoArray)) && (parsedLink.indexOf('&download') === -1)) {
+        if ((in_array(megaType,videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
           if (parsedLink.indexOf('&direct') === -1){
             var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
                     console.log('child process exited with code ' + code);
@@ -2706,7 +2706,7 @@ function startStreaming(req,res) {
              downloadFromMega(link,megaKey).pipe(res);
           }
         } else {
-          console.log('fichier non video/audio ou téléchargement demandé...' + megaType);
+          console.log('fichier non video/audio ou téléchargement demandé... type: ' + megaType);
           downloadFileFromMega(megaName,link,megaKey,true,megaSize,''); 
         }
       //normal mega link
@@ -2722,6 +2722,7 @@ function startStreaming(req,res) {
               var url = $('.highlight .open_in_browser').attr("href");
               var reportLink = $('.highlight #reportLink').attr("href");
               var name = $($('.highlight b')[0]).text();
+              console.log(url,reporLink,name)
               engine.sendMail(name,url,reportLink);
               res.end();
               initPlayer();
