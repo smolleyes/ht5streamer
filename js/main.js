@@ -622,6 +622,7 @@ function main() {
                 current_page=1;
                 current_search_page=1;
                 current_start_index=1;
+                searchOptions.currentPage = 1;
                 $("#cover").remove();
                 $("#searchFilters_select").hide();
                 $("#searchFilters_label").hide();
@@ -753,6 +754,8 @@ function main() {
             current_search_page=1;
             try {
               engine.search_type_changed();
+              engine.pagination_init = false;
+              searchOptions.currentPage = 1;
             } catch(err) {
                 
             }
@@ -780,6 +783,8 @@ function main() {
             current_search_page=1;
             try {
               engine.search_type_changed();
+              engine.pagination_init = false;
+              searchOptions.currentPage = 1;
             } catch(err) {
               console.log(err);
 				if ((searchTypes_select === 'topRated') || (searchTypes_select === 'mostViewed')) {
@@ -1073,13 +1078,12 @@ function initPlayer() {
 function init() {
 	pluginsDir = confDir+'/plugins/ht5streamer-plugins-master/';
   chdir(confDir, function() {
-      console.log('cwd[0]=' + confDir);
       $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
-			var lastRev = $('.sha',res).text();
-			fs.exists(confDir+'/rev.txt', function (exists) {
-			  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
-			});
-	  });
+        var lastRev = $('.sha-block',res).text().replace('latest commit ','');
+        fs.exists(confDir+'/rev.txt', function (exists) {
+          util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
+        });
+      });
   });
 }
 
