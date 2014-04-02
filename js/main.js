@@ -430,6 +430,9 @@ function main() {
     // stop button
     $(document).on('click','#stopBtn',function(e) {
         initPlayer();
+        if (playAirMedia === true) {
+			stop_on_fbx();
+		}
     });
     // pause/stop button
     $('.mejs-playpause-button').click(function(e) {
@@ -2684,7 +2687,7 @@ function startStreaming(req,res) {
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
         console.log('LIEN USER MEGA....');
-        if ((in_array(megaType,videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
+        if (($.inArray(megaType,videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
           if (parsedLink.indexOf('&direct') === -1){
             var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
                     console.log('child process exited with code ' + code);
