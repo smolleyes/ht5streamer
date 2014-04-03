@@ -157,7 +157,8 @@ var transcodeArray = ['avi','flv','mkv','mpeg','mpg','wmv','wma','mov'];
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','cpasbien','songza','cpasbien'];
+var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza'];
+var excludedPlugins = ['mega','cpasbien'];
 var loadedTimeout;
 
 // settings
@@ -1082,7 +1083,8 @@ function init() {
 	pluginsDir = confDir+'/plugins/ht5streamer-plugins-master/';
   chdir(confDir, function() {
       $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
-        var lastRev = $('.sha-block',res).text().replace('latest commit ','');
+        var lastRev = res.match(/data-sha="(.*?)"/)[1];
+        console.log('lastRev is : ' + lastRev);
         fs.exists(confDir+'/rev.txt', function (exists) {
           util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
         });
@@ -1104,7 +1106,7 @@ function compareRev(lastRev){
 	fs.readFile(confDir+'/rev.txt', function (err, data) {
 		if (err) throw err;
 		var rev = data.toString();
-		if(rev === lastRev) {
+		if((rev !== '') && (rev !== null) && (rev === lastRev)) {
 			loadApp();
 		} else {
 			writeRevFile(lastRev);
@@ -1154,11 +1156,14 @@ function reloadPlugins() {
       if (name == 'main.js') {
         try {
           var eng = require(pluginsDir+file);
+          if(excludedPlugins.contains(eng.engine_name.toLowerCase()) === true) {
+				return true;
+		  }
           if ((pluginsList.contains(eng.engine_name.toLowerCase()) === false) || (settings.plugins.contains(eng.engine_name.toLowerCase()))) {
             engines[eng.engine_name] = eng;
             // add entry to main gui menu
             $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
-          } 
+          }
         } catch(err) {
           console.log("can't load plugin "+file+", error:" + err)
         }
@@ -1183,6 +1188,10 @@ function loadApp() {
       if (name == 'main.js') {
         try {
           var eng = require(pluginsDir+file);
+          console.log(eng.engine_name.toLowerCase()+" is "+excludedPlugins.contains(eng.engine_name.toLowerCase()))
+          if(excludedPlugins.contains(eng.engine_name.toLowerCase()) === true) {
+				return true;
+		  }
           if ((pluginsList.contains(eng.engine_name.toLowerCase()) === false) || (settings.plugins.contains(eng.engine_name.toLowerCase()))) {
             engines[eng.engine_name] = eng;
             // add entry to main gui menu

@@ -425,6 +425,16 @@ height : calc(100% - 37px) !important;
 	left:5px;
 }
 
+#updateProgress{
+	position:relative;
+	width:90%;
+	top:-10px;
+	left:2px;
+}
+#updateProgress progress{
+	width:90%
+}
+
 #file_update span {
 	position:relative;
 	top: -4px;

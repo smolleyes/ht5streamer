@@ -111,29 +111,8 @@ function downloadUpdate(link,filename) {
 	    
 	    if (process.platform === 'win32') {
 			var f = tmpPath.replace(/\\/g,"\\\\")+'\\\\ht5streamer-setup.exe';
-			console.log(f);
-			setTimeout(function(){
-				try{
-					update = execFile(f);
-					setTimeout(function(){win.emit('close')},1000);
-					update.on('exit', function(data){
-						pbar.click();
-						$('.notification').click();
-						if (parseInt(data) == 0) {
-							$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-						} else {
-							$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-						}
-					});
-					update.stderr.on('data', function(data) {
-						$('.notification').click();
-						$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-						console.log('update stderr: ' + data);
-					});
-				} catch(err) {
-					console.log(err);
-				}
-			},5000);
+			var exe = exec(f); 
+			setTimeout(function(){win.emit('close')},2000);
  	    } else if (process.platform === 'darwin') {
 			var dest = path.dirname(execDir.match(/.*ht5streamer.app(.*?)/)[0]);
 		    var args = ['-o',filename,'-d',dest];
