@@ -43,6 +43,7 @@ padding: 10px;
 color: white !important;
 z-index: 2000;
 opacity:0.80;
+overflow: scroll;
 }
 
 #closePreview {

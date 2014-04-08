@@ -158,7 +158,7 @@ var currentMedia;
 var currentAirMedia = {};
 var fn;
 var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza'];
-var excludedPlugins = ['mega','cpasbien'];
+var excludedPlugins = ['mega'];
 var loadedTimeout;
 
 // settings
@@ -431,9 +431,6 @@ function main() {
     // stop button
     $(document).on('click','#stopBtn',function(e) {
         initPlayer();
-        if (playAirMedia === true) {
-			stop_on_fbx();
-		}
     });
     // pause/stop button
     $('.mejs-playpause-button').click(function(e) {
@@ -2564,6 +2561,7 @@ function startStreaming(req,res) {
           });
       }
       var linkParams = parsedLink.split('&');
+      var quality = "normal";
       var swidth;
       var sheight;
       try {
@@ -2589,9 +2587,13 @@ function startStreaming(req,res) {
       if (parsedLink.indexOf('&size') !== -1){
         megaSize = linkParams[2].replace('size=','');
       }
+      if (parsedLink.indexOf('&quality') !== -1){
+        quality = parsedLink.match(/&quality=(.*?)&/)[1];
+      }
       var megaName = $('#song-title').text().replace(_('Playing: '),'');
       var megaType = megaName.split('.').pop().toLowerCase();
       host = req.headers['host'];
+      console.log("QUALITE TV: " + quality);
       //if freeboxtv
       var date = new Date();
       if (tv === true) {
@@ -2603,10 +2605,25 @@ function startStreaming(req,res) {
           var args;
           link = link.replace(/\+/g,' ');
           host = req.headers['host'];
+          var bitrate = 0;
           if (host.indexOf('192.') !== -1) {
-            args = ['-i',link,'-f','mpegts','-movflags', '+faststart','-sn','-c:v', 'libx264','-profile:v', 'baseline','-preset', 'fast',"-b:v", "1200k",'-c:a', 'libmp3lame','-s',swidth+'x'+sheight, '-b:a','128k', '-deinterlace','-threads', '0', '-'];
+            if (quality === 'high') {
+                bitrate = "1200k"
+            } else if (quality === 'normal') {
+                bitrate = "800k"
+            } else if (quality === 'low') {
+                bitrate = "600k"
+            }
+            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'h264','-profile:v', 'baseline','-preset', 'ultrafast','-deinterlace',"-b:v", bitrate,'-c:a', 'copy','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           } else {
-            args = ['-i',link,'-f','mpegts','-movflags', '+faststart','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'baseline',"-b:v", "600k",'-c:a', 'libmp3lame','-s',swidth+'x'+sheight, '-b:a','96k', '-deinterlace','-threads', '0', '-'];
+            if (quality === 'high') {
+                bitrate = "600k"
+            } else if (quality === 'normal') {
+                bitrate = "320k"
+            } else if (quality === 'low') {
+                bitrate = "200k"
+            }
+            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'h264', '-preset', 'ultrafast','-profile:v', 'baseline','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis','-strict','1','-b:a','96k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           }
           if (process.platform === 'win32') {
               ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
