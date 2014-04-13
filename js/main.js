@@ -2210,7 +2210,7 @@ function convertTomp3(file) {
         $('#progress_'+vid+' strong').html(_("Converting video to mp3, please wait..."));
         var proc = new ffmpeg({ source: title })
           .withAudioBitrate('192k')
-          .withAudioCodec('libmp3lame')
+          .withAudioCodec('libvorbis')
           .withAudioChannels(2)
           .toFormat('mp3')
           .saveToFile(target, function(stdout, stderr) {
@@ -2454,18 +2454,17 @@ function startMegaServer() {
                 $.get('http://mafreebox.freebox.fr/freeboxtv/playlist.m3u',function(resp){
                   var list = resp.split('#EXTINF');
                   $.each(list,function(index,c){
-                    var chaine = c.trim();
+                    var chaine = c.trim().replace(/(\r\n|\n|\r)/gm,"");
                     var infos = {};
                     try {
-                      if((chaine.indexOf('bas débit') !== -1) || (chaine.indexOf('standard') !== -1)) {
                         infos.canal = chaine.split(" ")[0].split(",")[1];
                         infos.link = 'rtsp://'+chaine.match(/rtsp:\/\/(.*)/)[1];
                         var n = chaine.match(/(.*?)-(.*?)\)/)[2]+(')');
                         infos.name = n.trim();
+                        infos.thumb = 'img/fbxLogos/'+infos.canal+'.png';
                         json.channels.push(infos);
                         var link =  'http://'+req.headers["host"]+'/?file='+infos.link+'&tv';
                         html+='<a class="tvLink" href="#" src="'+link+'" style="decoration:none;">'+infos.name+'</a><br>';
-                      }
                       if (index+1 === list.length) {
                         if (req.url.indexOf("json") !== -1){
                               var body = JSON.stringify(json);
@@ -2594,6 +2593,24 @@ function startStreaming(req,res) {
       var megaType = megaName.split('.').pop().toLowerCase();
       host = req.headers['host'];
       console.log("QUALITE TV: " + quality);
+      var bitrate = 0;
+      if (host.indexOf('192.') !== -1) {
+        if (quality === 'high') {
+            bitrate = "0k"
+        } else if (quality === 'normal') {
+            bitrate = "2400k"
+        } else if (quality === 'low') {
+            bitrate = "1200k"
+        }
+      } else {
+        if (quality === 'high') {
+            bitrate = "600k"
+        } else if (quality === 'normal') {
+            bitrate = "300k"
+        } else if (quality === 'low') {
+            bitrate = "200k"
+        }
+      }
       //if freeboxtv
       var date = new Date();
       if (tv === true) {
@@ -2605,25 +2622,10 @@ function startStreaming(req,res) {
           var args;
           link = link.replace(/\+/g,' ');
           host = req.headers['host'];
-          var bitrate = 0;
           if (host.indexOf('192.') !== -1) {
-            if (quality === 'high') {
-                bitrate = "1200k"
-            } else if (quality === 'normal') {
-                bitrate = "800k"
-            } else if (quality === 'low') {
-                bitrate = "600k"
-            }
-            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'h264','-profile:v', 'baseline','-preset', 'ultrafast','-deinterlace',"-b:v", bitrate,'-c:a', 'copy','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'libx264','-profile:v', 'baseline','-preset', 'ultrafast','-deinterlace',"-aspect", "16:9","-b:v", bitrate,'-c:a', 'copy','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           } else {
-            if (quality === 'high') {
-                bitrate = "600k"
-            } else if (quality === 'normal') {
-                bitrate = "320k"
-            } else if (quality === 'low') {
-                bitrate = "200k"
-            }
-            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'h264', '-preset', 'ultrafast','-profile:v', 'baseline','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis','-strict','1','-b:a','96k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'libx264', '-preset', 'ultrafast','-profile:v', 'baseline','-deinterlace',"-aspect", "16:9","-b:v", bitrate,'-c:a', 'libvorbis','-strict','1','-b:a','96k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           }
           if (process.platform === 'win32') {
               ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
@@ -2660,7 +2662,7 @@ function startStreaming(req,res) {
           res.writeHead(200, {
             'Content-Type': 'video/mp4'
           });
-          var ffmpeg = spawnFfmpeg(link,device,'','',function (code) { // exit
+          var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
               console.log('child process exited with code ' + code);
               res.end();
           });
@@ -2672,7 +2674,7 @@ function startStreaming(req,res) {
             'Content-Type': 'video/mp4'
         });
         var link = link.replace('file://','');
-        var ffmpeg = spawnFfmpeg(link,device,'','',function (code) { // exit
+        var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
           console.log('child process exited with code ' + code);
           res.end();
         });
@@ -2697,7 +2699,7 @@ function startStreaming(req,res) {
         console.log('LIEN USER MEGA....');
         if (($.inArray(megaType,videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
           if (parsedLink.indexOf('&direct') === -1){
-            var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
+            var ffmpeg = spawnFfmpeg('',device,host,bitrate,function (code) { // exit
                     console.log('child process exited with code ' + code);
                     res.end();
             });
@@ -2747,7 +2749,7 @@ function startStreaming(req,res) {
             $('#song-title').empty().html(_('Playing: ')+megaName);
             if (parsedLink.indexOf('&direct') === -1){
                 console.log('playing movie with transcoding');
-                var ffmpeg = spawnFfmpeg('',device,host,function (code) { // exit
+                var ffmpeg = spawnFfmpeg('',device,host,bitrate,function (code) { // exit
                   console.log('child process exited with code ' + code);
                   res.end();
                 });
@@ -2917,28 +2919,28 @@ function downloadFromMega(link,key,size) {
   return stream
 }
 
-function spawnFfmpeg(link,device,host,exitCallback) {
+function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
   if ((host === undefined) || (link !== '')) {
     //local file...
-    args = ['-re','-i',link,'-sn','-c:v', 'libx264','-c:a', 'libmp3lame', '-f','matroska', 'pipe:1'];
+    args = ['-re','-i',link,'-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
   } else {
     if (device === "phone") {
       if (host.indexOf('192.') !== -1) {
-        args = ['-re','-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", "512k",'-c:a', 'libmp3lame', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-re','-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", "256k",'-c:a', 'libmp3lame', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     } else if (device === 'tablet') {
       if (host.indexOf('192.') !== -1) {
-        args = ['-re','-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", "600k",'-c:a', 'libmp3lame', '-b:a','192k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-re','-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", "400k",'-c:a', 'libmp3lame', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     } else {
       if (host.indexOf('192.') !== -1) {
-        args = ['-re','-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", "512k",'-c:a', 'libmp3lame', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-re','-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", "256k",'-c:a', 'libmp3lame', '-b:a','96k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128', '-threads', '0', 'pipe:1'];
       }
     }
   }
@@ -2987,3 +2989,14 @@ Array.prototype.contains = function(obj) {
     }
     return false;
 }
+
+
+$.get('http://www.free.fr/adsl/pages/television/services-de-television/acces-a-plus-250-chaines/themes/theme-24.html',function(res) {
+  var list = $('.linkChaine',res); 
+  $.each(list,function(index,channel){
+      title = $(this).attr('data-chaineid')+'.png';console.log(title)
+      img = 'http://www.free.fr/'+$(this).find('img')[0].src.replace('file:///','');console.log(img)
+      vid = ((Math.random() * 1e6) | 0);
+      downloadFile(img,title,vid);
+  });
+});
