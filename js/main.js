@@ -981,6 +981,7 @@ function startPlay(media) {
     var link = media.link;
     currentMedia = media;
     var title = media.title;
+    console.log(title)
     $('#song-title').empty().append(_('Playing: ') +decodeURIComponent(title));
     // check local files
     var localLink = null;
@@ -2486,7 +2487,7 @@ function startMegaServer() {
               startStreaming(req,res);
             }
         }
-      }).listen(8888,"0.0.0.0");
+      }).listen(8888);
       console.log('Megaserver ready on port 8888');
     }
 }
@@ -2623,9 +2624,9 @@ function startStreaming(req,res) {
           link = link.replace(/\+/g,' ');
           host = req.headers['host'];
           if (host.indexOf('192.') !== -1) {
-            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'libx264','-profile:v', 'baseline','-preset', 'ultrafast','-deinterlace',"-aspect", "16:9","-b:v", bitrate,'-c:a', 'copy','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx265','-preset', 'ultrafast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','128k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           } else {
-            args = ['-i',link,'-f','matroska','-movflags', '+faststart','-sn','-c:v', 'libx264', '-preset', 'ultrafast','-profile:v', 'baseline','-deinterlace',"-aspect", "16:9","-b:v", bitrate,'-c:a', 'libvorbis','-strict','1','-b:a','96k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx265','-preset', 'ultrafast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','96k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           }
           if (process.platform === 'win32') {
               ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
@@ -2697,7 +2698,8 @@ function startStreaming(req,res) {
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
         console.log('LIEN USER MEGA....');
-        if (($.inArray(megaType,videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
+        megaType = currentMedia.title.split('.').pop().toLowerCase();
+        if ((in_array(megaType.toString(),videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
           if (parsedLink.indexOf('&direct') === -1){
             var ffmpeg = spawnFfmpeg('',device,host,bitrate,function (code) { // exit
                     console.log('child process exited with code ' + code);
@@ -2723,7 +2725,7 @@ function startStreaming(req,res) {
              downloadFromMega(link,megaKey).pipe(res);
           }
         } else {
-          console.log('fichier non video/audio ou téléchargement demandé... type: ' + megaType);
+          console.log('fichier non video/audio ou téléchargement demandé... type:' + megaType);
           downloadFileFromMega(megaName,link,megaKey,true,megaSize,''); 
         }
       //normal mega link
@@ -2902,7 +2904,6 @@ function downloadFileFromMega(title,link,key,fromMegacypter,length,stream) {
 }
 
 function downloadFromMega(link,key,size) {
-  console.log(link,key);
   var id = ((Math.random() * 1e6) | 0);
   var m = new mega.File({downloadId:id,key:key});
   var stream = mega.decrypt(m.key);
