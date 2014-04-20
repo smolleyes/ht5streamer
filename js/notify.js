@@ -3,7 +3,7 @@ var path = require('path');
 var fs = require('fs');
 var temp = require('temp');
 var execFile = require('child_process').exec;
-
+var execDir;
 var online_version;
 
 $(document).ready(function(){
@@ -47,8 +47,8 @@ $(document).ready(function(){
             file = 'ht5streamer-setup.exe';
             link = 'http://sd-20470.dedibox.fr/ht5streamer/windows/'+file;
 		} else if (process.platform === 'darwin') {
-			 file = 'ht5streamer-32.nw';
-			 link = 'http://sd-20470.dedibox.fr/ht5streamer/'+file;
+			 file = 'Ht5streamer-osx.zip';
+			 link = 'http://www.ubukey.fr/ht5streamer/osx/'+file;
         } else {
             if (arch === 'ia32') {
                 console.log('linux 32 bits detected...');
@@ -67,7 +67,7 @@ function downloadUpdate(link,filename) {
     $.notif({title: 'Ht5streamer update:',icon: '&#128229;',timeout:0,content:'',btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'block'});
     // remove file if already exist
     var pbar = $('#updateProgress');
-    var execDir = path.dirname(process.execPath);
+    execDir = path.dirname(process.execPath);
     // start download
     $('#updateProgress strong').html(_('Waiting for connection...'));
     var val = $('#updateProgress progress').attr('value');
@@ -114,7 +114,7 @@ function downloadUpdate(link,filename) {
 			var exe = exec(f); 
 			setTimeout(function(){win.emit('close')},2000);
  	    } else if (process.platform === 'darwin') {
-			var dest = path.dirname(execDir.match(/.*ht5streamer.app(.*?)/)[0]);
+			var dest = path.dirname(execDir.match(/(.*)Ht5streamer.app(.*?)/)[0]);
 		    var args = ['-o',filename,'-d',dest];
 		    var update = spawn('unzip', args);
 	    	update.on('exit', function(data){
