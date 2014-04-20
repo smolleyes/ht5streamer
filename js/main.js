@@ -2599,17 +2599,17 @@ function startStreaming(req,res) {
         if (quality === 'high') {
             bitrate = "0k"
         } else if (quality === 'normal') {
-            bitrate = "2400k"
+            bitrate = "1600k"
         } else if (quality === 'low') {
-            bitrate = "1200k"
+            bitrate = "800k"
         }
       } else {
         if (quality === 'high') {
-            bitrate = "600k"
-        } else if (quality === 'normal') {
             bitrate = "300k"
-        } else if (quality === 'low') {
+        } else if (quality === 'normal') {
             bitrate = "200k"
+        } else if (quality === 'low') {
+            bitrate = "100k"
         }
       }
       //if freeboxtv
