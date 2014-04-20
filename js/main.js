@@ -2599,17 +2599,17 @@ function startStreaming(req,res) {
         if (quality === 'high') {
             bitrate = "0k"
         } else if (quality === 'normal') {
-            bitrate = "1600k"
+            bitrate = "1800k"
         } else if (quality === 'low') {
-            bitrate = "800k"
+            bitrate = "1200k"
         }
       } else {
         if (quality === 'high') {
-            bitrate = "300k"
+            bitrate = "600k"
         } else if (quality === 'normal') {
-            bitrate = "200k"
+            bitrate = "320k"
         } else if (quality === 'low') {
-            bitrate = "100k"
+            bitrate = "200k"
         }
       }
       //if freeboxtv
@@ -2624,9 +2624,9 @@ function startStreaming(req,res) {
           link = link.replace(/\+/g,' ');
           host = req.headers['host'];
           if (host.indexOf('192.') !== -1) {
-            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx265','-preset', 'ultrafast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','128k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','128k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           } else {
-            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx265','-preset', 'ultrafast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','96k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','64k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           }
           if (process.platform === 'win32') {
               ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
