@@ -84,11 +84,12 @@ var chdir = require('chdir');
 var AdmZip = require('adm-zip');
 var util = require('util');
 var deviceType = require('ua-device-type');
+var nwg = require("nwglobal");
 
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
-var localeList = ['en', 'fr','es'];
+var localeList = ["en", "fr","es"];
 var locale = 'en';
 
 //engines
@@ -152,13 +153,13 @@ var megaSize = '';
 var right;
 var left;
 var megaServer;
-var videoArray = ['avi','webm','mp4','flv','mkv','mpeg','mp3','mpg','wmv','wma','mov','wav','ogg'];
-var transcodeArray = ['avi','flv','mkv','mpeg','mpg','wmv','wma','mov'];
+var videoArray = ["avi","webm","mp4","flv","mkv","mpeg","mp3","mpg","wmv","wma","mov","wav","ogg"];
+var transcodeArray = ["avi","flv","mkv","mpeg","mpg","wmv","wma","mov"];
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza'];
-var excludedPlugins = ['mega'];
+var pluginsList = ['vimeo','grooveshark','mega-search','cpasbien','mega-files','songza'];
+var excludedPlugins = ['mega','omgtorrent'];
 var loadedTimeout;
 
 // settings
@@ -181,7 +182,7 @@ i18n.configure({
     updateFiles: true
 });
 
-if ($.inArray(settings.locale, localeList) >-1) {
+if (in_array(settings.locale, localeList)) {
 	locale=settings.locale;
 	i18n.setLocale(locale);
 } else {
@@ -636,7 +637,7 @@ function main() {
 					// hide not needed menus
 					$.each(selectTypes,function(index,type){
 						$("#"+type+"_select").empty();
-						var is = $.inArray(type, engine.defaultMenus) > -1;
+						var is = in_array(type, engine.defaultMenus);
 						if (is === false) {
 							$("#"+type+"_label").hide();
 							$("#"+type+"_select").hide();
@@ -981,7 +982,6 @@ function startPlay(media) {
     var link = media.link;
     currentMedia = media;
     var title = media.title;
-    console.log(title)
     $('#song-title').empty().append(_('Playing: ') +decodeURIComponent(title));
     // check local files
     var localLink = null;
@@ -1002,7 +1002,7 @@ function startPlay(media) {
     }
     if (playFromHttp === true) {
       var ext = title.split('.').pop().toLowerCase();
-      if (transcodeArray.contains(ext)){
+      if (in_array(ext,transcodeArray)){
         player.setSrc('http://'+ipaddress+':8888/?file='+link+'&torrent');
         player.play();
       } else {
@@ -1037,7 +1037,7 @@ function startPlay(media) {
       });
     } else {
       var ext = link.split('.').pop().toLowerCase();
-      if (transcodeArray.contains(ext)){
+      if (in_array(ext,transcodeArray)){
           console.log('link '+link+' need transcoding');
           player.setSrc('http://'+ipaddress+':8888/?file='+link);
           player.play();
@@ -1154,10 +1154,10 @@ function reloadPlugins() {
       if (name == 'main.js') {
         try {
           var eng = require(pluginsDir+file);
-          if(excludedPlugins.contains(eng.engine_name.toLowerCase()) === true) {
-				return true;
-		  }
-          if ((pluginsList.contains(eng.engine_name.toLowerCase()) === false) || (settings.plugins.contains(eng.engine_name.toLowerCase()))) {
+          if(in_array(eng.engine_name.toLowerCase(),excludedPlugins)) {
+            return true;
+          }
+          if ((in_array(eng.engine_name.toLowerCase(),pluginsList)) || (in_array(eng.engine_name.toLowerCase(),settings.plugins))) {
             engines[eng.engine_name] = eng;
             // add entry to main gui menu
             $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
@@ -1186,11 +1186,10 @@ function loadApp() {
       if (name == 'main.js') {
         try {
           var eng = require(pluginsDir+file);
-          console.log(eng.engine_name.toLowerCase()+" is "+excludedPlugins.contains(eng.engine_name.toLowerCase()))
-          if(excludedPlugins.contains(eng.engine_name.toLowerCase()) === true) {
+          if(in_array(eng.engine_name.toLowerCase(),excludedPlugins)) {
 				return true;
 		  }
-          if ((pluginsList.contains(eng.engine_name.toLowerCase()) === false) || (settings.plugins.contains(eng.engine_name.toLowerCase()))) {
+          if ((in_array(eng.engine_name.toLowerCase(),pluginsList)) || (in_array(eng.engine_name.toLowerCase(),settings.plugins))) {
             engines[eng.engine_name] = eng;
             // add entry to main gui menu
             $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
@@ -2057,8 +2056,8 @@ function startVideo(vid_id,title) {
     }
 }
 
-function downloadFile(link,title,vid){
-	if ($('.tabActiveHeader').attr('id') !== 'tabHeader_4') {
+function downloadFile(link,title,vid,toTorrent){
+	if (($('.tabActiveHeader').attr('id') !== 'tabHeader_4') && (toTorrent === undefined)) {
         $("#tabHeader_4").click();
     }
     if (vid === undefined) {
@@ -2125,7 +2124,7 @@ function downloadFile(link,title,vid){
 				// The location for some (most) redirects will only contain the path,  not the hostname;
 				// detect this and add the host to the path.
 				$('#progress_'+vid).remove();
-				return downloadFile(response.headers.location,title,vid);
+				return downloadFile(response.headers.location,title,vid,toTorrent);
 			// Otherwise no redirect; capture the response as normal            
 			} else {
 				pbar.show();
@@ -2164,6 +2163,9 @@ function downloadFile(link,title,vid){
 							if (err) {
 							} else {
 								console.log('successfully renamed '+download_dir+'/'+title);
+                if(toTorrent !== undefined) {
+                     getTorrent(download_dir+'/'+title);
+                }
 							}
 						});
 						$('#progress_'+vid+' strong').html(_('Download ended !'));
@@ -2697,9 +2699,8 @@ function startStreaming(req,res) {
       }
       //if mega userstorage link
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
-        console.log('LIEN USER MEGA....');
-        megaType = currentMedia.title.split('.').pop().toLowerCase();
-        if ((in_array(megaType.toString(),videoArray) !== -1) && (parsedLink.indexOf('&download') === -1)) {
+        var newVar = currentMedia.title.split('.').slice(-1)[0];
+        if ((in_array(newVar,videoArray)) && (parsedLink.indexOf('&download') === -1)) {
           if (parsedLink.indexOf('&direct') === -1){
             var ffmpeg = spawnFfmpeg('',device,host,bitrate,function (code) { // exit
                     console.log('child process exited with code ' + code);
@@ -2747,7 +2748,7 @@ function startStreaming(req,res) {
               initPlayer();
               return;
           }
-          if ((videoArray.contains(megaType)) && (parsedLink.indexOf('&download') === -1)) {
+          if ((in_array(String(megaType),videoArray)) && (parsedLink.indexOf('&download') === -1)) {
             $('#song-title').empty().html(_('Playing: ')+megaName);
             if (parsedLink.indexOf('&direct') === -1){
                 console.log('playing movie with transcoding');
@@ -2974,30 +2975,21 @@ function cleanffar() {
 function in_array(needle, haystack){
     var found = 0;
     for (var i=0, len=haystack.length;i<len;i++) {
-        if (haystack[i] == needle) return i;
-            found++;
-    }
-    return -1;
-}
-
-//// extend array
-Array.prototype.contains = function(obj) {
-    var i = this.length;
-    while (i--) {
-        if (this[i] === obj) {
-            return true;
+        if (haystack[i] === needle) {
+           return true;
         }
+        found++;
     }
     return false;
 }
 
 
-$.get('http://www.free.fr/adsl/pages/television/services-de-television/acces-a-plus-250-chaines/themes/theme-24.html',function(res) {
-  var list = $('.linkChaine',res); 
-  $.each(list,function(index,channel){
-      title = $(this).attr('data-chaineid')+'.png';console.log(title)
-      img = 'http://www.free.fr/'+$(this).find('img')[0].src.replace('file:///','');console.log(img)
-      vid = ((Math.random() * 1e6) | 0);
-      downloadFile(img,title,vid);
-  });
-});
+//$.get('http://www.free.fr/adsl/pages/television/services-de-television/acces-a-plus-250-chaines/themes/theme-24.html',function(res) {
+  //var list = $('.linkChaine',res); 
+  //$.each(list,function(index,channel){
+      //title = $(this).attr('data-chaineid')+'.png';console.log(title)
+      //img = 'http://www.free.fr/'+$(this).find('img')[0].src.replace('file:///','');console.log(img)
+      //vid = ((Math.random() * 1e6) | 0);
+      //downloadFile(img,title,vid);
+  //});
+//});

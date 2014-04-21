@@ -22,7 +22,7 @@ var gui = require('nw.gui');
 var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
-var version = "0.9.8.6";
+var version = "0.9.8.7";
 
 //localize
 var i18n = require("i18n");
@@ -156,10 +156,6 @@ var htmlConfig='<div style="height:36px;"> \
         <div class="ItemCheckbox left">\
           <label for="mega-files">Mega-files</label>\
           <input class="pluginCheckBox" type="checkbox" id="mega-files" name="mega-files">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="omgtorrent">Omgtorrent</label>\
-          <input class="pluginCheckBox" type="checkbox" id="omgtorrent" name="omgtorrent">\
         </div>\
         <div class="ItemCheckbox left">\
           <label for="omgtorrent">Cpasbien</label>\
