@@ -22,13 +22,17 @@ var gui = require('nw.gui');
 var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
-var version = "0.9.8.7";
+var nodeip = require("node-ip");
+var version = "0.9.8.8";
 
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
 var localeList = ['en', 'fr', 'es'];
 var locale = 'en';
+var locale_changed = false;
+var shares_changed = false;
+var plugins_changed = false;
 
 var settings = {};
 var selected_interface;
@@ -46,22 +50,26 @@ if (process.platform === 'win32') {
 
 try {
     settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-    if (settings.edit === false) {
-		if ((settings.version === undefined) || (settings.version !== version))  {
-			settings.version = version;
-			fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-				if(err) {
-				console.log(err);
-				} else {
-				window.location="index.html";
-				return;
-				}
-			});
-		} else {
-			window.location="index.html";
-			return;
-		}
+    var ip = nodeip.address();
+    console.dir("Adresse ip: " +ip);
+    if ((settings.fromPopup === true) || (settings.fromPopup === true)) {
+      return;
     }
+    if ((settings.edit === false) && (settings.fromPopup === false)) {
+      if ((settings.version === undefined) || (settings.version !== version))  {
+        settings.version = version;
+      } else if ((settings.ipaddress === '') || (settings.ipaddress !== ip)) {
+        settings.ipaddress = ip;
+      } else if (settings.init === undefined) {
+        settings.init = true;
+      } 
+      writeConf(settings);
+		} else {
+      if(settings.init === true) {
+        window.location="index.html";
+        return;
+      }
+		}
 } catch(err) {
 	
 }
@@ -186,7 +194,11 @@ $(document).ready(function() {
     $("select#countries option:selected").each(function () {
 			locale = $(this).val();
       settings.locale = locale;
+      locale_changed = true;
       settings.edit = true;
+      if(settings.fromPopup === true) {
+          settings.locale_changed = true;
+      }
       saveSettings();
       confWin.reload();
 		});
@@ -199,7 +211,8 @@ $(document).ready(function() {
 		});
 	});
     $('#valid_config').click(function(e) {
-		savePopConf();
+      settings.init = true;
+      savePopConf();
     });
     //resolutions select
     var selected_resolution = settings.resolution;
@@ -209,6 +222,12 @@ $(document).ready(function() {
 	    settings.resolution = $(this).val();
 	});
     });
+    // checkbox changes
+    $('.pluginCheckBox:checkbox').change(function() {
+        plugins_changed = true;
+        settings.plugins_changed = true;
+    }); 
+    
     // choose download_dir
     $('#choose_download_dir').click(function() {
 	chooseDownloadDir();
@@ -216,19 +235,23 @@ $(document).ready(function() {
     // shared dirs
     $('#add_shared_dir').click(function() {
 		addSharedDir();
+    shares_changed = true;
+    settings.shares_changed = true;
     });
     $('#remove_shared_dir').click(function() {
 		removeSharedDir();
+    shares_changed = true;
+    settings.shares_changed = true;
     });
     //init
-    if ((settings.interface === undefined) || (settings.interface === '') || (settings.ipaddress === undefined) || (settings.ipaddress === '')) {
+    if ((settings.interface === undefined) || (settings.interface === '')) {
 		selected_interface = '';
 		$("#interface_select").val('');
 	} else {
 		selected_interface = settings.interface;
 		$("#interface_select").val(selected_interface);
 	}
-    $(document).on('change',"#sharedDirDialog",function(){
+  $(document).on('change',"#sharedDirDialog",function(){
 		addDir($('#sharedDirDialog').val());
 	});
 	
@@ -310,6 +333,17 @@ without notice.");
   initCheck();
 });
 
+function writeConf(settings) {
+    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+				if(err) {
+          console.log(err);
+				} else {
+          window.location="index.html";
+          return;
+				}
+			});
+}
+
 function getUserHome() {
   return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
@@ -334,7 +368,7 @@ function makeConfdir(confdir) {
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false,"gmailUser":"","gmailPass":"","plugins":[]}', function(err) {
+    fs.writeFile(confdir+'/ht5conf.json', '{"init":false,"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false,"gmailUser":"","gmailPass":"","plugins":[]}', function(err) {
         if(err) {
             console.log(err);
 	    return;
@@ -433,6 +467,10 @@ function getIpaddress() {
 		if (details.family=='IPv4') {
 		  if (dev === decodeURIComponent(settings.interface)) {
 			settings.ipaddress = details.address;
+      var ip = nodeip.address();
+      if (settings.ipaddress !== ip) {
+        settings.ipaddress = ip;
+      }
 		  }
 		  ++alias;
 		}
@@ -445,9 +483,9 @@ function savePopConf() {
     settings.edit=false;
     settings.fromPopup = false;
     var plugins_length = settings.plugins.length;
-    var locale_changed = false;
-    if (locale !== settings.locale) {
-		locale_changed= true;
+    if (settings.locale_changed) {
+		locale_changed = true;
+    settings.locale_changed = false;
 		settings.locale=locale;
 	}
   //gmail
@@ -470,7 +508,8 @@ function savePopConf() {
       //reload plugins if needed
       if (index+1 === list.length) {
         if (fromPopup === true){
-          if(settings.plugins.length !== plugins_length) {
+          if(settings.plugins_changed === true) {
+              settings.plugins_changed = false;
               window.haveParent.window.settings=settings;
               window.haveParent.window.reloadPlugins();
           }
@@ -478,16 +517,30 @@ function savePopConf() {
       }
   });
   
+    
+    if (settings.fromPopup === true) {
+      if (settings.shares_changed === true) {
+        settings.shares_changed = false;
+        settings.scan_dirs = true;
+      } else {
+        settings.scan_dirs = false;
+      }
+    }
+  
     if (settings.download_dir === '') {
 		$('#download_path').val('REQUIRED!!!').css({'color':'red'});
 		return;
+    }
+    var ip = nodeip.address();
+    if (settings.ipaddress !== ip) {
+      settings.ipaddress = ip;
     }
     fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
         if(err) {
             console.log(err);
         } else {
 			if (fromPopup === true){
-				if (locale_changed === true) {
+				if ((locale_changed === true) || (shares_changed === true)) {
 					window.haveParent.reload();
 				} else {
 					window.haveParent.window.settings=settings;
@@ -502,11 +555,6 @@ function savePopConf() {
 				confWin.close(true);
 			} else {
 				window.location='index.html';
-				if (settings.shared_dirs.length !== shared_length) {
-					settings.scan_dirs = true;
-				} else {
-					settings.scan_dirs = false;
-				}
 				window.window.settings=settings;
 			}
 			console.log("ht5config config updated successfully!");

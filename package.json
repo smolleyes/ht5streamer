@@ -11,8 +11,5 @@
     "min_height": 200,
     "title": "ht5streamer",
     "show": false
-  },
-  "dependencies": {
-    "mobile-detect": "~0.1.0"
   }
 }

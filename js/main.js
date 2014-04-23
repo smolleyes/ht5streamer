@@ -78,13 +78,13 @@ var os = require('os');
 var vidStreamer = require("vid-streamer");
 var wrench = require("wrench");
 var mega = require('mega');
-var exec = require("child_process").exec;
 var cp = require("child_process");
+var exec = cp.exec;
 var chdir = require('chdir');
 var AdmZip = require('adm-zip');
 var util = require('util');
 var deviceType = require('ua-device-type');
-var nwg = require("nwglobal");
+var nodeip = require("node-ip");
 
 //localize
 var i18n = require("i18n");
@@ -1157,7 +1157,7 @@ function reloadPlugins() {
           if(in_array(eng.engine_name.toLowerCase(),excludedPlugins)) {
             return true;
           }
-          if ((in_array(eng.engine_name.toLowerCase(),pluginsList)) || (in_array(eng.engine_name.toLowerCase(),settings.plugins))) {
+          if ((in_array(eng.engine_name.toLowerCase(),pluginsList) === false) || (in_array(eng.engine_name.toLowerCase(),settings.plugins))) {
             engines[eng.engine_name] = eng;
             // add entry to main gui menu
             $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
@@ -1187,9 +1187,9 @@ function loadApp() {
         try {
           var eng = require(pluginsDir+file);
           if(in_array(eng.engine_name.toLowerCase(),excludedPlugins)) {
-				return true;
-		  }
-          if ((in_array(eng.engine_name.toLowerCase(),pluginsList)) || (in_array(eng.engine_name.toLowerCase(),settings.plugins))) {
+            return true;
+          }
+          if ((in_array(eng.engine_name.toLowerCase(),pluginsList) === false) || (in_array(eng.engine_name.toLowerCase(),settings.plugins))) {
             engines[eng.engine_name] = eng;
             // add entry to main gui menu
             $('#engines_select').append('<option value="'+eng.engine_name+'">'+eng.engine_name+'</option>');
@@ -2563,7 +2563,7 @@ function startStreaming(req,res) {
           });
       }
       var linkParams = parsedLink.split('&');
-      var quality = "normal";
+      var bitrate = 300;
       var swidth;
       var sheight;
       try {
@@ -2589,31 +2589,13 @@ function startStreaming(req,res) {
       if (parsedLink.indexOf('&size') !== -1){
         megaSize = linkParams[2].replace('size=','');
       }
-      if (parsedLink.indexOf('&quality') !== -1){
-        quality = parsedLink.match(/&quality=(.*?)&/)[1];
+      if (parsedLink.indexOf('&bitrate') !== -1){
+        bitrate = parsedLink.match(/&bitrate=(.*?)&/)[1];
       }
       var megaName = $('#song-title').text().replace(_('Playing: '),'');
       var megaType = megaName.split('.').pop().toLowerCase();
       host = req.headers['host'];
-      console.log("QUALITE TV: " + quality);
-      var bitrate = 0;
-      if (host.indexOf('192.') !== -1) {
-        if (quality === 'high') {
-            bitrate = "0k"
-        } else if (quality === 'normal') {
-            bitrate = "1800k"
-        } else if (quality === 'low') {
-            bitrate = "1200k"
-        }
-      } else {
-        if (quality === 'high') {
-            bitrate = "600k"
-        } else if (quality === 'normal') {
-            bitrate = "320k"
-        } else if (quality === 'low') {
-            bitrate = "200k"
-        }
-      }
+      console.log("QUALITE TV: " + bitrate + "k");
       //if freeboxtv
       var date = new Date();
       if (tv === true) {
@@ -2625,10 +2607,10 @@ function startStreaming(req,res) {
           var args;
           link = link.replace(/\+/g,' ');
           host = req.headers['host'];
-          if (host.indexOf('192.') !== -1) {
-            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','128k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+          if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
+            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate+"k",'-c:a', 'libopus','-b:a','128k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           } else {
-            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate,'-c:a', 'libopus','-b:a','64k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
+            args = ['-i',link,'-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate+"k",'-c:a', 'libopus','-b:a','64k','-s',swidth+'x'+sheight,'-threads', '0', '-'];
           }
           if (process.platform === 'win32') {
               ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
@@ -2927,22 +2909,22 @@ function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
     args = ['-re','-i',link,'-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
   } else {
     if (device === "phone") {
-      if (host.indexOf('192.') !== -1) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
+      if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     } else if (device === 'tablet') {
-      if (host.indexOf('192.') !== -1) {
+      if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
         args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     } else {
-      if (host.indexOf('192.') !== -1) {
+      if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
         args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128', '-threads', '0', 'pipe:1'];
       }
     }
   }
