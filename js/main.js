@@ -2587,10 +2587,18 @@ function startStreaming(req,res) {
         megaKey = linkParams[1].replace('key=','');
       }
       if (parsedLink.indexOf('&size') !== -1){
-        megaSize = linkParams[2].replace('size=','');
+        try {
+          megaSize = parsedLink.match(/&size=(.*?)&/)[1];
+        } catch(err) {
+          megaSize = parsedLink.match(/&bsize=(.*)/)[1];
+        }
       }
       if (parsedLink.indexOf('&bitrate') !== -1){
-        bitrate = parsedLink.match(/&bitrate=(.*?)&/)[1];
+        try {
+          bitrate = parsedLink.match(/&bitrate=(.*?)&/)[1];
+        } catch(err) {
+          bitrate = parsedLink.match(/&bitrate=(.*)/)[1];
+        }
       }
       var megaName = $('#song-title').text().replace(_('Playing: '),'');
       var megaType = megaName.split('.').pop().toLowerCase();
@@ -2910,21 +2918,9 @@ function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
   } else {
     if (device === "phone") {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate+"k",'-c:a', 'libopus','-b:a','128k','-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
-      }
-    } else if (device === 'tablet') {
-      if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
-      } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
-      }
-    } else {
-      if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
-      } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+"k",'-c:a', 'libvorbis', '-b:a','128', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264','-preset', 'fast','-deinterlace',"-aspect", "16:9","-b:v",bitrate+"k",'-c:a', 'libopus','-b:a','64k','-threads', '0', 'pipe:1'];
       }
     }
   }
