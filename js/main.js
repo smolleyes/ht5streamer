@@ -25,6 +25,7 @@ onload = function() {
       }
       // clean torrent dir
       wipeTmpFolder();
+      UPNPserver.stop();
 			// close opened pages in engines
 			$.each(engines, function(key, value){
 				var page = value.page;
@@ -85,6 +86,7 @@ var AdmZip = require('adm-zip');
 var util = require('util');
 var deviceType = require('ua-device-type');
 var nodeip = require("node-ip");
+var upnpServer = require("upnpserver");
 
 //localize
 var i18n = require("i18n");
@@ -136,6 +138,7 @@ var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 var torrentsFolder = path.join(os.tmpDir(), 'Popcorn-Time');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 if( ! fs.existsSync(torrentsFolder) ) { fs.mkdir(torrentsFolder); }
+var UPNPserver;
 
 // global var
 var search_engine = 'youtube';
@@ -899,6 +902,9 @@ function main() {
     $('#song-title').empty().append(_('Stopped...'));
     startMegaServer();
     
+    //load upnp server
+    startUPNPserver();
+    
     window.ondragover = function(e) { e.preventDefault(); return false };
     window.ondrop = function(e) { e.preventDefault(); return false };
     
@@ -916,6 +922,22 @@ function main() {
         return false;
     };
     
+}
+
+function startUPNPserver() {
+    var upnpDirs = [];
+    var uuid = '3a272073-c632-4b0b-aacf-d0ba28e18948';
+    $.each(settings.shared_dirs,function(index,dir){
+          var share = {};
+          share.path=dir;
+          share.mountPoint = path.basename(dir).replace(' ','_');
+          upnpDirs.push(share);
+          if(index+1 == settings.shared_dirs.length) {
+              UPNPserver = new upnpServer({name:'Ht5streamer_'+os.hostname(),uuid:uuid},upnpDirs);
+              console.log(UPNPserver)
+              UPNPserver.start();
+          }
+    });
 }
 
 function stopTorrent() {
@@ -2098,6 +2120,7 @@ function downloadFile(link,title,vid,toTorrent){
     $('#progress_'+vid+' strong').html(_('Waiting for connection...'));
     var opt = {};
     var val = $('#progress_'+vid+' progress').attr('value');
+    title = title.trim();
     opt.link = link;
     opt.title = title;
     opt.vid = vid;
@@ -2159,7 +2182,7 @@ function downloadFile(link,title,vid,toTorrent){
 						$('#progress_'+vid+' strong').html(_("Download canceled!"));
 						setTimeout(function(){pbar.hide()},5000);
 					} else {
-						fs.rename(target,download_dir+'/'+title.replace(/  /g,' '), function (err) {
+						fs.rename(target,download_dir+'/'+title.replace(/  /g,' ').trim(), function (err) {
 							if (err) {
 							} else {
 								console.log('successfully renamed '+download_dir+'/'+title);
@@ -2450,44 +2473,7 @@ function startMegaServer() {
     } catch(err) {
       megaServer = http.createServer(function (req, res) {
         if((req.url !== "/favicon.ico") && (req.url !== "/")) {
-            if (req.url.indexOf("/getPlaylist") !== -1) {
-                var html="";
-                var json = {};
-                json.channels = [];
-                $.get('http://mafreebox.freebox.fr/freeboxtv/playlist.m3u',function(resp){
-                  var list = resp.split('#EXTINF');
-                  $.each(list,function(index,c){
-                    var chaine = c.trim().replace(/(\r\n|\n|\r)/gm,"");
-                    var infos = {};
-                    try {
-                        infos.canal = chaine.split(" ")[0].split(",")[1];
-                        infos.link = 'rtsp://'+chaine.match(/rtsp:\/\/(.*)/)[1];
-                        var n = chaine.match(/(.*?)-(.*?)\)/)[2]+(')');
-                        infos.name = n.trim();
-                        infos.thumb = 'img/fbxLogos/'+infos.canal+'.png';
-                        json.channels.push(infos);
-                        var link =  'http://'+req.headers["host"]+'/?file='+infos.link+'&tv';
-                        html+='<a class="tvLink" href="#" src="'+link+'" style="decoration:none;">'+infos.name+'</a><br>';
-                      if (index+1 === list.length) {
-                        if (req.url.indexOf("json") !== -1){
-                              var body = JSON.stringify(json);
-                              res.writeHead(200, {"Content-Type": "application/json;charset=utf-8"});
-                              res.end(body);
-                        } else {
-                              res.writeHead(200,{'Content-type': 'text/html'});
-                              res.end(html, 'utf-8');
-                        }
-                      }
-                    } catch(err){
-                      console.log("n'est pas une chaine", err);
-                    }
-                 });
-              });
-            } else if (req.url.indexOf("/getLocalDbJson") !== -1){
-                getLocalDb(res);
-            } else {
-              startStreaming(req,res);
-            }
+            startStreaming(req,res);
         }
       }).listen(8888);
       console.log('Megaserver ready on port 8888');
@@ -2509,60 +2495,6 @@ function startStreaming(req,res) {
       } catch(err) {
         console.log(err);
       }
-      if (parsedLink === '/tv'){
-          console.log("tv freebox demandée");
-          device='other';
-          host='http://'+req.headers['host'];
-          var list;
-          $.get('http://mafreebox.freebox.fr/freeboxtv/playlist.m3u',function(resp){
-              list = resp.split('#EXTINF');
-              var html='<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Ma tv Freebox</title> \
-              <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script> \
-              <script>$(document).on("ready",function() { \
-                  $(document).on("change","select#tvList",function(e) { \
-                    $("select#tvList option:selected").each(function () { \
-                      var width = screen.height; \
-                      var height = screen.width; \
-                      var link = $(this).val()+"&screen="+width+"x"+height; \
-                      $("#vlcLink").attr("href",link).show(); \
-                      $("#vlcLink2").attr("href",decodeURIComponent(link.replace("vlc://",""))).show(); \
-                    }); \
-                  }); \
-                }); \
-              </script> \
-              </head><body><select id="tvList"><option class="loadTv" value="">Liste des chaînes</option>';
-              $.each(list,function(index,c){
-                var chaine = c.trim();
-                var infos = {};
-                try {
-                  if((chaine.indexOf('bas débit') !== -1) || (chaine.indexOf('standard') !== -1)) {
-                    infos.canal = chaine.split(" ")[0].split(",")[1];
-                    infos.link = 'rtsp://'+chaine.match(/rtsp:\/\/(.*)/)[1];
-                    var n = chaine.match(/(.*?)-(.*?)\)/)[2]+(')');
-                    infos.name = n.trim();
-                    var link =  'vlc://http://'+req.headers["host"]+'/?file='+infos.link+'&tv';
-                    html+='<option class="loadTv" value="'+link+'">'+infos.canal+' - '+infos.name+'</option>';
-                    if (index+1 === list.length) {
-                        html+='</select><p id="selectedChannel"></p><p id="videoLink"></p><a id="vlcLink" href="" style="display:none;">Ouvrir directement dans vlc</a><br><a style="display:none;" id="vlcLink2" href="" style="">Lien de secours à copier dans vlc</a><br><br><p style="color:red">Sur android vous devez utiliser la derniere version de vlc disponible ici: <a href="http://nightlies.videolan.org/">vlc nightly build</a> (prenez la bonne version pour votre cpu)</p></body></html>';
-                        res.writeHead(200,{'Content-type': 'text/html'});
-                        res.end(html, 'utf-8');
-                        return;
-                    }
-                  } else{
-                      if (index+1 === list.length) {
-                        html+='</select><p id="selectedChannel"></p><p id="videoLink"></p><a id="vlcLink" href="" style="display:none;">Ouvrir directement dans vlc</a><br><a style="display:none;" id="vlcLink2" href="" style="">Lien de secours à copier dans vlc</a><br><br><p style="color:red">Sur android vous devez utiliser la derniere version de vlc disponible ici: <a href="http://nightlies.videolan.org/">vlc nightly build</a> (prenez la bonne version pour votre cpu)</p></body></html>';
-                        res.writeHead(200,{'Content-type': 'text/html'});
-                        res.end(html, 'utf-8');
-                        return;
-                      }
-                  }
-                } catch(err){
-                  console.log("n'est pas une chaine");
-                }
-              });
-          });
-      }
-      console.log("PARSEEEEEEEEEEEEE " + parsedLink)
       var linkParams = parsedLink.split('&');
       var bitrate = 300;
       var swidth;
