@@ -71,7 +71,6 @@ var path = require('path');
 var request = require('request');
 var https = require('https');
 var http = require('follow-redirects').http;
-var ffmpeg = require('fluent-ffmpeg');
 var spawn = require('child_process').spawn;
 var url = require('url');
 var wrench = require("wrench");
