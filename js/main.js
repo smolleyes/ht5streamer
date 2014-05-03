@@ -87,6 +87,7 @@ var util = require('util');
 var deviceType = require('ua-device-type');
 var nodeip = require("node-ip");
 var upnpServer = require("upnpserver");
+var uuid = require('node-uuid');
 
 //localize
 var i18n = require("i18n");
@@ -926,14 +927,13 @@ function main() {
 
 function startUPNPserver() {
     var upnpDirs = [];
-    var uuid = '3a272073-c632-4b0b-aacf-d0ba28e18948';
     $.each(settings.shared_dirs,function(index,dir){
           var share = {};
           share.path=dir;
           share.mountPoint = path.basename(dir).replace(' ','_');
           upnpDirs.push(share);
           if(index+1 == settings.shared_dirs.length) {
-              UPNPserver = new upnpServer({name:'Ht5streamer_'+os.hostname(),uuid:uuid},upnpDirs);
+              UPNPserver = new upnpServer({name:'Ht5streamer_'+os.hostname(),uuid:uuid.v4()},upnpDirs);
               console.log(UPNPserver)
               UPNPserver.start();
           }

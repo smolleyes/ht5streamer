@@ -35,9 +35,17 @@
 <link rel="stylesheet" href="css/pictogram-button.css" />
 </head>
 <body>
+  <script>
+   var Gaze = require('gaze').Gaze;
+   var gaze = new Gaze('**/*');
+
+   gaze.on('all', function(event, filepath) {
+     if (location)
+       location.reload();
+   });
+  </script>
     <input style="display:none;" id="fileDialog" type="file" nwdirectory />
     <div id="main">
-        
     </div>
     <p id="loadingApp" style="font-weight:bold;display:none;top:48%;position:relative;left:50%;width:250px;margin-left:-125px;"></p>
 </body>
