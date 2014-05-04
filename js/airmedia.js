@@ -32,6 +32,7 @@ $(document).ready(function(){
     try {
         http.get('http://mafreebox.freebox.fr');
         console.log('freebox available, airplay enabled');
+        $('#airplayContainer').show();
     } catch(err) {
         console.log('no freebox available, airplay disabled');
     }
@@ -135,7 +136,7 @@ function wait_user_auth(track_id) {
     });
 }
 
-function login() {
+function login(cb,params) {
     http.get('http://mafreebox.freebox.fr/api/v1/login/',function(res){
         var datas = '';
         res.on('data',function(data){
@@ -150,7 +151,7 @@ function login() {
                   , key = token_string
                   , hash
                 hash = crypto.createHmac('sha1', key).update(text).digest('hex');
-                getSession(hash);
+                getSession(hash,cb,params);
             } else {
                 console.log('can t get login session...')
                 return;
@@ -159,7 +160,7 @@ function login() {
     });
 }
 
-function getSession(passwd) {
+function getSession(passwd,cb,params) {
     var param = {"app_id": APP_ID, "password": passwd};
     var paramString = JSON.stringify(param);
     
@@ -190,8 +191,9 @@ function getSession(passwd) {
             if (resultObject.success === true) {
                 session_token = resultObject.result['session_token'];
                 console.log('session ok!, token : '+session_token);
-                getAirMediaReceivers();
-                $('#airplayContainer').show();
+                if (cb) {
+                	cb(params);
+                } 
             } else {
                 console.log('can t get session token! : '+resultObject);
                 return;
@@ -227,6 +229,7 @@ function getAirMediaReceivers() {
             // check response
             if (resultObject.success === true) {
                 var list = resultObject.result;
+                console.log(list);
                 airMediaDevices = [];
                 $('#fbxPopup').empty();
                 for (var i=0; i<list.length; i++){
@@ -267,6 +270,7 @@ function getAirMediaReceivers() {
                 console.log('can t get airmedia receivers : '+responseString);
                 return;
             }
+            console.log(airMediaDevices);
         });
     });
     req.end();

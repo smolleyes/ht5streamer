@@ -21,7 +21,7 @@ onload = function() {
 	try {
 		win.on('close', function() {
       if (playAirMedia === true) {
-        stop_on_fbx();
+        login(stop_on_fbx);
       }
       // clean torrent dir
       wipeTmpFolder();
@@ -36,14 +36,14 @@ onload = function() {
 					} catch(err) {
             console.log(err);
             if (playAirMedia === true) {
-              stop_on_fbx();
+              login(stop_on_fbx);
             }
 						try {
               page.close(true);
             } catch(err) {
               process.exit();
               if (playAirMedia === true) {
-                stop_on_fbx();
+                login(stop_on_fbx);
               }
             }
 					}
@@ -54,7 +54,7 @@ onload = function() {
 		});
 	} catch(err) {
     if (playAirMedia === true) {
-        stop_on_fbx();
+        login(stop_on_fbx);
     }
     // clean torrent dir
     wipeTmpFolder();
@@ -377,6 +377,12 @@ function main() {
         startSearch(query);
     });
     // open in browser
+    $(document).on('click','#airplay-toggle',function(e) {
+        e.preventDefault();
+        console.log("airplay toggled");
+        login(getAirMediaReceivers);
+    });
+    // open in browser
     $(document).on('click','.open_in_browser',function(e) {
         e.preventDefault();
         gui.Shell.openExternal($(this).attr('href'));
@@ -440,7 +446,7 @@ function main() {
     $('.mejs-playpause-button').click(function(e) {
         if (playAirMedia === true) {
             if (airMediaPlaying === true) {
-              stop_on_fbx();
+              login(stop_on_fbx);
               if (currentMedia.link !== currentAirMedia.link) {
                 setTimeout(function(){
                     $('.mejs-overlay-button').hide();
@@ -505,7 +511,7 @@ function main() {
     $('video').on('loadPlayer',function(e,video){
 		try {
 			if ((playAirMedia === false) && (airMediaPlaying === true)) {
-				stop_on_fbx();
+				login(stop_on_fbx);
 			}
 		} catch(err) {
 		}
@@ -1085,6 +1091,9 @@ function initPlayer() {
   $(".mejs-overlay-loading").hide();
   $(".mejs-overlay-button").show();
 	$('#song-title').empty().append(_('Stopped...'));
+  if(airMediaPlaying === true) {
+      login(stop_on_fbx);
+  }
   try {
     cleanffar();
   } catch(err) {
