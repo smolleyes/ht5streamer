@@ -206,6 +206,7 @@ function getSession(passwd,cb,params) {
 
 // get airmedia receivers list
 function getAirMediaReceivers() {
+    console.log('get airmedia devices')
     var headers = {
         'X-Fbx-App-Auth': session_token
     };
@@ -229,51 +230,101 @@ function getAirMediaReceivers() {
             // check response
             if (resultObject.success === true) {
                 var list = resultObject.result;
-                console.log(list);
                 airMediaDevices = [];
                 $('#fbxPopup').empty();
-                for (var i=0; i<list.length; i++){
-                    if (list[i].capabilities['video'] === true) {
-                       var name = list[i].name;
+                $.each(list,function(index1,item) {
+                    if (item.capabilities['video'] === true) {
+                        var name = item.name;
                         if (airMediaDevices.length === 0) {
                             $('#fbxPopup').append('<span style="position:relative;top:-3px;">'+name + ' :</span> <input type=radio name="'+name+'" checked="true" value="'+name+'"> <br />');
                         } else {
                             $('#fbxPopup').append('<span style="position:relative;top:-3px;">'+name + ' :</span> <input type=radio name="'+name+'" value="'+name+'"> <br />');
                         }
                         airMediaDevices.push(name);
-                    }
-                }
-                if (airMediaDevice !== '') {
-                    $("#tiptip_content input").each(function(){
-                        var name = $(this).prop('name');
-                        if (name !== airMediaDevice) {
-                            $(this).prop('checked','');
+                    } else {
+                        if(index1+1 === list.length) {
+                          return loadQtip();
                         }
-                    });
-                    $("#tiptip_content input[name='"+airMediaDevice+"']").prop('checked','checked');
-                }
-                if (airMediaDevices.length === 1) {
-                    airMediaDevice = airMediaDevices[0];
-                    return;
-                } else if (airMediaDevices.length === 0){
-                   $(function(){
-                        var text = '<p>Allumez votre freebox player...</p>';
-                        $(".tiptip").tipTip({activation: "click",content : text,keepAlive : true});
-                   });
-                } else {
-                    $(function(){
-                        var text = $("#fbxPopup").html();
-                        $(".tiptip").tipTip({activation: "click",content : text,keepAlive : true});
-                    });
-                }
+                        return true;
+                    }
+                    if(index1+1 === list.length) {
+                        return loadQtip();
+                    }
+                  });
+                
             } else {
                 console.log('can t get airmedia receivers : '+responseString);
                 return;
             }
-            console.log(airMediaDevices);
         });
     });
     req.end();
+}
+
+function loadQtip() {
+  if (airMediaDevice !== '') {
+      $("#fbxPopup input").each(function(){
+          var name = $(this).prop('name');
+          if (name !== airMediaDevice) {
+              $(this).prop('checked','');
+          }
+      });
+      $("#fbxPopup input[name='"+airMediaDevice+"']").prop('checked','checked');
+  }
+  if (airMediaDevices.length === 1) {
+      airMediaDevice = airMediaDevices[0];
+      return;
+  } else if (airMediaDevices.length === 0){
+      var text = '<p>Aucun Freebox player allumé! <br>Allumez votre freebox player et réactivez ce bouton...</p>';
+      $("#airplay-toggle").qtip({
+      content : {text: text},
+      position: {
+        corner: {
+          target: 'bottomMiddle',
+          tooltip: 'topMiddle'
+        }
+      },
+      show: { ready: true },
+      hide: {
+        event: 'unfocus',
+        effect: function(offset) {
+            $(this).slideDown(1000); // "this" refers to the tooltip
+        }
+      },
+      style: { classes : 'qtip-youtube'},
+      // The magic
+      api: {
+        onRender: function() {
+          this.elements.tooltip.click(this.hide) //
+        }
+      }
+    });
+  } else {
+    var text = $('#fbxPopup').html();
+    $("#airplay-toggle").qtip({
+      content : {text: text},
+      position: {
+        corner: {
+          target: 'bottomMiddle',
+          tooltip: 'topMiddle'
+        }
+      },
+      show: { ready: true },
+      hide: {
+        event: 'unfocus',
+        effect: function(offset) {
+            $(this).slideDown(1000); // "this" refers to the tooltip
+        }
+      },
+      style: { classes : 'qtip-youtube'},
+      // The magic
+      api: {
+        onRender: function() {
+          this.elements.tooltip.click(this.hide) //
+        }
+      }
+    });
+  }
 }
 
 

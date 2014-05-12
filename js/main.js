@@ -139,6 +139,7 @@ var torrentsFolder = path.join(os.tmpDir(), 'Popcorn-Time');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 if( ! fs.existsSync(torrentsFolder) ) { fs.mkdir(torrentsFolder); }
 var UPNPserver;
+var airplayToggleOn = false;
 
 // global var
 var search_engine = 'youtube';
@@ -318,6 +319,7 @@ var htmlStr = '<div id="menu"> \
 <ol> \
 </ol> \
 </div> \
+<div id="tipContent" style="display:none;"></div> \
 </div>';
 
 try {
@@ -375,12 +377,6 @@ function main() {
         current_start_index = 1;
         current_prev_start_index = 1;
         startSearch(query);
-    });
-    // open in browser
-    $(document).on('click','#airplay-toggle',function(e) {
-        e.preventDefault();
-        console.log("airplay toggled");
-        login(getAirMediaReceivers);
     });
     // open in browser
     $(document).on('click','.open_in_browser',function(e) {
@@ -856,21 +852,23 @@ function main() {
     // airplay
     $('#airplay-toggle').click(function(e) {
         e.preventDefault();
-        $('#airplay-toggle').toggleClass('airplay-enabled','airplay-disabled');
-        if (playAirMedia === false) {
+        if (airplayToggleOn === false) {
             playAirMedia = true;
-            login();
+            airplayToggleOn = true;
+            login(getAirMediaReceivers);
+            $('#airplay-toggle').removeClass('airplay-disabled').addClass('airplay-enabled');
         } else {
-            $('#tiptip_holder').remove();
-            login();
+            $('#airplay-toggle').qtip('destroy', true);
+            $('#airplay-toggle').removeClass('airplay-enabled').addClass('airplay-disabled');
+            airplayToggleOn = false;
             playAirMedia = false;
         }
     });
     
-    $(document).on('change','#tiptip_content input',function(){
+    $(document).on('change','.qtip-content input',function(){
         var selected = $(this).prop('name');
         airMediaDevice = selected;
-        $("#tiptip_content input").each(function(){
+        $(".qtip-content input").each(function(){
             var name = $(this).prop('name');
             if (name !== selected) {
                 $(this).prop('checked','');
