@@ -166,3 +166,6 @@ Please ask your system administrator to enable user sharing.
 Nautilus-Share-Message: Called "net usershare info" but it failed: « net usershare » a retourné l'erreur 255 : net usershare: cannot open usershare directory /var/lib/samba/usershares. Error Aucun fichier ou dossier de ce type
 Please ask your system administrator to enable user sharing.
 
+
+(nw:694): Gtk-WARNING **: cannot open display: 
+[696:0100/000000:ERROR:zygote_linux.cc(478)] write: Relais brisé (pipe)

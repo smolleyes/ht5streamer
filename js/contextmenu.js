@@ -27,6 +27,8 @@ $(document).ready(function() {
             $('#custom-menu ol').empty().append('<li><a id="mega_link" href="#" alt="'+text+'">'+_("Open mega link")+'</a></li>');
         } else if (text.indexOf('.torrent') !== -1){
             $('#custom-menu ol').empty().append('<li><a id="torrent_link" href="#" alt="'+text+'">'+_("Open Torrent")+'</a></li>');
+        } else if (text.indexOf('magnet:?xt') !== -1){
+            $('#custom-menu ol').empty().append('<li><a id="magnet_link" href="#" alt="'+text+'">'+_("Open Magnet")+'</a></li>');
         }
   });
 	$(document).on("rightclick", ".start_video", function(e) {
@@ -129,6 +131,14 @@ $(document).ready(function() {
     if(vlink.indexOf('file://') !== -1) {
       vlink = decodeURIComponent(vlink).replace("file://",'');
     }
+    console.log(vlink);
+    getTorrent(vlink);
+		$('#custom-menu').hide();
+	});
+  // open torrent magnet
+	$(document).on('click','#magnet_link',function(e) {
+		e.preventDefault();
+		var vlink = $(this).attr('alt');
     console.log(vlink);
     getTorrent(vlink);
 		$('#custom-menu').hide();

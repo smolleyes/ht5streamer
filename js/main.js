@@ -134,8 +134,8 @@ var airMediaPlaying = false;
 var ffmpeg;
 var ffar = [];
 var torrentsArr = [];
-var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 var torrentsFolder = path.join(os.tmpDir(), 'Popcorn-Time');
+var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 if( ! fs.existsSync(torrentsFolder) ) { fs.mkdir(torrentsFolder); }
 var UPNPserver;
@@ -588,7 +588,8 @@ function main() {
         var link = $(this).attr('href');
         var title= $(this).attr('alt');
         var engine = title.split('::')[2];
-        if (engine === 'dailymotion') {
+        console.log(link, search_engine)
+        if (search_engine === 'dailymotion') {
             var req = request(link, function (error, response, body) {
                 if (!error) {
                     var link = response.request.href;
@@ -940,40 +941,6 @@ function startUPNPserver() {
               console.log(UPNPserver)
               UPNPserver.start();
           }
-    });
-}
-
-function stopTorrent() {
-  $.each(torrentsArr,function(index,torrent) {
-    wipeTmpFolder();
-    clearTimeout(loadedTimeout);
-    try {
-    videoStreamer = null;
-    console.log("stopping torrent :" + torrent.name);
-    var flix = torrent.obj;
-    torrentsArr.pop(index,1);
-    flix.clearCache();
-    flix.destroy();
-    delete flix;
-    playFromHttp = false;
-  } catch(err) {
-      playFromHttp = false;
-      console.log(err);
-  }
-  });
-}
-
-var wipeTmpFolder = function() {
-    if( typeof tmpFolder != 'string' ){ return; }
-    fs.readdir(tmpFolder, function(err, files){
-        for( var i in files ) {
-            fs.unlink(tmpFolder+'/'+files[i],function(){console.log("file deleted");});
-        }
-    });
-    fs.readdir(torrentsFolder, function(err, files){
-        for( var i in files ) {
-            fs.unlink(tmpFolder+'/'+files[i],function(){console.log("file deleted");});
-        }
     });
 }
 
@@ -1490,9 +1457,9 @@ function startSearch(query){
 }
 
 function searchRelated(vid,page,engine) {
-	if (engine === 'youtube') {
+	if (search_engine === 'youtube') {
 		youtube.searchRelated(vid,page,searchFilters,function(datas){ getVideosDetails(datas,'youtube',true,vid); });
-	} else if (engine === 'dailymotion') {
+	} else if (search_engine === 'dailymotion') {
 		dailymotion.searchRelated(vid,page,searchFilters,function(datas){ getVideosDetails(datas,'dailymotion',true,vid); });
 	}
 }
@@ -1567,7 +1534,7 @@ function getVideosDetails(datas,engine,sublist,vid) {
             return;
         }
         var page = parseInt(p) + 1;
-        if (engine === 'dailymotion') {
+        if (search_engine === 'dailymotion') {
             if (has_more === true) {
                 $('#loadmore_'+vid).attr('alt',''+totalResults+'::'+page+'::'+vid+'::'+engine+'').show();
             } else {
@@ -1720,7 +1687,7 @@ function getChannelsInfos(datas, engine){
 }
 
 function loadPlaylistItems(item, engine) {
-    if (engine === 'dailymotion') {
+    if (search_engine === 'dailymotion') {
         var title = item.name;
         var thumb = item.thumbnail_medium_url;
         var pid = item.id;
@@ -1743,7 +1710,7 @@ function loadPlaylistItems(item, engine) {
 }
 
 function loadChannelsItems(item, engine) {
-    if (engine === 'dailymotion') {
+    if (search_engine === 'dailymotion') {
         var title = item.name;
         var thumb = item.thumbnail_medium_url;
         var pid = item.id;
@@ -1774,7 +1741,7 @@ function loadPlaylistSongs(pid){
     current_start_index = 1;
     current_prev_start_index = 1;
     current_search_page=1;
-    if (engine === 'dailymotion'){
+    if (search_engine === 'dailymotion'){
         dailymotion.loadSongs(plid,length,current_search_page, function(datas, length, pid, engine) { fillPlaylistFromPlaylist(datas, length, pid, engine); });
     }
     else if ( engine === 'youtube') {
@@ -1796,7 +1763,7 @@ function loadChannelSongs(pid){
     current_search_page=1;
     pagination_init = false;
     current_channel_link = link;
-    if (engine === 'dailymotion'){
+    if (search_engine === 'dailymotion'){
         dailymotion.loadSongs(link,current_search_page, function(datas) { fillPlaylistFromPlaylist(datas, engine); });
     }
     else if ( engine === 'youtube') {
@@ -1861,7 +1828,7 @@ function fillPlaylistFromChannel(datas,engine) {
         $('#search_results').html('<p><strong>'+totalResults+'</strong> '+ _("videos found in this channel")+' </p>');
         try {
             for(var i=0; i<items.length; i++) {
-                if (engine === 'youtube') {
+                if (search_engine === 'youtube') {
                     youtube.getVideoInfos('http://www.youtube.com/watch?v='+items[i].id,i,items.length,function(datas) {fillPlaylist(datas,false,'','youtube');});
                 }
             }
@@ -1900,7 +1867,7 @@ function changeChannelPage() {
 
 function fillPlaylistFromPlaylist(datas, length, pid, engine) {
     var sublist=false;
-    if (engine === 'dailymotion') {
+    if (search_engine === 'dailymotion') {
         var items=datas.list;
         for(var i=0; i<items.length; i++) {
             dailymotion.getVideoInfos(items[i].id,i,items.length,function(datas) {fillPlaylist(datas,false,'','dailymotion');});
@@ -2016,9 +1983,9 @@ function printVideoInfos(infos,solo,sublist,sublist_id,engine){
         } else if ($('#youtube_entry_res_sub_'+vid+' a.video_link').length === 0) {
             $('#youtube_entry_res_sub_'+vid).parent().parent().remove();
         }
-        if (engine === 'youtube') {
+        if (search_engine === 'youtube') {
             var slink = "http://www.youtube.com/watch?v="+vid;
-        } else if (engine === 'dailymotion') {
+        } else if (search_engine === 'dailymotion') {
             var slink = "http://www.dailymotion.com/video/"+vid;
         }
         if (sublist === false) {
@@ -2135,19 +2102,21 @@ function downloadFile(link,title,vid,toTorrent){
     var target = download_dir+'/ht5_download.'+startTime;
     var host;
     var path;
+    var parsedLink = url.parse(link);
     try {
-      host = link.match('http://(.*?)/(.*)')[1];
-      path = '/'+link.match('https://(.*?)/(.*)')[2];
+      host = parsedLink.host;
+      path = parsedLink.path;
     } catch(err) {
-      try { 
-        host = link.match('https://(.*?)/(.*)')[1];
-        path = '/'+link.match('https://(.*?)/(.*)')[2];
-      } catch(err) {
-        console.log(err);
-      }
+        console.log(err+' '+ link);
     }
     current_download[opt] = opt;
-    current_download[vid] = request(link);
+    if(search_engine === 'dailymotion') {
+		console.log('DAILYMOTION ' + link)
+		current_download[vid] = http.request(link);
+	} else {
+		current_download[vid] = request(link);
+	}
+	console.log('DOWNLOADING FILE ' + link)
     current_download[vid].on('response' ,function(response) {
 			if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
 				// The location for some (most) redirects will only contain the path,  not the hostname;
@@ -2606,7 +2575,7 @@ function startStreaming(req,res) {
             'Content-Type': 'video/mp4'
         });
         var link = link.replace('file://','');
-        var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
+        var ffmpeg = spawnFfmpeg('',device,'',bitrate,function (code) { // exit
           console.log('child process exited with code ' + code);
           res.end();
         });
@@ -2852,25 +2821,25 @@ function downloadFromMega(link,key,size) {
 function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
   if ((host === undefined) || (link !== '')) {
     //local file...
-    args = ['-re','-i',link,'-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
+    args = ['-re','-i','pipe:0','-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
   } else {
     if (device === "phone") {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libvorbis', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+'k','-c:a', 'libvo_aacenc', '-b:a','128k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libopus', '-b:a','64k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+'k','-c:a', 'libvo_aacenc', '-b:a','64k', '-threads', '0', 'pipe:1'];
       }
     } else if (device === 'tablet') {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvo_aacenc', '-b:a','256k', '-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", bitrate,'-c:a', 'libopus', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high',"-b:v", bitrate+'k','-c:a', 'libvo_aacenc', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     } else {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvorbis', '-b:a','256k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvo_aacenc', '-b:a','256k','-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate,'-c:a', 'libopus', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+'k','-c:a', 'libvo_aacenc', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     }
   }

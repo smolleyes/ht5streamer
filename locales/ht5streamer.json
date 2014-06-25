@@ -106,5 +106,6 @@
 	"Downloading plugins...": "Downloading plugins...",
   "<b><u>Gmail account (optional... used to report some errors) : </u></b>":"<b><u>Gmail account (optional... used to report some errors) : </u></b>",
   "Username: ":"Username: ",
-  "Password: ":"Password: "
+  "Password: ":"Password: ",
+  "Open Magnet" : "Open Magnet link"
 }
