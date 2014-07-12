@@ -1076,11 +1076,24 @@ function init() {
 	pluginsDir = confDir+'/plugins/ht5streamer-plugins-master/';
   chdir(confDir, function() {
       $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
-        var lastRev = res.match(/class="sha">(.*?)</)[1];
-        console.log('lastRev is : ' + lastRev);
-        fs.exists(confDir+'/rev.txt', function (exists) {
-          util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
-        });
+        var lastRev;
+        try {
+			lastRev = $('.sha-block',res).attr('href').split('/').pop();
+			console.log('lastRev is : ' + lastRev);
+			fs.exists(confDir+'/rev.txt', function (exists) {
+			  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
+			});
+		} catch(err) {
+			try {
+				lastRev = res.match(/class="sha">(.*?)</)[1];
+				console.log('lastRev is : ' + lastRev);
+				fs.exists(confDir+'/rev.txt', function (exists) {
+				  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
+				});
+			} catch(err) {
+				main();
+			}
+		}
       });
   });
 }
