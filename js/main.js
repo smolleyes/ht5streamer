@@ -1076,7 +1076,7 @@ function init() {
 	pluginsDir = confDir+'/plugins/ht5streamer-plugins-master/';
   chdir(confDir, function() {
       $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
-        var lastRev = res.match(/data-sha="(.*?)"/)[1];
+        var lastRev = res.match(/class="sha">(.*?)</)[1];
         console.log('lastRev is : ' + lastRev);
         fs.exists(confDir+'/rev.txt', function (exists) {
           util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
@@ -2448,14 +2448,70 @@ function startMegaServer() {
     } catch(err) {
       megaServer = http.createServer(function (req, res) {
         if((req.url !== "/favicon.ico") && (req.url !== "/")) {
-            startStreaming(req,res);
+            getMetadata(req,res);
         }
       }).listen(8888);
       console.log('Megaserver ready on port 8888');
     }
 }
 
-function startStreaming(req,res) {
+function getMetadata(req,res){
+    var ffprobe;
+    var link;
+    var bitrate = '';
+    var resolution = '';
+    var parsedLink = decodeURIComponent(url.parse(req.url).href);
+    try {
+        link = parsedLink.match(/\?file=(.*?)&tv/)[1].replace(/\+/g,' ');
+    } catch(err) {
+        try {
+            link = parsedLink.match(/\?file=(.*)/)[1].replace(/\+/g,' ');
+        } catch(err) {
+            res.end();
+            return;
+        }
+    }
+    //var args = ['-show_streams','-print_format','json',link];
+    var args = [link];
+    var error = false;
+    if (process.platform === 'win32') {
+        ffprobe = spawn(exec_path+'/ffprobe.exe', args);
+    } else {
+        ffprobe = spawn(exec_path+'/ffprobe', args);
+    }
+    ffprobe.stderr.on('data', function(data) {
+        var infos = data.toString();
+        if(infos.indexOf('453 Not Enough Bandwidth') !== -1) {
+            res.writeHead(400,{"Content-Type": "text/html"});
+            res.write("Pas assez de débit");
+            res.end();
+            error = true;
+        }
+        try{
+            if (resolution === '') {
+                var vinfos = infos.match(/Video:(.*)/)[1];
+                console.log(vinfos)
+                resolution = vinfos.toLowerCase().match(/\d{3}(?:\d*)?x\d{3}(?:\d*)/)[0];
+            }
+        }catch(err){
+
+        }
+    });
+    
+    ffprobe.on('exit', function(data) {
+        if(error) {
+            return;
+        }
+        console.log('[DEBUG] ffprobe exited...'+bitrate+' '+resolution);
+        var width = 640;
+        var height = 480;
+        width = parseInt(resolution.split("x")[0]);
+        height = parseInt(resolution.split("x")[1]);
+        startStreaming(req,res,width,height)
+    });
+}
+
+function startStreaming(req,res,width,height) {
     try {
       var baseLink = url.parse(req.url).href;
       var tv = false;
@@ -2465,6 +2521,8 @@ function startStreaming(req,res) {
       var parsedLink = decodeURIComponent(url.parse(req.url).href);
       var device = deviceType(req.headers['user-agent']);
       console.log("Device: " + device);
+      
+      
       try {
         cleanffar();
       } catch(err) {
@@ -2560,9 +2618,7 @@ function startStreaming(req,res) {
       }
       // if torrent
       if (parsedLink.indexOf('&torrent') !== -1) {
-          res.writeHead(200, {
-            'Content-Type': 'video/mp4'
-          });
+
           var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
               console.log('child process exited with code ' + code);
               res.end();
@@ -2571,10 +2627,39 @@ function startStreaming(req,res) {
       }
       // if local file
       if (link.indexOf('file:') !== -1) {
-        res.writeHead(200, {
-            'Content-Type': 'video/mp4'
-        });
-        var link = link.replace('file://','');
+		  link = link.replace('file://','');
+		  res.writeHead(200, {
+            'Connection':'keep-alive',
+            'Content-Type': 'video/mp4',
+            'Server':'Ht5treamer/0.0.1'
+          });
+		  //var path = link  //test-mp4-long.mp4
+    //, stat = fs.statSync(path)
+    //, total = stat.size
+
+
+    //var range = req.headers.range;
+    //if(range === undefined){
+		//range='bytes=0-';
+	//}
+    //console.log('RANGEEEEEE' + range, req.headers)
+    //var parts = range.replace(/bytes=/, "").split("-")
+    //, partialstart = parts[0]
+    //, partialend = parts[1]
+    //, start = parseInt(partialstart, 10)
+    //, end = partialend ? parseInt(partialend, 10) : total-1
+    //, chunksize = (end-start)+1
+
+
+    //console.log('RANGE: ' + start + ' - ' + end + ' = ' + chunksize +  "\n")
+
+		  
+		  
+        //res.writeHead(206
+    //, { 'Content-Range': 'bytes ' + 0 + '-' + 10230 + '/' + 1240000
+    //, 'Accept-Ranges': 'bytes', 'Content-Length': 10240000
+    //, 'Content-Type': 'video/mp4'
+    //})
         var ffmpeg = spawnFfmpeg('',device,'',bitrate,function (code) { // exit
           console.log('child process exited with code ' + code);
           res.end();
@@ -2821,7 +2906,7 @@ function downloadFromMega(link,key,size) {
 function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
   if ((host === undefined) || (link !== '')) {
     //local file...
-    args = ['-re','-i','pipe:0','-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
+    args = ['-i','pipe:0','-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
   } else {
     if (device === "phone") {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
@@ -2839,7 +2924,7 @@ function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
         args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace','-c:a', 'libvo_aacenc', '-b:a','256k','-threads', '0', 'pipe:1'];
       } else {
-        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+'k','-c:a', 'libvo_aacenc', '-b:a','128k', '-threads', '0', 'pipe:1'];
+        args = ['-i','pipe:0','-f','matroska','-sn','-c:v', 'libx264', '-preset', 'fast','-profile:v', 'high','-deinterlace',"-b:v", bitrate+'k','-bufsize',bitrate+'k','-c:a', 'libvo_aacenc', '-b:a','128k', '-threads', '0', 'pipe:1'];
       }
     }
   }
