@@ -104,7 +104,7 @@ app.updateStats = function(streamInfo) {
 			this.percent = (swarm.downloaded / (BUFFERING_SIZE / 100)).toFixed(2);
       if(stateModel.state != 'ready') {
           if(stateModel.state === 'connecting') {
-              if(parseInt(stateModel.numTry) > 90) {
+              if(parseInt(stateModel.numTry) >= 90) {
                 setTimeout(function() {$('#preloadProgress').empty().append('Torrent invalide ou pas de seeders, impossible de télécharger...!');},5000);
                 clearTimeout(statsUpdater);
                 return;
@@ -121,7 +121,7 @@ app.updateStats = function(streamInfo) {
           $('#preloadTorrent').remove();
           var stream = {};
           playFromHttp = true;
-          stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/';;
+          stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/';
           stream.next = '';
           stream.title = streamInfo.torrent.name;
           clearTimeout(statsUpdater);

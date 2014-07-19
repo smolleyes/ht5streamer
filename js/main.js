@@ -1078,19 +1078,20 @@ function init() {
       $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
         var lastRev;
         try {
-			lastRev = $('.sha-block',res).attr('href').split('/').pop();
-			console.log('lastRev is : ' + lastRev);
-			fs.exists(confDir+'/rev.txt', function (exists) {
-			  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
-			});
+				lastRev = $('.sha',res).text();
+				console.log('lastRev is : ' + lastRev);
+				fs.exists(confDir+'/rev.txt', function (exists) {
+				  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
+				});
 		} catch(err) {
 			try {
-				lastRev = res.match(/class="sha">(.*?)</)[1];
+				lastRev = $('.sha-block',res).attr('href').split('/').pop();
 				console.log('lastRev is : ' + lastRev);
 				fs.exists(confDir+'/rev.txt', function (exists) {
 				  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
 				});
 			} catch(err) {
+				console.log(err)
 				main();
 			}
 		}
@@ -2632,7 +2633,7 @@ function startStreaming(req,res,width,height) {
       // if torrent
       if (parsedLink.indexOf('&torrent') !== -1) {
 
-          var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
+          var ffmpeg = spawnFfmpeg(link.replace('&torrent',''),device,'',bitrate,function (code) { // exit
               console.log('child process exited with code ' + code);
               res.end();
           });
