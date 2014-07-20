@@ -1075,10 +1075,10 @@ function initPlayer() {
 function init() {
 	pluginsDir = confDir+'/plugins/ht5streamer-plugins-master/';
   chdir(confDir, function() {
-      $.get('https://github.com/smolleyes/ht5streamer-plugins',function(res){
+      $.get('https://github.com/smolleyes/ht5streamer-plugins/commits/master.atom',function(res){
         var lastRev;
         try {
-				lastRev = $('.sha',res).text();
+				lastRev = $($.find('link',res)[2]).attr('href').split('/').pop();
 				console.log('lastRev is : ' + lastRev);
 				fs.exists(confDir+'/rev.txt', function (exists) {
 				  util.debug(exists ? compareRev(lastRev) : writeRevFile(lastRev));
@@ -2475,6 +2475,7 @@ function getMetadata(req,res){
     var bitrate = '';
     var resolution = '';
     var parsedLink = decodeURIComponent(url.parse(req.url).href);
+    console.log('LINKKKK '+req.url)
     try {
         link = parsedLink.match(/\?file=(.*?)&tv/)[1].replace(/\+/g,' ');
     } catch(err) {
@@ -2485,6 +2486,7 @@ function getMetadata(req,res){
             return;
         }
     }
+    console.log('LINKKKK '+link)
     //var args = ['-show_streams','-print_format','json',link];
     var args = [link];
     var error = false;
