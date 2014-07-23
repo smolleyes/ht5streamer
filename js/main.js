@@ -157,13 +157,13 @@ var megaSize = '';
 var right;
 var left;
 var megaServer;
-var videoArray = ["avi","webm","mp4","flv","mkv","mpeg","mp3","mpg","wmv","wma","mov","wav","ogg"];
-var transcodeArray = ["avi","flv","mkv","mpeg","mpg","wmv","wma","mov"];
+var videoArray = ["avi","webm","mp4","flv","mkv","mpeg","mp3","mpg","wmv","wma","mov","wav","ogg","flac","opus"];
+var transcodeArray = ["avi","flv","mkv","mpeg","mpg","wmv","wma","mov","flac","aac","opus"];
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['vimeo','grooveshark','mega-search','cpasbien','mega-files','songza'];
-var excludedPlugins = ['mega','omgtorrent'];
+var pluginsList = ['grooveshark','mega-search','cpasbien','songza'];
+var excludedPlugins = ['mega','omgtorrent','mega-files','vimeo'];
 var loadedTimeout;
 
 // settings

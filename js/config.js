@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.0";
+var version = "1.0.1";
 
 //localize
 var i18n = require("i18n");
@@ -37,7 +37,7 @@ var plugins_changed = false;
 var settings = {};
 var selected_interface;
 var shared_length = 0;
-var pluginsList = ['vimeo','grooveshark','mega-search','omgtorrent','mega-files','songza'];
+var pluginsList = ['grooveshark','mega-search','songza','cpasbien'];
 
 // settings
 var confdir;
@@ -145,10 +145,10 @@ var htmlConfig='<div style="height:36px;"> \
         '+_("Please read the disclaimer here : <u><a id='disclaimer' style='color:red;' href='#'>disclaimer</a></u>")+' \
       </p> \
       <div style="border: 1px solid black;height:34px;"> \
-        <div class="ItemCheckbox left">\
+        <!--<div class="ItemCheckbox left">\
           <label for="vimeo">Vimeo</label>\
           <input class="pluginCheckBox" type="checkbox" id="vimeo" name="vimeo">\
-        </div>\
+        </div>-->\
         <div class="ItemCheckbox left">\
           <label for="songza">Songza</label>\
           <input class="pluginCheckBox" type="checkbox" id="songza" name="songza">\
@@ -160,10 +160,6 @@ var htmlConfig='<div style="height:36px;"> \
         <div class="ItemCheckbox">\
           <label for="mega-search">Mega-search.ws</label>\
           <input class="pluginCheckBox" type="checkbox" id="mega-search" name="mega-search">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="mega-files">Mega-files</label>\
-          <input class="pluginCheckBox" type="checkbox" id="mega-files" name="mega-files">\
         </div>\
         <div class="ItemCheckbox left">\
           <label for="omgtorrent">Cpasbien</label>\
