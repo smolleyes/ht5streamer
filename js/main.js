@@ -53,12 +53,15 @@ onload = function() {
 			win.close(true);
 		});
 	} catch(err) {
-    if (playAirMedia === true) {
-        login(stop_on_fbx);
-    }
+    try {
+		if (playAirMedia === true) {
+			login(stop_on_fbx);
+		}
+	} catch(err) {}
     // clean torrent dir
-    wipeTmpFolder();
-		process.exit();
+    win.hide();
+	win.close(true);
+	process.exit();
 	}
   
 	win.on('loaded',function() {
@@ -982,7 +985,11 @@ function startPlay(media) {
     if (playAirMedia === true) {
       airMediaLink = link;
       if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1) && (title.indexOf('265') === -1) && (title.indexOf('vp9') === -1) && (link.indexOf('freeboxtv') === -1)) {
-          currentMedia.link=media.link+"&direct";
+          if(link.indexOf('&torrent') !== -1) {
+		      currentMedia.link=media.link.replace('&torrent','')+"&direct";
+		  } else {
+              currentMedia.link=media.link+"&direct";
+		  }
           $('.mejs-playpause-button').click();
           $('.mejs-overlay-loading').hide();
           return;
@@ -992,13 +999,13 @@ function startPlay(media) {
           return;
       }
     }
-    if (playFromHttp === true) {
-      var ext = title.split('.').pop().toLowerCase();
+    if (playFromHttp === true || link.indexOf('&torrent') !== -1) {
+      var ext = torrentsArr[0].obj.server.index.name.split('.').pop().toLowerCase();
       if (in_array(ext,transcodeArray)){
-        player.setSrc('http://'+ipaddress+':8888/?file='+link+'&torrent');
+        player.setSrc('http://'+ipaddress+':8888/?file='+link);
         player.play();
       } else {
-        player.setSrc(link);
+        player.setSrc(link.replace('&torrent',''));
         player.play();
       }
       playFromHttp = false;
@@ -2649,50 +2656,9 @@ function startStreaming(req,res,width,height) {
             'Content-Type': 'video/mp4',
             'Server':'Ht5treamer/0.0.1'
           });
-		  //var path = link  //test-mp4-long.mp4
-    //, stat = fs.statSync(path)
-    //, total = stat.size
-
-
-    //var range = req.headers.range;
-    //if(range === undefined){
-		//range='bytes=0-';
-	//}
-    //console.log('RANGEEEEEE' + range, req.headers)
-    //var parts = range.replace(/bytes=/, "").split("-")
-    //, partialstart = parts[0]
-    //, partialend = parts[1]
-    //, start = parseInt(partialstart, 10)
-    //, end = partialend ? parseInt(partialend, 10) : total-1
-    //, chunksize = (end-start)+1
-
-
-    //console.log('RANGE: ' + start + ' - ' + end + ' = ' + chunksize +  "\n")
-
-		  
-		  
-        //res.writeHead(206
-    //, { 'Content-Range': 'bytes ' + 0 + '-' + 10230 + '/' + 1240000
-    //, 'Accept-Ranges': 'bytes', 'Content-Length': 10240000
-    //, 'Content-Type': 'video/mp4'
-    //})
-        var ffmpeg = spawnFfmpeg('',device,'',bitrate,function (code) { // exit
+        var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
           console.log('child process exited with code ' + code);
           res.end();
-        });
-        var x = fs.createReadStream(link).pipe(ffmpeg.stdin);
-        x.on('error',function(err) {
-              console.log('ffmpeg stdin error...' + err);
-              if (err.stack.indexOf('codec') === -1) {
-                console.log("Arret demandé !!!");
-                res.end();
-              } else {
-                var f={};
-                f.link = 'http://'+ipaddress+':8888'+req.url+'&direct';
-                f.title = megaName;
-                res.end();
-                startPlay(f);
-              }
         });
         ffmpeg.stdout.pipe(res);
       }
@@ -2920,9 +2886,9 @@ function downloadFromMega(link,key,size) {
 }
 
 function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
-  if ((host === undefined) || (link !== '')) {
+  if (host === undefined || link !== '') {
     //local file...
-    args = ['-i','pipe:0','-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
+    args = ['-i',link,'-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
   } else {
     if (device === "phone") {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {

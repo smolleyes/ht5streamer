@@ -2,7 +2,7 @@ var os = require('os');
 var fs = require('fs');
 var address = require('network-address');
 var proc = require('child_process');
-var readTorrent = require('read-torrent');
+var rTorrent = require('read-torrent');
 var peerflix = require('peerflix');
 var mime = require('mime');
 var ts = require('torrent-stream');
@@ -37,8 +37,7 @@ function getTorrent(link) {
   initPlayer();
   stateModel = {state: 'connecting', backdrop: '',numTry: 0};
   streamInfo = {};
-  var readTorrent = require('read-torrent');
-  readTorrent(link, function(err, torrent) {
+  rTorrent(link, function(err, torrent) {
       if(err) {
          console.log(err);
       } else {
@@ -119,9 +118,10 @@ app.updateStats = function(streamInfo) {
           }
       } else {
           $('#preloadTorrent').remove();
+          console.log()
           var stream = {};
           playFromHttp = true;
-          stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/';
+          stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/&torrent';
           stream.next = '';
           stream.title = streamInfo.torrent.name;
           clearTimeout(statsUpdater);
