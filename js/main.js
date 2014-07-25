@@ -983,12 +983,17 @@ function startPlay(media) {
     // play on airmedia
     $('.mejs-container p#fbxMsg').remove();
     if (playAirMedia === true) {
-      airMediaLink = link;
+      if(link.indexOf('&torrent') !== -1) {
+         airMediaLink = link.replace('&torrent','');
+         currentMedia.link = link.replace ('&torrent','');
+	  } else {
+		 airMediaLink = link;
+	  }
       if ((link.indexOf('file=') !== -1) && (link.indexOf('direct') === -1) && (title.indexOf('265') === -1) && (title.indexOf('vp9') === -1) && (link.indexOf('freeboxtv') === -1)) {
           if(link.indexOf('&torrent') !== -1) {
-		      currentMedia.link=media.link.replace('&torrent','')+"&direct";
+		      currentMedia.link=link.replace('&torrent','')+"&direct";
 		  } else {
-              currentMedia.link=media.link+"&direct";
+              currentMedia.link=link+"&direct";
 		  }
           $('.mejs-playpause-button').click();
           $('.mejs-overlay-loading').hide();
@@ -999,7 +1004,7 @@ function startPlay(media) {
           return;
       }
     }
-    if (playFromHttp === true || link.indexOf('&torrent') !== -1) {
+    if (playAirMedia === false && playFromHttp === true || link.indexOf('&torrent') !== -1) {
       var ext = torrentsArr[0].obj.server.index.name.split('.').pop().toLowerCase();
       if (in_array(ext,transcodeArray)){
         player.setSrc('http://'+ipaddress+':8888/?file='+link);
