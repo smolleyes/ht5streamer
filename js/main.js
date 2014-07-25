@@ -1321,7 +1321,7 @@ function getNext() {
 					playNextVideo(next_vid);
 				}
 			}
-		} else if (($('.tabActiveHeader').attr('id') === 'tabHeader_2') || ($('.tabActiveHeader').attr('id') === 'tabHeader_3')) {
+		} else if (($('.tabActiveHeader').attr('id') === 'tabHeader_2') ||Â ($('.tabActiveHeader').attr('id') === 'tabHeader_3')) {
 			var vid = $('.jstree-clicked').attr('id');
 			if (vid === undefined) {
 				console.log("no more videos to play in the playlists");
@@ -2498,6 +2498,9 @@ function getMetadata(req,res){
             return;
         }
     }
+	if (link.indexOf('&torrent') !== -1) {
+		link = link.replace('&torrent','');
+	}
     console.log('LINKKKK '+link)
     //var args = ['-show_streams','-print_format','json',link];
     var args = [link];
@@ -2511,7 +2514,7 @@ function getMetadata(req,res){
         var infos = data.toString();
         if(infos.indexOf('453 Not Enough Bandwidth') !== -1) {
             res.writeHead(400,{"Content-Type": "text/html"});
-            res.write("Pas assez de débit");
+            res.write("Pas assez de dÃ©bit");
             res.end();
             error = true;
         }
@@ -2680,7 +2683,7 @@ function startStreaming(req,res,width,height) {
             x.on('error',function(err) {
                   console.log('ffmpeg stdin error...' + err);
                   if (err.stack.indexOf('codec') === -1) {
-                    console.log("Arret demandé !!!");
+                    console.log("Arret demandÃ© !!!");
                     res.end();
                   } else {
                     var f={};
@@ -2696,7 +2699,7 @@ function startStreaming(req,res,width,height) {
              downloadFromMega(link,megaKey).pipe(res);
           }
         } else {
-          console.log('fichier non video/audio ou téléchargement demandé... type:' + megaType);
+          console.log('fichier non video/audio ou tÃ©lÃ©chargement demandÃ©... type:' + megaType);
           downloadFileFromMega(megaName,link,megaKey,true,megaSize,''); 
         }
       //normal mega link
@@ -2730,7 +2733,7 @@ function startStreaming(req,res,width,height) {
                 x.on('error',function(err) {
                   console.log('ffmpeg stdin error...' + err);
                   if (err.stack.indexOf('codec') === -1) {
-                      console.log("Arret demandé !!!!!!!!!!!!!!!!!!!!!!!!!!!!", megaName);
+                      console.log("Arret demandÃ© !!!!!!!!!!!!!!!!!!!!!!!!!!!!", megaName);
                       res.end();
                   } else {
                     var f={};
@@ -2747,7 +2750,7 @@ function startStreaming(req,res,width,height) {
                 file.download().pipe(res);
             }
           } else {
-              console.log('fichier non video/audio ou téléchargement demandé...' + megaType);
+              console.log('fichier non video/audio ou tÃ©lÃ©chargement demandÃ©...' + megaType);
               downloadFileFromMega(megaName,'','',false,megaSize,file);
           }
       });
