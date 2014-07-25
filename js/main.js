@@ -1149,9 +1149,14 @@ function updatePlugins(url) {
 		}).on("end", function(e) {
 			console.log("update terminated");
 			file.end();
-			var zip = new AdmZip(confDir+'/master.zip');
-			zip.extractAllTo(confDir+"/plugins",true);
-			loadApp();
+			try {
+				if(!fs.existsSync(confDir+"/plugins")) { fs.mkdir(confDir+"/plugins"); }
+				var zip = new AdmZip(confDir+'/master.zip');
+				zip.extractAllTo(confDir+"/plugins",true);
+				loadApp();
+			} catch(err) {
+				console.log("plugins update error" + err);
+			}
 		});
 	}).on("error", function(e){
 		console.log("Got error: " + e.message);
