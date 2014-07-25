@@ -24,8 +24,10 @@ onload = function() {
         login(stop_on_fbx);
       }
       // clean torrent dir
-      wipeTmpFolder();
-      UPNPserver.stop();
+      try{
+		wipeTmpFolder();
+		UPNPserver.stop();
+	  } catch(err){}
 			// close opened pages in engines
 			$.each(engines, function(key, value){
 				var page = value.page;

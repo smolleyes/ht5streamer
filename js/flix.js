@@ -6,6 +6,7 @@ var rTorrent = require('read-torrent');
 var peerflix = require('peerflix');
 var mime = require('mime');
 var ts = require('torrent-stream');
+var rmdir = require('rmdir');
 
 var path = require('path');
 var mime = require('mime');
@@ -150,9 +151,9 @@ function stopTorrent(res) {
 var wipeTmpFolder = function() {
     if( typeof tmpFolder != 'string' ){ return; }
     fs.readdir(tmpFolder, function(err, files){
-        for( var i in files ) {
-            fs.unlink(tmpFolder+'/'+files[i],function(){console.log("file deleted");});
-        }
+		rmdir( tmpFolder+'/'+files[i], function ( err, dirs, files ){
+		  console.log( 'all files are removed' );
+		});
     });
 }
 
