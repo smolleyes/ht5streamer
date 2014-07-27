@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.0.2";
+var version = "1.1";
 
 //localize
 var i18n = require("i18n");
@@ -37,7 +37,7 @@ var plugins_changed = false;
 var settings = {};
 var selected_interface;
 var shared_length = 0;
-var pluginsList = ['grooveshark','mega-search','songza','cpasbien'];
+var pluginsList = ['grooveshark','mega-search','songza','cpasbien','thepiratebay'];
 
 // settings
 var confdir;
@@ -164,6 +164,10 @@ var htmlConfig='<div style="height:36px;"> \
         <div class="ItemCheckbox left">\
           <label for="omgtorrent">Cpasbien</label>\
           <input class="pluginCheckBox" type="checkbox" id="cpasbien" name="cpasbien">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="omgtorrent">Thepiratebay</label>\
+          <input class="pluginCheckBox" type="checkbox" id="thepiratebay" name="thepiratebay">\
         </div>\
       </div>\
     </div> \
@@ -379,7 +383,7 @@ function makeConfigFile() {
 function checkConf(confdir) {
     $('#main_config').show();
     fs.exists(confdir+'/ht5conf.json', function (exists) {
-        util.debug(exists ? loadConf(confdir) : makeConfigFile(confdir) );
+       util.debug(exists ? loadConf(confdir) : makeConfigFile(confdir) );
     });
 }
 

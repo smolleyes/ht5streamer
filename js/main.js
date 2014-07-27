@@ -139,10 +139,6 @@ var airMediaPlaying = false;
 var ffmpeg;
 var ffar = [];
 var torrentsArr = [];
-var torrentsFolder = path.join(os.tmpDir(), 'Popcorn-Time');
-var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
-if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
-if( ! fs.existsSync(torrentsFolder) ) { fs.mkdir(torrentsFolder); }
 var UPNPserver;
 var airplayToggleOn = false;
 
@@ -167,7 +163,7 @@ var transcodeArray = ["avi","flv","mkv","mpeg","mpg","wmv","wma","mov","flac","a
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['grooveshark','mega-search','cpasbien','songza'];
+var pluginsList = ['grooveshark','mega-search','cpasbien','songza','thepiratebay'];
 var excludedPlugins = ['mega','omgtorrent','mega-files','vimeo'];
 var loadedTimeout;
 
@@ -225,7 +221,7 @@ var htmlStr = '<div id="menu"> \
     <form id="video_search"> \
         <label id="searchTypes_label">'+_("Search:")+'</label> \
         <input type="text" id="video_search_query" name="video_search_query" placeholder="'+_("Enter your search...")+'" /> \
-        <label>'+_("Search type:")+'</label> \
+        <label id="searchTypesMenu_label">'+_("Search type:")+'</label> \
         <select id="searchTypes_select"> \
             <option value = "videos">'+_("Videos")+'</option> \
             <option value = "playlists">'+_("Playlists")+'</option> \
@@ -636,17 +632,28 @@ function main() {
                 current_search_page=1;
                 current_start_index=1;
                 searchOptions.currentPage = 1;
+                $("#searchTypes_select").empty().hide();
+				$("#searchTypes_label").hide();
+				$("#dateTypes_select").empty().hide();
+				$("#searchFilters_label").hide();
+				$("#searchFilters_select").empty().hide();
+				$("#categories_label").hide();
+				$("#categories_select").empty().hide();
+				$("#orderBy_label").hide();
+				$("#orderBy_select").empty().hide();
+                $("#search").show();
+                $("#searchTypesMenu_label").show();
+                $("#items_container").empty().hide();
                 $("#cover").remove();
-                $("#searchFilters_select").hide();
-                $("#searchFilters_label").hide();
                 $('#items_container').css({"border": "1px solid black","position": "relative","left": "5px","top": "110px"});
 				$('#search').css({"position":"fixed","z-index": "500","top": "74px","width": "46%","background": "white","overflow": "auto","height":"70px"}).show();
 				$('#pagination').hide();
                 try {
 					engine = engines[search_engine];
 					engine.init(gui,win.window,$.notif);
+					$("#search p").empty().append(_("Engine %s ready...!",engine.engine_name)).show();
 					// hide not needed menus
-					$.each(selectTypes,function(index,type){
+					$.each(engine.menuEntries,function(index,type){
 						$("#"+type+"_select").empty();
 						var is = in_array(type, engine.defaultMenus);
 						if (is === false) {
@@ -658,12 +665,13 @@ function main() {
 						}
 					});
 					// load searchTypes options
-					$.each(engine.searchTypes, function(key, value){
+					if (engine.searchTypes !== undefined) {
+						$.each(engine.searchTypes, function(key, value){
 							$('#searchTypes_select').append('<option value="'+value+'">'+key+'</option>');
-					});
-					searchTypes_select = engine.defaultSearchType;
-					$("#searchTypes_select").val(searchTypes_select);
-					
+						});
+						searchTypes_select = engine.defaultSearchType;
+						$("#searchTypes_select").val(searchTypes_select);
+					}
 					// load orderBy filters
 					if (engine.orderBy_filters !== undefined) {
 						$('#orderBy_select').empty();
@@ -689,6 +697,7 @@ function main() {
 					
 				} catch(err) {
 					if (search_engine === 'dailymotion') {
+						$("#search p").empty().append(_("Engine %s ready...!",'dailymotion')).show();
 						var html = '<option value = "relevance">'+_("Relevance")+'</option> \
 									<option value = "recent">'+_("Published")+'</option> \
 									<option value = "visited">'+_("Views")+'</option> \
@@ -704,6 +713,7 @@ function main() {
 						$('#searchFilters_select').empty().append(html);
 						
 					} else {
+						$("#search p").empty().append(_("Engine %s ready...!",'youtube')).show();
 						var html = '<option value = "relevance">'+_("Relevance")+'</option> \
 									<option value = "published">'+_("Published")+'</option> \
 									<option value = "viewCount">'+_("Views")+'</option> \
@@ -723,6 +733,7 @@ function main() {
 					}
 					if ((search_engine === 'youtube') || (search_engine === 'dailymotion')) {
 						$('#video_search_query').prop('disabled', false);
+						$("#searchTypes_select").show();
 						$('#searchTypes_label').show();
 						$('#orderBy_label').show();
 						$('#orderBy_select').show();
@@ -1432,6 +1443,7 @@ function update_searchOptions() {
 
 //search
 function startSearch(query){
+	$("#search p").empty().append(' ');
     if ($('.tabActiveHeader').attr('id') !== 'tabHeader_1') {
         $("#tabHeader_1").click();
     }
@@ -2268,7 +2280,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 	browse = browse;
   if (pageNumber !== 0) {
     if (parseInt(total) > 0) {
-       $("#search_results p").empty().append(_("<p>Around %s results found </p>", total)); 
+       $("#search_results p").empty().append(_("Around %s results found", total)); 
     }
 		$("#pagination").pagination({
 				displayedPages:5,
@@ -2283,7 +2295,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 		pagination_init = true;
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else if ((browse === false) && (pagination_init === false)) {
-		$("#search_results p").empty().append(_("<p>Around %s results found </p>", total));
+		$("#search_results p").empty().append(_("Around %s results found", total));
 		$("#pagination").pagination({
 				items: total,
 				itemsOnPage: byPages,
@@ -2297,8 +2309,9 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 		pagination_init = true;
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else {
+		console.log(has_more,pagination_init,current_page)
 		if ((browse === true) && (pagination_init === false)) {
-			$("#search_results p").empty().append("<p>"+_("Browsing mode, use the pagination bar to navigate")+"</p><span></span>");
+			$("#search_results p").empty().append(_("Browsing mode, use the pagination bar to navigate")+"<span></span>");
 			$("#pagination").pagination({
 					itemsOnPage : byPages,
 					pages: current_page+1,

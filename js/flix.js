@@ -34,6 +34,9 @@ var numTry = 0;
 var stateModel = {};
 var streamInfo = {};
 
+var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
+if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
+
 function getTorrent(link) {
   initPlayer();
   stateModel = {state: 'connecting', backdrop: '',numTry: 0};
@@ -151,8 +154,14 @@ function stopTorrent(res) {
 var wipeTmpFolder = function() {
     if( typeof tmpFolder != 'string' ){ return; }
     fs.readdir(tmpFolder, function(err, files){
-		rmdir( tmpFolder+'/'+files[i], function ( err, dirs, files ){
-		  console.log( 'all files are removed' );
+		$.each(files,function(index,dir) {
+			try {
+				rmdir( tmpFolder+'/'+dir, function ( err, dirs, files ){
+					console.log( 'dir '+dir+' removed' );
+				});
+			} catch(err) {
+				console.log('can t remove dir '+dir)
+			}
 		});
     });
 }
