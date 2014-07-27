@@ -1,0 +1,15 @@
+V 1.0.2
+  * add Piratebay engine
+  * fix many bugs
+
+V 0.5.0
+  * Add local file browsing and sharing support
+  * Add vimeo engine
+  * New plugin system
+  * fix vevo videos for youtube
+  * others small fixes
+
+V 0.1.1
+  * add suggested videos for dailymotion
+  * add local playlist system with web storage
+  * bug fixes

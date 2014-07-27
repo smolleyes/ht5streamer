@@ -317,7 +317,21 @@ the Service will be correct, accurate, timely, or otherwise reliable \n\
 \n \
 Ht5streamer team reserves the right to update this policy at any time \
 without notice.");
-      alert(msg);
+    var new_win = gui.Window.open('warning.html', {
+            "position": 'center',
+            "width": 680,
+            "height": 670,
+            "toolbar": false,
+            "title": _('Warnings')
+	});
+	new_win.on('close', function() {
+	  this.hide();
+	  this.close(true);
+	});
+	new_win.on('loaded', function(){
+		new_win.window.document.body.innerHTML = '<div><pre>'+msg+'</pre></div>';
+	});
+	new_win.show();
   });
   
   //plugins
