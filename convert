@@ -1,1 +1,0 @@
-ffmpeg -i input -vcodec libx264 -q 0 -acodec copy output.mkv
