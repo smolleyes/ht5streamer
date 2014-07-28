@@ -2141,6 +2141,9 @@ function downloadFile(link,title,vid,toTorrent){
     var opt = {};
     var val = $('#progress_'+vid+' progress').attr('value');
     title = title.trim();
+	if (toTorrent) {
+		title += '.torrent';
+	}
     opt.link = link;
     opt.title = title;
     opt.vid = vid;
@@ -2209,7 +2212,7 @@ function downloadFile(link,title,vid,toTorrent){
 							} else {
 								console.log('successfully renamed '+download_dir+'/'+title);
                 if(toTorrent !== undefined) {
-                     getTorrent(download_dir+'/'+title);
+                     gui.Shell.openItem(download_dir+'/'+title);
                 }
 							}
 						});
@@ -2280,7 +2283,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 	browse = browse;
   if (pageNumber !== 0) {
     if (parseInt(total) > 0) {
-       $("#search_results p").empty().append(_("Around %s results found", total)); 
+       $("#search_results p").empty().append(_("Around %s results found", total)).show(); 
     }
 		$("#pagination").pagination({
 				displayedPages:5,
@@ -2295,7 +2298,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 		pagination_init = true;
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else if ((browse === false) && (pagination_init === false)) {
-		$("#search_results p").empty().append(_("Around %s results found", total));
+		$("#search_results p").empty().append(_("Around %s results found", total)).show();
 		$("#pagination").pagination({
 				items: total,
 				itemsOnPage: byPages,
@@ -2311,7 +2314,7 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 	} else {
 		console.log(has_more,pagination_init,current_page)
 		if ((browse === true) && (pagination_init === false)) {
-			$("#search_results p").empty().append(_("Browsing mode, use the pagination bar to navigate")+"<span></span>");
+			$("#search_results p").empty().append(_("Browsing mode, use the pagination bar to navigate")+"<span></span>").show();
 			$("#pagination").pagination({
 					itemsOnPage : byPages,
 					pages: current_page+1,
@@ -2681,15 +2684,21 @@ function startStreaming(req,res,width,height) {
       // if local file
       if (link.indexOf('file:') !== -1) {
 		  link = link.replace('file://','');
-		  res.writeHead(200, {
-            'Connection':'keep-alive',
-            'Content-Type': 'video/mp4',
-            'Server':'Ht5treamer/0.0.1'
-          });
         var ffmpeg = spawnFfmpeg(link,device,'',bitrate,function (code) { // exit
           console.log('child process exited with code ' + code);
           res.end();
         });
+        res.writeHead(200, { // NOTE: a partial http response
+    // 'Date':date.toUTCString(),
+    'Connection':'close',
+    // 'Cache-Control':'private',
+    'Content-Type':'video/mp4',
+     //'Content-Length':10000000,
+    //'Content-Range':'bytes '+0+'-'+10000000+'/'+10000001,
+     //'Accept-Ranges':'bytes',
+    // 'Server':'CustomStreamer/0.0.1',
+    //'Transfer-Encoding':'chunked'
+    });
         ffmpeg.stdout.pipe(res);
       }
       //if mega userstorage link
@@ -2918,7 +2927,7 @@ function downloadFromMega(link,key,size) {
 function spawnFfmpeg(link,device,host,bitrate,exitCallback) {
   if (host === undefined || link !== '') {
     //local file...
-    args = ['-i',link,'-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska', 'pipe:1'];
+    args = ['-re','-i',link,'-sn','-c:v', 'libx264','-c:a', 'libvorbis', '-f','matroska','pipe:1'];
   } else {
     if (device === "phone") {
       if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {

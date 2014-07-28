@@ -118,18 +118,23 @@ app.updateStats = function(streamInfo) {
               if (parseInt(this.percent) > 0 && parseInt(this.percent) < 100) {
                   $('#preloadProgress').empty().append('Chargement  '+ this.percent +' % effectué à '+ this.downloadSpeed);
                   $('#preloadTorrent progress').attr('value',this.percent).text(this.percent);
-              } 
+              }
           }
       } else {
-          $('#preloadTorrent').remove();
-          console.log()
-          var stream = {};
-          playFromHttp = true;
-          stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/&torrent';
-          stream.next = '';
-          stream.title = streamInfo.torrent.name;
-          clearTimeout(statsUpdater);
-          startPlay(stream);
+		  if($('#preloadTorrent').length === 0) {
+			  var percent = 
+			  console.log(this.percent +' % effectué à '+ this.downloadSpeed,videoStreamer) 
+		  } else {
+			  $('#preloadTorrent').remove();
+			  console.log()
+			  var stream = {};
+			  playFromHttp = true;
+			  stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/&torrent';
+			  stream.next = '';
+			  stream.title = streamInfo.torrent.name;
+			  clearTimeout(statsUpdater);
+			  startPlay(stream);
+		  }
       }
       
 };
@@ -157,10 +162,10 @@ var wipeTmpFolder = function() {
 		$.each(files,function(index,dir) {
 			try {
 				rmdir( tmpFolder+'/'+dir, function ( err, dirs, files ){
-					console.log( 'dir '+dir+' removed' );
+					console.log( 'file '+files+' removed' );
 				});
 			} catch(err) {
-				console.log('can t remove dir '+dir)
+				console.log('can t remove file '+files)
 			}
 		});
     });
