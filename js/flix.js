@@ -121,12 +121,7 @@ app.updateStats = function(streamInfo) {
               }
           }
       } else {
-		  if($('#preloadTorrent').length === 0) {
-			  var percent = 
-			  console.log(this.percent +' % effectué à '+ this.downloadSpeed,videoStreamer) 
-		  } else {
 			  $('#preloadTorrent').remove();
-			  console.log()
 			  var stream = {};
 			  playFromHttp = true;
 			  stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/&torrent';
@@ -134,7 +129,6 @@ app.updateStats = function(streamInfo) {
 			  stream.title = streamInfo.torrent.name;
 			  clearTimeout(statsUpdater);
 			  startPlay(stream);
-		  }
       }
       
 };
