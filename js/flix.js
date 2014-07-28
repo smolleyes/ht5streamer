@@ -20,7 +20,9 @@ var active = function(wire) {
 var stateModel = {};
 stateModel.state='';
 var videoStreamer = null;
-
+var maxTry = 90;
+var numTry = 0; 
+var streamInfo = {};
 var app = {};
 
 // Minimum percentage to open video
@@ -29,18 +31,16 @@ var STREAM_PORT = 21584; // 'PT'!
 // Minimum bytes loaded to open video
 var BUFFERING_SIZE = 10 * 1024 * 1024;
 
-var maxTry = 90;
-var numTry = 0; 
-var stateModel = {};
-var streamInfo = {};
-
 var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 
 function getTorrent(link) {
   initPlayer();
+  stopTorrent();
   stateModel = {state: 'connecting', backdrop: '',numTry: 0};
   streamInfo = {};
+  videoStreamer = null;
+  statsUpdater = null;
   rTorrent(link, function(err, torrent) {
       if(err) {
          console.log(err);
