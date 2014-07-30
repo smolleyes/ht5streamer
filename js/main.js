@@ -937,6 +937,8 @@ function main() {
         return false;
     };
     
+    $('#my-divider').css({right:'59%'}).css({right:'58%'});
+    
 }
 
 function startUPNPserver() {
