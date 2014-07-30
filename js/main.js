@@ -2247,33 +2247,6 @@ function convertTomp3Win(file){
     });
 }
 
-function convertTomp3(file) {
-    try{
-        var vid = file.split('::')[1];
-        var title = file.split('::')[0];
-        var pbar = $('#progress_'+vid);
-        var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
-        $('#progress_'+vid+' strong').html(_("Converting video to mp3, please wait..."));
-        var proc = new ffmpeg({ source: title })
-          .withAudioBitrate('192k')
-          .withAudioCodec('libvorbis')
-          .withAudioChannels(2)
-          .toFormat('mp3')
-          .saveToFile(target, function(stdout, stderr) {
-            $('#progress_'+vid+' strong').html(_("video converted successfully !"));
-            fs.rename(target.replace(/[\"\[\]\.\)\(\''\*\\]/g,'').replace(/ /g,' '),target, function (err) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log('successfully renamed '+getUserHome()+'/'+title);
-                }
-            });
-        });
-    } catch(err) {
-        console.log('can\'t convert you video '+title+' to mp3...')
-    }
-}
-
 function init_pagination(total,byPages,browse,has_more,pageNumber) {
 	browse = browse;
   if (pageNumber !== 0) {
