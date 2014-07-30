@@ -35,13 +35,25 @@ $(document).ready(function() {
 				content.removeClass('opened').addClass('closed');
 				content.slideToggle();
 				$(window).scrollTop(pos+17);
-				var text = $(this).text().replace('-','+');
+				var text = '';
+				if($(this).text().indexOf('-') === -1) {
+					var t = $(this).text();
+					text = '+ '+t;
+				} else {
+					text= $(this).text().replace('-','+');
+				}
 				$(this).html(text);
 			} else {
 				content.removeClass('closed').addClass('opened');
 				content.slideToggle();
 				$(window).scrollTop(pos+17);
-				var text= $(this).text().replace('+','-');
+				var text = '';
+				if($(this).text().indexOf('+') === -1) {
+					var t = $(this).text();
+					text = '- '+t;
+				} else {
+					text= $(this).text().replace('+','-');
+				}
 				$(this).html(text);
 			}
 		} else {
