@@ -164,7 +164,7 @@ var currentMedia;
 var currentAirMedia = {};
 var fn;
 var pluginsList = ['grooveshark','mega-search','cpasbien','songza','thepiratebay'];
-var excludedPlugins = ['mega','omgtorrent','mega-files','vimeo'];
+var excludedPlugins = ['mega','mega-files','vimeo'];
 var loadedTimeout;
 
 // settings

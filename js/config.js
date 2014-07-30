@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.2";
+var version = "1.3";
 
 //localize
 var i18n = require("i18n");
@@ -37,7 +37,7 @@ var plugins_changed = false;
 var settings = {};
 var selected_interface;
 var shared_length = 0;
-var pluginsList = ['grooveshark','mega-search','songza','cpasbien','thepiratebay'];
+var pluginsList = ['grooveshark','mega-search','songza','cpasbien','thepiratebay','omgtorrent'];
 
 // settings
 var confdir;
@@ -168,6 +168,10 @@ var htmlConfig='<div style="height:36px;"> \
         <div class="ItemCheckbox left">\
           <label for="omgtorrent">Thepiratebay</label>\
           <input class="pluginCheckBox" type="checkbox" id="thepiratebay" name="thepiratebay">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="omgtorrent">Omgtorrent</label>\
+          <input class="pluginCheckBox" type="checkbox" id="omgtorrent" name="omgtorrent">\
         </div>\
       </div>\
     </div> \

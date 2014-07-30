@@ -112,7 +112,7 @@ function downloadUpdate(link,filename) {
 	    if (process.platform === 'win32') {
 			var f = tmpPath.replace(/\\/g,"\\\\")+'\\\\ht5streamer-setup.exe';
 			var exe = exec(f); 
-			setTimeout(function(){win.emit('close')},2000);
+			setTimeout(function(){win.emit('close')},3000);
  	    } else if (process.platform === 'darwin') {
 			var dest = path.dirname(execDir.match(/(.*)Ht5streamer.app(.*?)/)[0]);
 		    var args = ['-o',filename,'-d',dest];
@@ -133,21 +133,23 @@ function downloadUpdate(link,filename) {
 	    	});
  	    } else {
 		    var args = ['-o',filename,'-d',execDir];
-		    var update = spawn('unzip', args);
-	    	update.on('exit', function(data){
-		    	pbar.click();
-		    	$('.notification').click();
-		    	if (parseInt(data) == 0) {
-			    	$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    	} else {
-			    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    	}
-	    	});
-	    	update.stderr.on('data', function(data) {
-		    	$('.notification').click();
-		    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    	console.log('update stderr: ' + data);
-	    	});
+		    setTimeout(function(){
+				var update = spawn('unzip', args);
+				update.on('exit', function(data){
+					pbar.click();
+					$('.notification').click();
+					if (parseInt(data) == 0) {
+						$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+					} else {
+						$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+					}
+				});
+				update.stderr.on('data', function(data) {
+					$('.notification').click();
+					$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+					console.log('update stderr: ' + data);
+				});
+			},3000);
 		}
 	});
     });
