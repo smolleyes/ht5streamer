@@ -394,20 +394,20 @@ function main() {
     $(document).on('click','.mejs-fullscreen-button',function(e) {
         if (win.isFullscreen === true) {
             win.toggleFullscreen();
-            $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-            $('#right-component').width(right);
-            $('#my-divider').show();
-            $('#left-component').show();
-            $('#menu').show();
+			$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
+			$('#right-component').width(right);
+			$('#my-divider').show();
+			$('#left-component').show();
+			$('#menu').show();
         } else {
-            $('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
-            left = $('#left-component').width();
-            right = $('#right-component').width();
-            $('#my-divider').hide();
-            $('#left-component').hide();
-            $('#right-component').width(screen.width);
-            $('#menu').hide();
-            win.toggleFullscreen();
+			left = $('#left-component').width();
+			right = $('#right-component').width();
+			$('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
+			$('#my-divider').hide();
+			$('#left-component').hide();
+			$('#right-component').width(screen.width);
+			$('#menu').hide();
+			win.toggleFullscreen();
         }
     });
     // click on tab1 get focus
@@ -1382,6 +1382,7 @@ function changePage() {
 
 function onKeyPress(key) {
     if (key.key === 'Esc') {
+		key.preventDefault();
         if (win.isFullscreen === true) {
             $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
             $('#right-component').width(right);
@@ -1391,17 +1392,19 @@ function onKeyPress(key) {
             win.toggleFullscreen();
         }
     } else if (key.key === 'f') {
+			key.preventDefault();
             if (win.isFullscreen === true) {
-                $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-                $('#right-component').width(right);
-                $('#my-divider').show();
-                $('#left-component').show();
-                $('#menu').show();
-                win.toggleFullscreen();
+				$('#right-component').width(right);
+				$('#my-divider').show();
+				$('#left-component').show();
+				$('#menu').show();
+				win.toggleFullscreen();
+				$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
+				$('#mep_0').removeClass('mejs-container-fullscreen');
             } else {
-                $('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
                 left = $('#left-component').width();
                 right = $('#right-component').width();
+                $('#mep_0').attr('style','height:100% !important;top:0;width:calc(100% + 10px);');
                 $('#my-divider').hide();
                 $('#left-component').hide();
                 $('#right-component').width(screen.width);
