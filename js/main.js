@@ -589,7 +589,6 @@ function main() {
         var link = $(this).attr('href');
         var title= $(this).attr('alt');
         var engine = title.split('::')[2];
-        console.log(link, search_engine)
         if (search_engine === 'dailymotion') {
             var req = request(link, function (error, response, body) {
                 if (!error) {
@@ -850,11 +849,7 @@ function main() {
     // convert to mp3
     $(document).on('click','.convert',function(e) {
         e.preventDefault();
-        if ((process.platform === 'win32') || (process.platform === 'darwin')){
-            convertTomp3Win($(this).attr('alt'));
-        } else {
-            convertTomp3($(this).attr('alt'));
-        }
+        convertTomp3Win($(this).attr('alt'));
     });
     // hide progress
     $(document).on('click','.hide_bar',function(e) {
@@ -935,7 +930,6 @@ function main() {
         var file = e.dataTransfer.files[0],
           reader = new FileReader();
           reader.onload = function (event) {
-          console.log(event.target);
         };
         if (file.type === "application/x-bittorrent") {
           getTorrent(file.path);
@@ -954,7 +948,6 @@ function startUPNPserver() {
           upnpDirs.push(share);
           if(index+1 == settings.shared_dirs.length) {
               UPNPserver = new upnpServer({name:'Ht5streamer_'+os.hostname(),uuid:uuid.v4()},upnpDirs);
-              console.log(UPNPserver)
               UPNPserver.start();
           }
     });
@@ -2166,7 +2159,6 @@ function downloadFile(link,title,vid,toTorrent){
 	} else {
 		current_download[vid] = request(link);
 	}
-	console.log('DOWNLOADING FILE ' + link)
     current_download[vid].on('response' ,function(response) {
 			if (response.statusCode > 300 && response.statusCode < 400 && response.headers.location) {
 				// The location for some (most) redirects will only contain the path,  not the hostname;
@@ -2236,7 +2228,7 @@ function convertTomp3Win(file){
     var pbar = $('#progress_'+vid);
     var target=title.substring(0, title.lastIndexOf('.'))+'.mp3';
     $('#progress_'+vid+' strong').html(_("Converting video to mp3, please wait..."));
-	var args = ['-y','-re','-i', title, '-ab', '192k', target];
+	var args = ['-i', title, '-ab', '192k', target];
 	if (process.platform === 'win32') {
     	var ffmpeg = spawn(exec_path+'/ffmpeg.exe', args);
 	} else {
@@ -2312,7 +2304,6 @@ function init_pagination(total,byPages,browse,has_more,pageNumber) {
 		pagination_init = true;
 		total_pages=$("#pagination").pagination('getPagesCount');
 	} else {
-		console.log(has_more,pagination_init,current_page)
 		if ((browse === true) && (pagination_init === false)) {
 			$("#search_results p").empty().append(_("Browsing mode, use the pagination bar to navigate")+"<span></span>").show();
 			$("#pagination").pagination({
@@ -2512,7 +2503,6 @@ function getMetadata(req,res){
     var bitrate = '';
     var resolution = '';
     var parsedLink = decodeURIComponent(url.parse(req.url).href);
-    console.log('LINKKKK '+req.url)
     try {
         link = parsedLink.match(/\?file=(.*?)&tv/)[1].replace(/\+/g,' ');
     } catch(err) {
@@ -2526,7 +2516,6 @@ function getMetadata(req,res){
 	if (link.indexOf('&torrent') !== -1) {
 		link = link.replace('&torrent','');
 	}
-    console.log('LINKKKK '+link)
     //var args = ['-show_streams','-print_format','json',link];
     var args = [link];
     var error = false;
@@ -2546,7 +2535,6 @@ function getMetadata(req,res){
         try{
             if (resolution === '') {
                 var vinfos = infos.match(/Video:(.*)/)[1];
-                console.log(vinfos)
                 resolution = vinfos.toLowerCase().match(/\d{3}(?:\d*)?x\d{3}(?:\d*)/)[0];
             }
         }catch(err){
@@ -2576,8 +2564,6 @@ function startStreaming(req,res,width,height) {
       var megaSize;
       var parsedLink = decodeURIComponent(url.parse(req.url).href);
       var device = deviceType(req.headers['user-agent']);
-      console.log("Device: " + device);
-      
       
       try {
         cleanffar();
@@ -2730,7 +2716,7 @@ function startStreaming(req,res,width,height) {
              downloadFromMega(link,megaKey).pipe(res);
           }
         } else {
-          console.log('fichier non video/audio ou tÃ©lÃ©chargement demandÃ©... type:' + megaType);
+          console.log('fichier non video/audio ou téléchargement demandé... type:' + megaType);
           downloadFileFromMega(megaName,link,megaKey,true,megaSize,''); 
         }
       //normal mega link
@@ -2764,7 +2750,7 @@ function startStreaming(req,res,width,height) {
                 x.on('error',function(err) {
                   console.log('ffmpeg stdin error...' + err);
                   if (err.stack.indexOf('codec') === -1) {
-                      console.log("Arret demandÃ© !!!!!!!!!!!!!!!!!!!!!!!!!!!!", megaName);
+                      console.log("Arret demandé !!!!!!!!!!!!!!!!!!!!!!!!!!!!", megaName);
                       res.end();
                   } else {
                     var f={};
@@ -2781,7 +2767,7 @@ function startStreaming(req,res,width,height) {
                 file.download().pipe(res);
             }
           } else {
-              console.log('fichier non video/audio ou tÃ©lÃ©chargement demandÃ©...' + megaType);
+              console.log('fichier non video/audio ou téléchargement demandé...' + megaType);
               downloadFileFromMega(megaName,'','',false,megaSize,file);
           }
       });
@@ -2985,14 +2971,3 @@ function in_array(needle, haystack){
     }
     return false;
 }
-
-
-//$.get('http://www.free.fr/adsl/pages/television/services-de-television/acces-a-plus-250-chaines/themes/theme-24.html',function(res) {
-  //var list = $('.linkChaine',res); 
-  //$.each(list,function(index,channel){
-      //title = $(this).attr('data-chaineid')+'.png';console.log(title)
-      //img = 'http://www.free.fr/'+$(this).find('img')[0].src.replace('file:///','');console.log(img)
-      //vid = ((Math.random() * 1e6) | 0);
-      //downloadFile(img,title,vid);
-  //});
-//});

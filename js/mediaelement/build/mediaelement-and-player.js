@@ -2498,7 +2498,6 @@ if (typeof jQuery != 'undefined') {
 					// resizer
 					if (t.options.enableAutosize) {
 						t.media.addEventListener('loadedmetadata', function(e) {
-              console.log(t,e)
 							// if the <video height> was not set and the options.videoHeight was not set
 							// then resize to the real dimensions
 							if (t.options.videoHeight <= 0 && t.domNode.getAttribute('height') === null && !isNaN(e.target.videoHeight)) {
