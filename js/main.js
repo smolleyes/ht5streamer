@@ -393,12 +393,13 @@ function main() {
     var right;
     $(document).on('click','.mejs-fullscreen-button',function(e) {
         if (win.isFullscreen === true) {
-            win.toggleFullscreen();
+			win.toggleFullscreen();
+			$('#mep_0').removeClass('mejs-container-fullscreen');
 			$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-			$('#right-component').width(right);
-			$('#my-divider').show();
-			$('#left-component').show();
-			$('#menu').show();
+            $('#right-component').width(right);
+            $('#my-divider').show();
+            $('#left-component').show();
+            $('#menu').show();
         } else {
 			left = $('#left-component').width();
 			right = $('#right-component').width();
@@ -936,8 +937,23 @@ function main() {
         }
         return false;
     };
-    
-    $('#my-divider').css({right:'59%'}).css({right:'58%'});
+    win.on('maximize',function() {
+		$('#my-divider').hide();
+		setTimeout(function() {
+			right = $('#right-component').width();
+			$('#my-divider').css({right:right+'px'}).fadeIn();
+			$.prototype.splitPane()
+		},200);
+	});
+	
+	 win.on('unmaximize',function() {
+		$('#my-divider').hide();
+		setTimeout(function() {
+			right = $('#right-component').width();
+			$('#my-divider').css({right:right+'px'}).fadeIn();
+			$.prototype.splitPane()
+		},200);
+	});
     
 }
 
@@ -1386,23 +1402,24 @@ function onKeyPress(key) {
     if (key.key === 'Esc') {
 		key.preventDefault();
         if (win.isFullscreen === true) {
-            $('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
+            win.toggleFullscreen();
+			$('#mep_0').removeClass('mejs-container-fullscreen');
+			$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
             $('#right-component').width(right);
             $('#my-divider').show();
             $('#left-component').show();
             $('#menu').show();
-            win.toggleFullscreen();
         }
     } else if (key.key === 'f') {
 			key.preventDefault();
             if (win.isFullscreen === true) {
+				win.toggleFullscreen();
+				$('#mep_0').removeClass('mejs-container-fullscreen');
+				$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
 				$('#right-component').width(right);
 				$('#my-divider').show();
 				$('#left-component').show();
 				$('#menu').show();
-				win.toggleFullscreen();
-				$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-				$('#mep_0').removeClass('mejs-container-fullscreen');
             } else {
                 left = $('#left-component').width();
                 right = $('#right-component').width();
@@ -2669,7 +2686,7 @@ function startStreaming(req,res,width,height) {
       if (link.indexOf('userstorage.mega.co.nz') !== -1) {
         var newVar = currentMedia.title.split('.').slice(-1)[0];
         if ((in_array(newVar,videoArray)) && (parsedLink.indexOf('&download') === -1)) {
-          if (parsedLink.indexOf('&direct') === -1){
+          if (parsedLink.indexOf('&direct') === -1 && newVar !== 'mp4'){
             var ffmpeg = spawnFfmpeg('',device,host,bitrate,function (code) { // exit
                     console.log('child process exited with code ' + code);
                     res.end();

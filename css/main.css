@@ -225,7 +225,6 @@ height : calc(100% - 37px) !important;
     position: fixed;
     z-index: 500;
     top: 74px;
-    width: 46%;
     background:white;
     overflow:auto;
     height:70px;

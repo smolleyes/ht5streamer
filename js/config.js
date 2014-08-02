@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.3.2";
+var version = "1.3.3";
 
 //localize
 var i18n = require("i18n");
@@ -370,7 +370,7 @@ function getUserHome() {
 function initCheck() {
 	confWin.show();
 	fs.exists(confdir, function (exists) {
-		util.debug(exists ? checkConf(confdir) : makeConfdir(confdir));
+		exists ? checkConf(confdir) : makeConfdir(confdir);
 	});
 }
 
@@ -402,7 +402,7 @@ function makeConfigFile() {
 function checkConf(confdir) {
     $('#main_config').show();
     fs.exists(confdir+'/ht5conf.json', function (exists) {
-       util.debug(exists ? loadConf(confdir) : makeConfigFile(confdir) );
+       exists ? loadConf(confdir) : makeConfigFile(confdir);
     });
 }
 
