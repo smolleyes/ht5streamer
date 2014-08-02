@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.3.3";
+var version = "1.3.4";
 
 //localize
 var i18n = require("i18n");
