@@ -396,10 +396,14 @@ function main() {
 			win.toggleFullscreen();
 			$('#mep_0').removeClass('mejs-container-fullscreen');
 			$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-            $('#right-component').width(right);
-            $('#my-divider').show();
             $('#left-component').show();
             $('#menu').show();
+            $('#right-component').width('');
+            setTimeout(function() {
+				right = $('#right-component').width();
+				$('#my-divider').css({right:right+'px'}).fadeIn();
+				$.prototype.splitPane()
+			},200);
         } else {
 			left = $('#left-component').width();
 			right = $('#right-component').width();
@@ -1405,10 +1409,14 @@ function onKeyPress(key) {
             win.toggleFullscreen();
 			$('#mep_0').removeClass('mejs-container-fullscreen');
 			$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-            $('#right-component').width(right);
-            $('#my-divider').show();
             $('#left-component').show();
             $('#menu').show();
+            $('#right-component').width('');
+            setTimeout(function() {
+				right = $('#right-component').width();
+				$('#my-divider').css({right:right+'px'}).fadeIn();
+				$.prototype.splitPane()
+			},200);
         }
     } else if (key.key === 'f') {
 			key.preventDefault();
@@ -1416,10 +1424,14 @@ function onKeyPress(key) {
 				win.toggleFullscreen();
 				$('#mep_0').removeClass('mejs-container-fullscreen');
 				$('#mep_0').attr('style','height:calc(100% - 37px) !important;top:37px;');
-				$('#right-component').width(right);
-				$('#my-divider').show();
 				$('#left-component').show();
 				$('#menu').show();
+				$('#right-component').width('');
+				setTimeout(function() {
+					right = $('#right-component').width();
+					$('#my-divider').css({right:right+'px'}).fadeIn();
+					$.prototype.splitPane()
+				},200);
             } else {
                 left = $('#left-component').width();
                 right = $('#right-component').width();
