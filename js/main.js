@@ -421,7 +421,7 @@ function main() {
 		try {
 			if ((search_engine === 'youtube') || (search_engine === 'dailymotion')) {
 				var p = $('.highlight').position().top;
-				$('#left-component').scrollTop(p-41);
+				$('#left-component').scrollTop(p-45);
 			} else {
 				var p = $('.highlight').position().top;
 				$('#left-component').scrollTop(p+13);
@@ -508,7 +508,7 @@ function main() {
         $('video').trigger('loadPlayer',video);
         if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
             var p = $('.highlight').position().top;
-            $('#left-component').scrollTop(p+18);
+            $('#left-component').scrollTop(p+13);
         }
     });
     $('video').on('loadPlayer',function(e,video){
