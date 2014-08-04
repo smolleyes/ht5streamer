@@ -11,5 +11,6 @@
     "min_height": 200,
     "title": "ht5streamer",
     "show": false
-  }
+  },
+  "chromium-args":"--ignore-gpu-blacklist"
 }

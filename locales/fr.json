@@ -120,5 +120,10 @@
 	"Open Torrent": "Ouvrir lien Torrent",
 	"Open Magnet": "Ouvrir lien magnet",
 	"Engine %s ready...!": "Moteur %s chargé avec succès...!",
-	"Warnings":"Avertissements"
+	"Warnings": "Avertissements",
+	"Your torrent download is terminated, save it ?": "Téléchargement du torrent terminé, voulez vous le sauvegarder ?",
+	"Can't save torrent to your download dir, error: %s": "Impossible de sauvegarder votre torrent, erreur: %s",
+	"(%s%% downloaded)":"(%s%% téléchargé)",
+	"Torrent successfully saved to your ht5 download directory !":"Torrent sauvegardé avec succès dans votre dossier de téléchargement ht5 !",
+	"Yes":"Oui"
 }

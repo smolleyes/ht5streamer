@@ -1,5 +1,5 @@
 var os = require('os');
-var fs = require('fs');
+var fs = require('node-fs-extra');
 var address = require('network-address');
 var proc = require('child_process');
 var rTorrent = require('read-torrent');
@@ -33,6 +33,17 @@ var BUFFERING_SIZE = 10 * 1024 * 1024;
 
 var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
 if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
+var playStarted = false;
+var downloadedPct = 0;
+var torrentSrc = '';
+var torrentName = '';
+
+$(document).ready(function(){
+	$(document).on('click','#saveTorrentBtn',function(e) {
+        e.preventDefault();
+        saveToDisk(torrentSrc,torrentName);
+    });
+});
 
 function getTorrent(link) {
   initPlayer();
@@ -41,6 +52,8 @@ function getTorrent(link) {
   streamInfo = {};
   videoStreamer = null;
   statsUpdater = null;
+  playStarted = false;
+  downloadedPct = 0;
   rTorrent(link, function(err, torrent) {
       if(err) {
          console.log(err);
@@ -121,17 +134,61 @@ app.updateStats = function(streamInfo) {
               }
           }
       } else {
+		  if (playStarted === false) {
 			  $('#preloadTorrent').remove();
 			  var stream = {};
 			  playFromHttp = true;
 			  stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/&torrent';
 			  stream.next = '';
 			  stream.title = streamInfo.torrent.name;
-			  clearTimeout(statsUpdater);
+			  //clearTimeout(statsUpdater);
 			  startPlay(stream);
+			  playStarted = true;
+		 } else {
+			 torrentSrc = videoStreamer.path;
+			 torrentName = videoStreamer.torrent.name;
+			 downloadedPct = (swarm.downloaded / streamInfo.files[0].length * 100).toFixed(2);
+			 if(parseInt(downloadedPct) >= 100){
+				clearTimeout(statsUpdater);
+				var t = _('(%s%% downloaded)',100);
+				$("#song-title").empty().text(_('Playing: ')+torrentName+" "+t);
+				$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#59256;',timeout:0,content:_('Your torrent download is terminated, save it ?'),btnId:'saveTorrentBtn',btnTitle:_('Yes'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
+			 } else {
+				var t = _('(%s%% downloaded)',downloadedPct);
+				$("#song-title").empty().text(_('Playing: ')+torrentName+" "+t);
+			 }
+		 }
       }
       
 };
+
+function saveToDisk(src,name) {
+	try {
+		if (name !== '') {
+			fs.remove(download_dir+'/'+name, function(err){
+				fs.copy(src, download_dir, function (err) {
+					if (err) {
+						console.log(err,src,name)
+						$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:7000,content:_("Can't save torrent to your download dir, error: %s",err),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
+					} else {
+						$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',timeout:7000,content:_('Torrent successfully saved to your ht5 download directory !'),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
+					}
+				});
+			});
+		} else {
+			$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:7000,content:_("Can't save torrent to your download dir, error: %s",err),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
+		}
+	} catch(err) {
+		fs.copy(src, download_dir, function (err) {
+			if (err) {
+				console.log(err,src,name)
+				$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:7000,content:_("Can't save torrent to your download dir, error: %s",err),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
+			} else {
+				$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',timeout:7000,content:_('Torrent successfully saved to your ht5 download directory !'),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
+			}
+		});
+	}
+}
 
 function stopTorrent(res) {
   $.each(torrentsArr,function(index,torrent) {
