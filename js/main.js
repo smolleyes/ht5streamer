@@ -215,7 +215,7 @@ var browse = true;
 var htmlStr = '<div id="menu"> \
     <div id="engines" class="space"> \
         <label>'+_("Engine:")+'</label> \
-        <select id="engines_select"> \
+        <select id="engines_select" class="selectpicker" data-style="btn-inverse"> \
             <option value = "youtube">Youtube</option> \
             <option value = "dailymotion">Dailymotion</option> \
         </select> \
@@ -224,7 +224,7 @@ var htmlStr = '<div id="menu"> \
         <label id="searchTypes_label">'+_("Search:")+'</label> \
         <input type="text" id="video_search_query" name="video_search_query" placeholder="'+_("Enter your search...")+'" /> \
         <label id="searchTypesMenu_label">'+_("Search type:")+'</label> \
-        <select id="searchTypes_select"> \
+        <select id="searchTypes_select" class="selectpicker" data-style="btn-inverse"> \
             <option value = "videos">'+_("Videos")+'</option> \
             <option value = "playlists">'+_("Playlists")+'</option> \
             <option value = "category">'+_("Categories")+'</option> \
@@ -233,24 +233,24 @@ var htmlStr = '<div id="menu"> \
             <option id="mostViewed" value = "mostViewed">'+_("Most viewed")+'</option> \
         </select> \
         <label id="dateTypes_label">'+_("Date:")+'</label> \
-        <select id="dateTypes_select"> \
+        <select id="dateTypes_select" class="selectpicker" data-style="btn-inverse"> \
             <option value = "today">'+_("Today")+'</option> \
             <option value = "this_week">'+_("This week")+'</option> \
             <option value = "this_month">'+_("This month")+'</option> \
             <option value = "all_time">'+_("All time")+'</option> \
         </select> \
         <label id="categories_label">'+_("Category:")+'</label> \
-        <select id="categories_select"> \
+        <select id="categories_select" class="selectpicker" data-style="btn-inverse"> \
         </select> \
         <label id="orderBy_label">'+_("Order by:")+'</label> \
-        <select id="orderBy_select"> \
+        <select id="orderBy_select" class="selectpicker" data-style="btn-inverse"> \
             <option value = "relevance">'+_("Relevance")+'</option> \
             <option value = "published">'+_("Published")+'</option> \
             <option value = "viewCount">'+_("Views")+'</option> \
             <option value = "rating">'+_("Rating")+'</option> \
         </select> \
         <label id="searchFilters_label">'+_("Filters:")+'</label> \
-        <select id="searchFilters_select"> \
+        <select id="searchFilters_select" class="selectpicker" data-style="btn-inverse"> \
             <option value = ""></option> \
             <option value = "hd">HD</option> \
             <option id="3dopt" value = "3d">3D</option> \
