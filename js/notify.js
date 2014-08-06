@@ -3,8 +3,11 @@ var path = require('path');
 var fs = require('fs');
 var temp = require('temp');
 var execFile = require('child_process').exec;
+var spawn = require('child_process').spawn;
+var sudo = require('sudo');
 var execDir;
 var online_version;
+var pbar;
 
 $(document).ready(function(){
     try {
@@ -66,7 +69,7 @@ $(document).ready(function(){
 function downloadUpdate(link,filename) {
     $.notif({title: 'Ht5streamer update:',icon: '&#128229;',timeout:0,content:'',btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'block'});
     // remove file if already exist
-    var pbar = $('#updateProgress');
+    pbar = $('#updateProgress');
     execDir = path.dirname(process.execPath);
     // start download
     $('#updateProgress strong').html(_('Waiting for connection...'));
@@ -115,44 +118,110 @@ function downloadUpdate(link,filename) {
 			setTimeout(function(){win.emit('close')},3000);
  	    } else if (process.platform === 'darwin') {
 			var dest = path.dirname(execDir.match(/(.*)Ht5streamer.app(.*?)/)[0]);
-		    var args = ['-o',filename,'-d',dest];
-		    var update = spawn('unzip', args);
-	    	update.on('exit', function(data){
-		    	pbar.click();
-		    	$('.notification').click();
-		    	if (parseInt(data) == 0) {
-			    	$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    	} else {
-			    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    	}
-	    	});
-	    	update.stderr.on('data', function(data) {
-		    	$('.notification').click();
-		    	$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... !") + data,btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-		    	console.log('update stderr: ' + data);
-	    	});
+			var args = ['-o',filename,'-d',dest];
+			var ls = spawn('stat', ['-c','%U', execDir]);
+			ls.stdout.on('data', function (data) {
+				console.log('permissions for install dir :' + data.toString())
+			  if(data.toString() === 'root') {
+				  console.log('need root to update');
+				  installAsAdmin(_('Please enter your sudo/admin password to install the update'),filename,execDir);
+			  } else {
+				  setTimeout(function(){
+					installUpdate(args)
+				  },3000);
+			  }
+			});
+
+			ls.stderr.on('data', function (data) {
+			  $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+			});
  	    } else {
+			console.log('install for linux...')
 		    var args = ['-o',filename,'-d',execDir];
-		    setTimeout(function(){
-				var update = spawn('unzip', args);
-				update.on('exit', function(data){
-					pbar.click();
-					$('.notification').click();
-					if (parseInt(data) == 0) {
-						$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-					} else {
-						$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-					}
-				});
-				update.stderr.on('data', function(data) {
-					$('.notification').click();
-					$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-					console.log('update stderr: ' + data);
-				});
-			},3000);
+			var ls = spawn('stat', ['-c','%U', execDir]);
+			ls.stdout.on('data', function (data) {
+				console.log('permissions for install dir :"' + data.toString()+ '"')
+				if(data.toString().trim() === 'root') {
+					console.log('need root to update');
+					installAsAdmin(_('Please enter your sudo/admin password to install the update'),filename,execDir);
+				} else {
+					setTimeout(function(){
+						installUpdate(args);
+					},3000);
+				}
+			});
+
+			ls.stderr.on('data', function (data) {
+			  $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+			});
 		}
 	});
     });
 });
 current_download.end();
+}
+
+function installAsAdmin(msg,file,dest) {
+	$.prompt(msg,'',function(res){
+	  if(res === null) {
+		  $('.notification').click();
+		  $.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		  return;  
+	  } else {
+		  var pass = res;
+		  var options = {
+			  cachePassword: true,
+			  prompt: 'password:',
+			  spawnOptions: { /* other options for spawn */ }
+		  }
+		  // test password
+		  var child = sudo([ 'ls', '-l', '/' ], options, pass);
+		  child.on('exit',function(code) {
+			  if(code === 0) {
+			        console.log('sudo command ok!, unzipping update');
+			        var child2 = sudo(['unzip','-o',file,'-d',dest], options, pass);
+			        child2.stdout.on('data',function(data) {
+						console.log(data.toString());
+					});
+			        child2.on('exit',function(code2) {
+						$('.notification').click();
+						if(parseInt(code2) === 0) {
+							$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+						} else {
+							$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+						}
+					});
+					child2.stderr.on('data', function(data) {
+						$('.notification').click();
+						$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+						console.log('update stderr: ' + data);
+					});
+			  } else {
+					console.log('bad sudo command')
+				    installAsAdmin(_('Wrong password, please retry or cancel...'),file,dest);
+			  }
+		  });
+	  }
+	},true);
+}
+
+function installUpdate(args) {
+	console.log('update args', args)
+	var update = spawn('unzip', args);
+	update.stdout.on('data',function(data) {
+		console.log(data.toString());
+	});
+	update.on('exit', function(code){
+		$('.notification').click();
+		if (code === 0) {
+			$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Update successfully installed! please restart ht5streamer"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		} else {
+			$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... or try to reinstall manually !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		}
+	});
+	update.stderr.on('data', function(data) {
+		$('.notification').click();
+		$.notif({title: 'Ht5streamer:',cls:'red',timeout:10000,icon: '&#10006;',content:_("Update error, please report the problem... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+		console.log('update stderr: ' + data);
+	});
 }

@@ -363,7 +363,13 @@ function main() {
     $('#video_search_query').focusout(function() {
         document.addEventListener("keydown", fn, false );
     });
-    
+    //password input
+    $(document).on('focusin','.msgbox-inbox input[type="password"]',function() {
+        document.removeEventListener("keydown",fn, false);
+    });
+    $(document).on('focusout','.msgbox-inbox input[type="password"]',function() {
+        document.addEventListener("keydown", fn, false );
+    });
     // default parameters
     $('#resolutions_select').val(selected_resolution);
     $('#searchTypes_select').val('videos');
