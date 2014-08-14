@@ -137,17 +137,16 @@ app.updateStats = function(streamInfo) {
 		  if (playStarted === false) {
 			  $('#preloadTorrent').remove();
 			  var stream = {};
-			  playFromHttp = true;
 			  stream.link = 'http://'+ipaddress+':' + videoStreamer.server.address().port + '/&torrent';
 			  stream.next = '';
-			  stream.title = streamInfo.torrent.name;
+			  stream.title = streamInfo.server.index.name;
 			  //clearTimeout(statsUpdater);
 			  startPlay(stream);
 			  playStarted = true;
 		 } else {
 			 torrentSrc = videoStreamer.path;
-			 torrentName = videoStreamer.torrent.name;
-			 downloadedPct = (swarm.downloaded / streamInfo.files[0].length * 100).toFixed(2);
+			 torrentName = videoStreamer.server.index.name;
+			 downloadedPct = (swarm.downloaded / streamInfo.server.index.length * 100).toFixed(2);
 			 if(parseInt(downloadedPct) >= 100){
 				clearTimeout(statsUpdater);
 				var t = _('(%s%% downloaded)',100);
@@ -155,6 +154,7 @@ app.updateStats = function(streamInfo) {
 				$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#59256;',timeout:0,content:_('Your torrent download is terminated, save it ?'),btnId:'saveTorrentBtn',btnTitle:_('Yes'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
 			 } else {
 				var t = _('(%s%% downloaded)',downloadedPct);
+				$('.mejs-time-loaded').width(downloadedPct+'%')
 				$("#song-title").empty().text(_('Playing: ')+torrentName+" "+t);
 			 }
 		 }
@@ -191,6 +191,7 @@ function saveToDisk(src,name) {
 }
 
 function stopTorrent(res) {
+  torrentPlaying = false;
   $.each(torrentsArr,function(index,torrent) {
     wipeTmpFolder();
     try {

@@ -236,9 +236,9 @@ function getAirMediaReceivers() {
                     if (item.capabilities['video'] === true) {
                         var name = item.name;
                         if (airMediaDevices.length === 0) {
-                            $('#fbxPopup').append('<span style="position:relative;top:-3px;">'+name + ' :</span> <input type=radio name="'+name+'" checked="true" value="'+name+'"> <br />');
+                            $('#fbxPopup').append('<span style="position:relative;top:-3px;">'+name + ' :</span> <input class="freebox" type=radio name="'+name+'" checked="true" value="'+name+'"> <br />');
                         } else {
-                            $('#fbxPopup').append('<span style="position:relative;top:-3px;">'+name + ' :</span> <input type=radio name="'+name+'" value="'+name+'"> <br />');
+                            $('#fbxPopup').append('<span style="position:relative;top:-3px;">'+name + ' :</span> <input class="freebox" type=radio name="'+name+'" value="'+name+'"> <br />');
                         }
                         airMediaDevices.push(name);
                     } else {

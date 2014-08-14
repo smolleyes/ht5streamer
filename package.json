@@ -2,6 +2,7 @@
   "name": "ht5streamer",
   "main": "config.html",
   "user-agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.48 Safari/537.36",
+  "chromium-args":"--ignore-gpu-blacklist",
   "window": {
     "toolbar": false,
     "width": 1300,
@@ -12,5 +13,7 @@
     "title": "ht5streamer",
     "show": false
   },
-  "chromium-args":"--ignore-gpu-blacklist"
+  "webkit": {
+    "plugin": true
+  }
 }

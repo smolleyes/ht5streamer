@@ -123,9 +123,11 @@
 	"Warnings": "Avertissements",
 	"Your torrent download is terminated, save it ?": "Téléchargement du torrent terminé, voulez vous le sauvegarder ?",
 	"Can't save torrent to your download dir, error: %s": "Impossible de sauvegarder votre torrent, erreur: %s",
-	"(%s%% downloaded)":"(%s%% téléchargé)",
-	"Torrent successfully saved to your ht5 download directory !":"Torrent sauvegardé avec succès dans votre dossier de téléchargement ht5 !",
-	"Yes":"Oui",
-	"Please enter your sudo/admin password to install the update":"Merci d'entrer votre mot de passe sudo/admin pour installer la mise à jour",
-	"Wrong password, please retry or cancel...":"Mot de passe erroné, merci de réessayer ou annuler..."
+	"(%s%% downloaded)": "(%s%% téléchargé)",
+	"Torrent successfully saved to your ht5 download directory !": "Torrent sauvegardé avec succès dans votre dossier de téléchargement ht5 !",
+	"Yes": "Oui",
+	"Please enter your sudo/admin password to install the update": "Merci d'entrer votre mot de passe sudo/admin pour installer la mise à jour",
+	"Wrong password, please retry or cancel...": "Mot de passe erroné, merci de réessayer ou annuler...",
+	"upnp": "upnp",
+	"Playing on your UPNP device !" : "Lecture en cours sur votre périphérique upnp !"
 }

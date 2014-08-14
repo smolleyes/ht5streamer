@@ -647,20 +647,28 @@ color: White;
     padding:5px;
 }
 
-#treeview {
+#treeview, #UpnpContainer {
     position: relative;
     top:40px;
+    list-style-type:none;
 }
 
 /* airplay */
-#airplayContainer {
+#airplayContainer, upnpContainer {
     position:fixed;
     z-index:1200;
-    left:380px;
+    left:425px;
     top: 50px;
 }
 
-.airplay-disabled {
+#upnpRenderersContainer {
+    position:fixed;
+    z-index:1200;
+    left:425px;
+    top: 50px;
+}
+
+.airplay-disabled, .upnp-disabled {
     background:url(../images/airplay.png);
     background-repeat:no-repeat;
     height: 26px;
@@ -668,7 +676,7 @@ color: White;
     position: absolute;
 }
 
-.airplay-enabled {
+.airplay-enabled, .upnp-enabled {
     height: 26px;
     width: 26px;
     position: absolute;

@@ -69,10 +69,25 @@ function showItems(results) {
 }
 
 function onSelectedItem(data) {
+	console.log(data)
 	$(".mejs-overlay").show();
 	$(".mejs-layer").show();
 	$(".mejs-overlay-play").hide();
 	$(".mejs-overlay-loading").show();
+	var id = data.rslt.obj[0].id;
+	
+	console.log('#' +id+ " clicked class loaded = "+$('#'+id).hasClass('loaded'))
+	if(id.indexOf('upnpRootNode') !== -1 && $('#'+id).hasClass('loaded') === false) {
+		var serverId = parseInt(id.split('_')[0]);
+		$('#'+id).addClass('loaded');
+		return browseUpnpDir(serverId,'0',id);
+	} else if (id.indexOf('upnpSubNode') !== -1 && $('#'+id).hasClass('loaded') === false) {
+		var serverId = parseInt(id.split('_')[0]);
+		var item = data.rslt.obj.prevObject[0].attributes;
+		$('#'+id).addClass('loaded');
+		return browseUpnpDir(item.serverId.value,item.index.value,id);
+	}
+	
 	var item = data.rslt.obj.prevObject[0].attributes;
 	try {
 		var vid = item.vid.value;

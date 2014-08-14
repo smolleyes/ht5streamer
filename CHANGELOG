@@ -1,3 +1,6 @@
+V 1.5 
+  * introduce upnp client and mediarenderer
+
 V 1.4.2
   * add admin/sudo check for update system in linux/osx
 
