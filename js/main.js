@@ -99,10 +99,6 @@ var timeUpdater;
 
 win.on('loaded', function() {
     win.show();
-    cli.searchDevices();
-    cli.on('updateUpnpDevice', function() {
-        updateUpnpList()
-    });
 });
 
 //localize
@@ -383,6 +379,7 @@ $(document).ready(function() {
     $('#loadingApp').empty().append('<img style="float:left;width:28px;height:28px;margin-right:10px;"src="images/spinner.gif" /><span>' + _("Loading ht5streamer...") + '</span>').show();
     // load plugins
     init();
+    
 });
 
 function main() {
@@ -1089,7 +1086,18 @@ function main() {
             $('#right-component').width(win.width - $('#left-component').width() - 5);
         }, 200);
     });
-
+    
+    setTimeout(function() {
+		// load upnp devices
+		cli.searchDevices();
+		cli.on('updateUpnpDevice', function() {
+			updateUpnpList()
+		});
+		//fix upnp toggle position
+		var pos = parseInt($('.tabs li').last().width()) + parseInt($('.tabs li').last().position().left);
+		$('#upnpRenderersContainer').css({left: pos+'px'});
+	},2000);
+    
 }
 
 function startUPNPserver() {
