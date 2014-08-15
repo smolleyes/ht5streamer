@@ -3578,12 +3578,10 @@ function updateUpnpList() {
             }
             $("#UpnpContainer").jstree("create", $("#" + _("upnp") + "_upnpRootNode"), "inside", obj, function() {}, true);
         }
-        // add mediarenderer if needed
-        // 1 load renderers button if we have renderers listed
-        if(cli._avTransports.length > 0) {
-			$('#upnpRenderersContainer').show();
-		} 
     })
+    if(cli._avTransports.length > 0) {
+		$('#upnpRenderersContainer').show();
+	} 
 }
 
 function loadUpnpRenderers() {
