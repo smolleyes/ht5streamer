@@ -184,6 +184,8 @@ var fn;
 var pluginsList = ['grooveshark', 'mega-search', 'cpasbien', 'songza', 'thepiratebay'];
 var excludedPlugins = ['mega', 'mega-files', 'vimeo'];
 var loadedTimeout;
+var popStreamer = require('popcorn-streamer');
+var playlistMode = 'normal';
 
 // settings
 var confDir;
@@ -478,18 +480,23 @@ function main() {
     // next signal and callback
     $(document).on('click', '.mejs-next-btn', function(e) {
         e.preventDefault();
-        if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
+        if ($('.tabActiveHeader').attr('id') === 'tabHeader_1' || $('.tabActiveHeader').attr('id') === 'tabHeader_3' || $('.tabActiveHeader').attr('id') === 'tabHeader_5') {
             try {
                 engine.play_next();
             } catch (err) {
                 getNext();
             }
         } else {
-            getNext();
+            on_media_finished();
         }
     });
     // stop button
     $(document).on('click', '#stopBtn', function(e) {
+		try {
+			upnpMediaPlaying = false;
+			continueTransition = false;
+			mediaRenderer.stop();
+		} catch(err) {}
         initPlayer();
     });
     // pause/stop button
@@ -509,6 +516,29 @@ function main() {
             }
         }
     });
+    //playlist buttons
+    $(document).on('click','#playlistBtn',function(e) {
+		e.preventDefault();
+		console.log('playlist clicked');
+		var pos = $('button[aria-label="playlist"]').css('backgroundPosition-y');
+		if(pos === '0px') {
+			$('button[aria-label="playlist"]').attr('style', 'background-position-y:-16px !important');
+			$('button[aria-label="playlist"]').attr('title','repeat mode');
+			playlistMode = 'loop';
+		//} else if(pos === '-16px') {
+			//$('button[aria-label="playlist"]').attr('style', 'background-position-y:-48px !important');
+			//$('button[aria-label="playlist"]').attr('title','shuffle mode');
+			//playlistMode = 'shuffle';
+		} else if (pos === '-16px') {
+			$('button[aria-label="playlist"]').attr('style', 'background-position-y:-48px !important');
+			$('button[aria-label="playlist"]').attr('title','play and stop');
+			playlistMode = 'normal';
+		} else if (pos === '-48px') {
+			$('button[aria-label="playlist"]').attr('style', 'background-position-y:0px !important');
+			$('button[aria-label="playlist"]').attr('title','playlist mode');
+			playlistMode = 'continue';
+		}
+	});
     // previous signal and callback
     $(document).on('click', '.mejs-back-btn', function(e) {
         e.preventDefault();
@@ -638,17 +668,7 @@ function main() {
 
     // next vid
     player.media.addEventListener('ended', function() {
-        $("#cover").remove();
-        $('#song-title').empty().append(_('Stopped... '));
-        if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
-            try {
-                engine.play_next();
-            } catch (err) {
-                getNext();
-            }
-        } else {
-            getNext();
-        }
+        on_media_finished();
     });
     //load playlist
     $(document).on('click', '.load_playlist', function(e) {
@@ -1097,6 +1117,8 @@ function main() {
 		var pos = parseInt($('.tabs li').last().width()) + parseInt($('.tabs li').last().position().left);
 		$('#upnpRenderersContainer').css({left: pos+'px'});
 	},2000);
+	
+	$('button[aria-label="playlist"]').attr('title','play and stop');
     
 }
 
@@ -1275,11 +1297,12 @@ function initPlayer() {
     player.currentTime = 0;
     player.current[0].style.width = 0;
     player.loaded[0].style.width = 0;
-    player.durationD.html('00:00');
+    player.durationD.html('00:00:00');
+    $('.mejs-time-loaded').width(0+'%');
     $('.mejs-time-buffering').width(0+'%');
 	$('.mejs-time-current').width(0+'%');
-	$('span.mejs-currenttime').text('00:00');
-	$('span.mejs-duration').text('00:00');
+	$('span.mejs-currenttime').text('00:00:00');
+	$('span.mejs-duration').text('00:00:00');
     $("#preloadTorrent").remove();
     $(".mejs-overlay").show();
     $(".mejs-layer").show();
@@ -1526,11 +1549,27 @@ function getCategories() {
     }
 }
 
+function on_media_finished(){
+	if (playlistMode === 'normal') {
+		initPlayer();
+	} else if (playlistMode === 'loop') {
+		if(upnpMediaPlaying) {
+			playUpnpRenderer(currentMedia)
+		} else {
+			startPlay(currentMedia);
+		}
+	} else if (playlistMode === 'shuffle') {
+		
+	} else if (playlistMode === 'continue') {
+		getNext();
+	} 
+}
+
 function getNext() {
 	$('.mejs-time-buffering').width(0+'%');
 	$('.mejs-time-current').width(0+'%');
-	$('span.mejs-currenttime').text('00:00');
-	$('span.mejs-duration').text('00:00');
+	$('span.mejs-currenttime').text('00:00:00');
+	$('span.mejs-duration').text('00:00:00');
     $("#preloadTorrent").remove();
     $(".mejs-overlay").show();
     $(".mejs-layer").show();
@@ -1598,8 +1637,8 @@ function getNext() {
 function getPrev() {
 	$('.mejs-time-buffering').width(0+'%');
 	$('.mejs-time-current').width(0+'%');
-	$('span.mejs-currenttime').text('00:00');
-	$('span.mejs-duration').text('00:00');
+	$('span.mejs-currenttime').text('00:00:00');
+	$('span.mejs-duration').text('00:00:00');
     $("#preloadTorrent").remove();
     $(".mejs-overlay").show();
     $(".mejs-layer").show();
@@ -2786,6 +2825,17 @@ function startMegaServer() {
     } catch (err) {
         megaServer = http.createServer(function(req, res) {
             if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
+				//res.writeHead(206, { // NOTE: a partial http response
+				////// 'Date':date.toUTCString(),
+				//'Connection': 'keep-alive',
+				//'Accept-Ranges':'bytes',
+				//'Content-Type': 'video/x-matroska',
+				//'Content-Length':731459584,
+				//'Content-Range':'bytes '+0+'-'+731459583+'/'+731459584,
+				//'Server':'CustomStreamer/0.0.1',
+				//'transferMode.dlna.org': 'Streaming',
+				//'contentFeatures.dlna.org':'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000'
+			//});
                 getMetadata(req, res);
             }
         }).listen(8888);
@@ -2793,22 +2843,15 @@ function startMegaServer() {
     }
 }
 
-//proxyServer = http.createServer(function(req, resp) {
-	//if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
-		//var url = req.url.split('?stream=')[1];
-		//console.log('streaming '+decodeXML(url))
-		//request.get(decodeXML(url))
-		  //.on('response',
-			//function (response) {
-				//console.log('RESPONSEEEEEEEEE')
-			  ////Here you can modify the headers
-			  //response.headers["transferMode.dlna.org"] = 'Streaming';
-			  ////response.headers["contentFeatures.dlna.org"] = 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000';
-			  //resp.writeHead(response.statusCode, response.headers);
-			//}
-		  //).pipe(resp);
-	//}
-//}).listen(8081);
+proxyServer = http.createServer(function(req, resp) {
+	if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
+		console.log(req)
+		var url = XMLEscape.xmlUnescape(req.url.split('?stream=')[1]);
+		console.log('streaming '+url)
+		//resp.headers["contentFeatures.dlna.org"] = 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000';
+		popStreamer(url).pipe(resp);
+	}
+}).listen(8081);
 //console.log("proxy server running on port 8081")
 
 function getMetadata(req, res) {
@@ -2816,6 +2859,7 @@ function getMetadata(req, res) {
     var link;
     var bitrate = '';
     var resolution = '';
+    var duration = 'NaN';
     var parsedLink = decodeURIComponent(url.parse(req.url).href);
     try {
         link = parsedLink.match(/\?file=(.*?)&tv/)[1].replace(/\+/g, ' ');
@@ -2839,7 +2883,7 @@ function getMetadata(req, res) {
         ffprobe = spawn(exec_path + '/ffprobe', args);
     }
     ffprobe.stderr.on('data', function(data) {
-        var infos = data.toString();
+        var infos = data.toString().trim().replace(/(\r\n|\n|\r)/gm," ");
         if (infos.indexOf('453 Not Enough Bandwidth') !== -1) {
             res.writeHead(400, {
                 "Content-Type": "text/html"
@@ -2848,30 +2892,33 @@ function getMetadata(req, res) {
             res.end();
             error = true;
         }
-        try {
-            if (resolution === '') {
-                var vinfos = infos.match(/Video:(.*)/)[1];
-                resolution = vinfos.toLowerCase().match(/\d{3}(?:\d*)?x\d{3}(?:\d*)/)[0];
-            }
-        } catch (err) {
-
-        }
+		if (resolution === '') {
+			try {
+				var vinfos = infos.match(/Video:(.*)/)[1];
+				resolution = vinfos.toLowerCase().match(/\d{3}(?:\d*)?x\d{3}(?:\d*)/)[0];
+			} catch (err) {}
+		}
+		if (duration === 'NaN') {
+			try {
+				duration = infos.match(/Duration: (.*?),/)[1];
+			} catch (err) {}
+		}
     });
 
     ffprobe.on('exit', function(data) {
         if (error) {
             return;
         }
-        console.log('[DEBUG] ffprobe exited...' + bitrate + ' ' + resolution);
+        console.log('[DEBUG] ffprobe exited...' + bitrate + ' ' + resolution + ' ' + duration );
         var width = 640;
         var height = 480;
         width = parseInt(resolution.split("x")[0]);
         height = parseInt(resolution.split("x")[1]);
-        startStreaming(req, res, width, height)
+        startStreaming(req, res, width, height, duration)
     });
 }
 
-function startStreaming(req, res, width, height) {
+function startStreaming(req, res, width, height,duration) {
     try {
         var baseLink = url.parse(req.url).href;
         var tv = false;
@@ -2887,11 +2934,10 @@ function startStreaming(req, res, width, height) {
 		res.writeHead(200, { // NOTE: a partial http response
 			// 'Date':date.toUTCString(),
 			'Connection': 'keep-alive',
-			// 'Cache-Control':'private',
-			//'Content-Type': 'video/x-msvideo',
-			//'Content-Length':megaSize,
+			'Content-Type': 'video/x-matroska',
+			'Content-Length':754445554454,
 			//'Content-Range':'bytes '+0+'-'+10000000+'/'+10000001,
-			//'Accept-Ranges':'bytes',
+			'Accept-Ranges':'bytes',
 			'Server':'CustomStreamer/0.0.1',
 			'transferMode.dlna.org': 'Streaming',
 			'contentFeatures.dlna.org':'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000'
@@ -2980,20 +3026,9 @@ function startStreaming(req, res, width, height) {
         // if local file
         if (parsedLink.indexOf('file:') !== -1) {
             link = link.replace('file://', '');
-            var ffmpeg = spawnFfmpeg(link, device, '', bitrate, function(code) { // exit
+            var ffmpeg = spawnFfmpeg(link, device, '', bitrate,duration, function(code) { // exit
                 console.log('child process exited with code ' + code);
                 res.end();
-            });
-            res.writeHead(200, { // NOTE: a partial http response
-                // 'Date':date.toUTCString(),
-                'Connection': 'close',
-                // 'Cache-Control':'private',
-                'Content-Type': 'video/mp4',
-                //'Content-Length':10000000,
-                //'Content-Range':'bytes '+0+'-'+10000000+'/'+10000001,
-                //'Accept-Ranges':'bytes',
-                // 'Server':'CustomStreamer/0.0.1',
-                //'Transfer-Encoding':'chunked'
             });
             ffmpeg.stdout.pipe(res);
         }
@@ -3289,11 +3324,11 @@ function downloadFromMega(link, key, size) {
     return stream
 }
 
-function spawnFfmpeg(link, device, host, bitrate, exitCallback) {
+function spawnFfmpeg(link, device, host, bitrate,duration,exitCallback) {
 	var link=link.replace('&tv','').replace('&torrent','');
     if (host === undefined || link !== '') {
         //local file...
-        args = ['-i', ''+link+'','-sn', '-c:v', 'libx264', '-c:a', 'libvorbis','-f', 'matroska','pipe:1'];
+        args = ['-i', ''+link+'', '-copyts','-sn', '-c:v', 'libx264', '-c:a', 'libvorbis','-f', 'matroska','pipe:1'];
     } else {
         if (device === "phone") {
             if (host.match(/(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)/) !== null) {
@@ -3325,6 +3360,10 @@ function spawnFfmpeg(link, device, host, bitrate, exitCallback) {
 
     ffmpeg.stderr.on('data', function(data) {
         console.log('grep stderr: ' + data);
+        var t = /([0-9]+):([0-9]+):([0-9]+.[0-9]+)/.exec(duration);
+		if(t){
+			player.options.duration = parseInt(t[1],10)*60*60+parseInt(t[2],10)*60+parseFloat(t[3]);
+		}
     });
 
     return ffmpeg;
@@ -3692,43 +3731,37 @@ function playUpnpRenderer(obj) {
 		obj.type = "object.item.videoItem";
 	}
 	$('.mejs-time-current').width(0+'%');
-	$('span.mejs-currenttime').text('00:00');
-	$('span.mejs-duration').text('00:00');
+	$('span.mejs-currenttime').text('00:00:00');
+	$('span.mejs-duration').text('00:00:00');
 	//'http://'+ipaddress+':8081/?stream='+
 	var uri = XMLEscape.xmlEscape(obj.link.replace('&tv','').replace('&torrent','').replace('&direct',''));
 	var infos = JSON.parse(obj.data).protocolInfo;
 	var title = XMLEscape.escape(obj.title);
 	var type = obj.type;
+	currentMedia = obj;
 	
-	var metaString = '&lt;DIDL-Lite xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:sec=&quot;http://www.sec.co.kr/&quot;&gt;&lt;item&gt;&lt;dc:title&gt;'+title+'&lt;/dc:title&gt;&lt;upnp:class&gt;'+type+'&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;'+infos+':*&quot; size=&quot;0&quot;&gt;'+uri+'&lt;/res&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;'
-	//var metaString= '&lt;DIDL-Lite xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\" xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\" xmlns:sec=\"http://www.sec.co.kr/\"&gt;&lt;item id=\"0/0/912/145-0\" parentID=\"0/0/912\" restricted=\"1\"&gt;&lt;upnp:class&gt;'+type+'&lt;/upnp:class&gt;&lt;dc:title&gt;'+title+'&lt;/dc:title&gt;&lt;dc:creator&gt;Unknown Artist&lt;/dc:creator&gt;&lt;upnp:artist&gt;Unknown Artist&lt;/upnp:artist&gt;&lt;upnp:album&gt;Unknown Album&lt;/upnp:album&gt;&lt;res protocolInfo=\"'+infos+':*\"&gt;'+uri+'&lt;/res&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;'
-	setTimeout(function() {
-		mediaRenderer.setAVTransportURI("0",uri,metaString).then(function(response) {
-			if (response && response.data) {
-				console.log('UPNP: Ok playing' + uri);
-				// start watching for PLAYING state
-				mediaRenderer.play();
-				continueTransition = true;
-				$('.mejs-overlay-button').hide();
-				$('.mejs-overlay-loading').hide();
-				$('.mejs-container p#fbxMsg').remove();
-				$('.mejs-container').append('<p id="fbxMsg" style="height:100px !important;position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 30px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;">'+_("Playing on your UPNP device !")+'</p>')
-				$('.mejs-controls').width('100%');
-				getRendererState('PLAYING');
-			} else {
-				mediaRenderer.stop();
-				continueTransition = false;
-				upnpMediaPlaying = false;
-				console.log('UPNP: No response for' + uri)
-				getRendererState('STOPPED');
-			}
-			
-		}).then( null, function( error ) { // Handle any errors
+	//var metaString = '&lt;DIDL-Lite xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:sec=&quot;http://www.sec.co.kr/&quot;&gt;&lt;item&gt;&lt;dc:title&gt;'+title+'&lt;/dc:title&gt;&lt;upnp:class&gt;'+type+'&lt;/upnp:class&gt;&lt;res protocolInfo=&quot;'+infos+':*&quot; size=&quot;0&quot;&gt;'+uri+'&lt;/res&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;'
+	var metaString= '&lt;DIDL-Lite xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\" xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\" xmlns:sec=\"http://www.sec.co.kr/\"&gt;&lt;item id=\"0/0/912/145-0\" parentID=\"0/0/912\" restricted=\"1\"&gt;&lt;upnp:class&gt;'+type+'&lt;/upnp:class&gt;&lt;dc:title&gt;'+title+'&lt;/dc:title&gt;&lt;dc:creator&gt;Unknown Artist&lt;/dc:creator&gt;&lt;upnp:artist&gt;Unknown Artist&lt;/upnp:artist&gt;&lt;upnp:album&gt;Unknown Album&lt;/upnp:album&gt;&lt;res protocolInfo=\"'+infos+':DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000\"&gt;'+uri+'&lt;/res&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;'
+	mediaRenderer.setAVTransportURI("0",uri,metaString).then(function(response) {
+		if (response && response.data) {
+			console.log('UPNP: Ok playing' + uri);
+			// start watching for PLAYING state
+			mediaRenderer.play();
+			continueTransition = true;
+			getRendererState('PLAYING');
+		} else {
+			mediaRenderer.stop();
+			continueTransition = false;
+			upnpMediaPlaying = false;
+			console.log('UPNP: No response for' + uri)
+			getRendererState('STOPPED');
+		}
+		
+	}).then( null, function( error ) { // Handle any errors
 
-			console.log( "An error occurred: " + error.description );
+		console.log( "An error occurred: " + error.description );
 
-		});
-	},1000);
+	});
 }
 
 function getRendererState(state) {
@@ -3762,28 +3795,41 @@ function getRendererState(state) {
 				if (state === 'PLAYING') {
 					upnpMediaPlaying = true;
 					continueTransition = true;
-					$('#song-title').empty().append(_('Playing: ') + decodeURIComponent(currentMedia.title));
+					setTimeout(function(){
+						$('#song-title').empty().append(_('Playing: ') + decodeURIComponent(currentMedia.title));
+						$('.mejs-overlay-button').hide();
+						$('.mejs-overlay-loading').hide();
+						$('.mejs-container p#fbxMsg').remove();
+						$('.mejs-container').append('<p id="fbxMsg" style="height:100px !important;position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 30px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;">'+_("Playing on your UPNP device !")+'</p>')
+						$('.mejs-controls').width('100%');
+					},1000);
 					// watch for STOPPED state
 					console.log("start watching for stopped state")
 					getRendererState('STOPPED');
 				} else if (state === 'STOPPED') {
 					continueTransition = false;
-					// if user asked stop
-					if(upnpMediaPlaying === false) {
-						console.log("upnp stopped")
-						continueTransition = false;
-					// else continue
-					} else {
-						console.log('upnp finished playing, trying next track')
-						continueTransition = false;
-						upnpMediaPlaying = false;
-						getNext();
-					}
 					setTimeout(function(){
+					// if user asked stop
+						if(upnpMediaPlaying === false) {
+							console.log("upnp stopped")
+							continueTransition = false;
+						// else continue
+						} else {
+							console.log('upnp finished playing...')
+							continueTransition = false;
+							upnpMediaPlaying = false;
+							on_media_finished();
+						}
+						try {
+							if(torrentPlaying) {
+							 stopTorrent();
+							}
+						} catch (err) {}
 						$('.mejs-time-buffering').width(0+'%');
+						$('.mejs-time-loaded').width(0+'%');
 						$('.mejs-time-current').width(0+'%');
-						$('span.mejs-currenttime').text('00:00');
-						$('span.mejs-duration').text('00:00');
+						$('span.mejs-currenttime').text('00:00:00');
+						$('span.mejs-duration').text('00:00:00');
 						$(".mejs-overlay").show();
 						$(".mejs-layer").show();
 						$(".mejs-overlay-loading").hide();
