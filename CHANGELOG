@@ -1,6 +1,11 @@
+V 1.6
+  * add option to enable/disable transcoding
+  * startPlay methods rewritted
+  * fix...
+ 
 V 1.5.2
   * fix some upnp bugs
-  * add lopp/plylist/playand stop mode
+  * add loop / playlist and play/stop mode
 
 V 1.5.1 
  * bug fix

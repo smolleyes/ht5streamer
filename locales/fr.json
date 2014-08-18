@@ -129,5 +129,12 @@
 	"Please enter your sudo/admin password to install the update": "Merci d'entrer votre mot de passe sudo/admin pour installer la mise à jour",
 	"Wrong password, please retry or cancel...": "Mot de passe erroné, merci de réessayer ou annuler...",
 	"upnp": "upnp",
-	"Playing on your UPNP device !" : "Lecture en cours sur votre périphérique upnp !"
+	"Playing on your UPNP device !": "Lecture en cours sur votre périphérique upnp !",
+	"Open external link": "Ouvrir lien externe",
+	"transcoding enabled": "transcodage activé",
+	"transcoding disabled": "transcodage désactivé",
+	"trancoding disabled": "trancoding disabled",
+	"play and stop": "mode normal",
+	"playlist mode": "mode liste de lecture",
+	"repeat mode": "mode boucle"
 }

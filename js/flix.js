@@ -154,7 +154,9 @@ app.updateStats = function(streamInfo) {
 				$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#59256;',timeout:0,content:_('Your torrent download is terminated, save it ?'),btnId:'saveTorrentBtn',btnTitle:_('Yes'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
 			 } else {
 				var t = _('(%s%% downloaded)',downloadedPct);
-				$('.mejs-time-loaded').width(downloadedPct+'%')
+				if(upnpToggleOn) {
+					$('.mejs-time-loaded').width(downloadedPct+'%')
+				}
 				$("#song-title").empty().text(_('Playing: ')+torrentName+" "+t);
 			 }
 		 }

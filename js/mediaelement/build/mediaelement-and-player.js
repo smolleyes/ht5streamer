@@ -1929,7 +1929,7 @@ if (typeof jQuery != 'undefined') {
 		// resize to media dimensions
 		enableAutosize: true,
 		// forces the hour marker (##:00:00)
-		alwaysShowHours: false,
+		alwaysShowHours: true,
 
 		// show framecount in timecode (##:00:00:00)
 		showTimecodeFrameCount: false,
@@ -3121,6 +3121,11 @@ if (typeof jQuery != 'undefined') {
 	// STOP BUTTON
 	$.extend(MediaElementPlayer.prototype, {
 		buildstop: function(player, controls, layers, media) {
+			$('<div class="mejs-button mejs-transcode-button" id="transcodeBtnContainer">' +
+					'<button aria-controls="transcodeBtn" class="transcoder-disabled" type="button" title="'+_("transcoding disabled")+'"></button>' +
+				'</div>')
+				.appendTo(controls)
+			
 			var t = this,
 				stop = 
 				$('<div class="mejs-button mejs-stop-button mejs-stop" id="stopBtn">' +
@@ -3142,9 +3147,9 @@ if (typeof jQuery != 'undefined') {
 					}
 				});
 				$('<div class="mejs-button mejs-playlist-button mejs-playlist" id="playlistBtn">' +
-					'<button type="button" aria-controls="playlistBtnImg" title="playlist" aria-label="playlist"></button>' +
+					'<button type="button" aria-controls="playlistBtnImg" title="'+_("play and stop")+'" aria-label="playlist"></button>' +
 				'</div>')
-				.appendTo(controls)
+				.appendTo(controls);
 		}
 	});
 	// playlist BUTTONs
@@ -3351,7 +3356,7 @@ if (typeof jQuery != 'undefined') {
 			
 			$('<div class="mejs-time">'+
 					'<span class="mejs-currenttime">' + (player.options.alwaysShowHours ? '00:' : '')
-					+ (player.options.showTimecodeFrameCount? '00:00:00':'00:00:00')+ '</span>'+
+					+ (player.options.showTimecodeFrameCount? '00:00':'00:00')+ '</span>'+
 					'</div>')
 					.appendTo(controls);
 			
@@ -3371,7 +3376,7 @@ if (typeof jQuery != 'undefined') {
 					'<span class="mejs-duration">' + 
 						(t.options.duration > 0 ? 
 							mejs.Utility.secondsToTimeCode(t.options.duration, t.options.alwaysShowHours || t.media.duration > 3600, t.options.showTimecodeFrameCount,  t.options.framesPerSecond || 25) :
-				   			((player.options.alwaysShowHours ? '00:' : '') + (player.options.showTimecodeFrameCount? '00:00:00':'00:00:00')) 
+				   			((player.options.alwaysShowHours ? '00:' : '') + (player.options.showTimecodeFrameCount? '00:00':'00:00')) 
 				   		) + 
 					'</span>')
 					.appendTo(controls.find('.mejs-time'));
@@ -3384,7 +3389,7 @@ if (typeof jQuery != 'undefined') {
 					'<span class="mejs-duration">' + 
 						(t.options.duration > 0 ? 
 							mejs.Utility.secondsToTimeCode(t.options.duration, t.options.alwaysShowHours || t.media.duration > 3600, t.options.showTimecodeFrameCount,  t.options.framesPerSecond || 25) :
-				   			((player.options.alwaysShowHours ? '00:' : '') + (player.options.showTimecodeFrameCount? '00:00:00':'00:00:00')) 
+				   			((player.options.alwaysShowHours ? '00:' : '') + (player.options.showTimecodeFrameCount? '00:00':'00:00')) 
 				   		) + 
 					'</span>' +
 				'</div>')

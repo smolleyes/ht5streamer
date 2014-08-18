@@ -18,6 +18,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
+button {
+	outline: none !important;
+}
+
+.transcoder-disabled {
+	background: url('../images/convert.png') no-repeat !important;
+}
+
+.transcoder-enabled {
+	background: url('../images/convert-enabled.png') no-repeat !important;
+}
+
 button[aria-label="playlist"] {
 	background: url('../js/mediaelement/build/playlist.png') no-repeat !important;
 	background-position-y: -48px !important;
@@ -662,7 +674,6 @@ color: White;
 #airplayContainer, upnpContainer {
     position:fixed;
     z-index:1200;
-    left:425px;
     top: 50px;
 }
 
@@ -672,6 +683,30 @@ color: White;
     left:425px;
     top: 50px;
 }
+
+#transcodeContainer {
+	position:fixed;
+    z-index:1200;
+    left:425px;
+    top: 50px;
+}
+
+.transcode-disabled {
+    background:url(../images/convert.png);
+    background-repeat:no-repeat;
+    height: 26px;
+    width: 26px;
+    position: absolute;
+}
+
+.transcode-enabled {
+    background:url(../images/convert-hover.png);
+    background-repeat:no-repeat;
+    height: 26px;
+    width: 26px;
+    position: absolute;
+}
+
 
 .airplay-disabled, .upnp-disabled {
     background:url(../images/airplay.png);

@@ -23,13 +23,18 @@ $(document).ready(function() {
 	};
   $(document).on("rightclick", "#left-component", function(e) {
         var text = clipboard.get('text');
+        $('#custom-menu ol').empty();
         if (text.indexOf('https://mega.co.nz') !== -1) {
             $('#custom-menu ol').empty().append('<li><a id="mega_link" href="#" alt="'+text+'">'+_("Open mega link")+'</a></li>');
         } else if (text.indexOf('.torrent') !== -1){
             $('#custom-menu ol').empty().append('<li><a id="torrent_link" href="#" alt="'+text+'">'+_("Open Torrent")+'</a></li>');
         } else if (text.indexOf('magnet:?xt') !== -1){
             $('#custom-menu ol').empty().append('<li><a id="magnet_link" href="#" alt="'+text+'">'+_("Open Magnet")+'</a></li>');
-        }
+        } else {
+			if(text !== '' && text.match(/^(http|https)/) !== null) {
+				$('#custom-menu ol').empty().append('<li><a id="external_link" href="#" alt="'+text+'">'+_("Open external link")+'</a></li>');
+			}
+		}
   });
 	$(document).on("rightclick", ".start_video", function(e) {
 		var evid = $(this).parent().closest('.youtube_item').find('div')[4].id;
@@ -143,6 +148,18 @@ $(document).ready(function() {
     getTorrent(vlink);
 		$('#custom-menu').hide();
 	});
+	// open external link
+	$(document).on('click','#external_link',function(e) {
+		e.preventDefault();
+		var vlink = $(this).attr('alt');
+    console.log(vlink);
+    var media = {};
+    media.link = 'http://'+ipaddress+':8888/?file='+vlink+'&external';
+    media.title = 'external link...';
+    startPlay(media);
+		$('#custom-menu').hide();
+	});
+	
   
   
 	// copy link
