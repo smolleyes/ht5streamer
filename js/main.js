@@ -190,7 +190,6 @@ var fn;
 var pluginsList = ['grooveshark', 'mega-search', 'cpasbien', 'songza', 'thepiratebay'];
 var excludedPlugins = ['mega', 'mega-files', 'vimeo'];
 var loadedTimeout;
-var popStreamer = require('popcorn-streamer');
 var playlistMode = 'normal';
 
 // settings
@@ -2849,15 +2848,15 @@ function startMegaServer() {
     }
 }
 
-proxyServer = http.createServer(function(req, resp) {
-	if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
-		console.log(req)
-		var url = XMLEscape.xmlUnescape(req.url.split('?stream=')[1]);
-		console.log('streaming '+url)
-		//resp.headers["contentFeatures.dlna.org"] = 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000';
-		popStreamer(url).pipe(resp);
-	}
-}).listen(8081);
+//proxyServer = http.createServer(function(req, resp) {
+	//if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
+		//console.log(req)
+		//var url = XMLEscape.xmlUnescape(req.url.split('?stream=')[1]);
+		//console.log('streaming '+url)
+		////resp.headers["contentFeatures.dlna.org"] = 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000';
+		//popStreamer(url).pipe(resp);
+	//}
+//}).listen(8081);
 //console.log("proxy server running on port 8081")
 
 function getMetadata(req, res) {
