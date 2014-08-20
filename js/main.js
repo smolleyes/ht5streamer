@@ -204,6 +204,15 @@ var download_dir = settings.download_dir;
 var selected_resolution = settings.resolution;
 var ipaddress = settings.ipaddress;
 
+if (settings.shared_dirs === undefined) {
+	settings.shared_dirs = [];
+	fs.writeFile(confDir + '/ht5conf.json', JSON.stringify(settings), function(err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
+
 // setup loccale
 i18n.configure({
     defaultLocale: 'en',
@@ -1055,11 +1064,11 @@ function main() {
 
     // create server
     if (settings.scan_dirs === undefined) {
-        if ((settings.shared_dirs.length !== 0)) {
+        if (settings.shared_dirs.length !== 0) {
             createServer();
         }
     } else {
-        if ((settings.scan_dirs === true)) {
+        if (settings.scan_dirs) {
             createServer();
         }
     }
@@ -1785,6 +1794,7 @@ function startSearch(query) {
         if (search_engine === 'dailymotion') {
             if (searchTypes_select === 'videos') {
                 dailymotion.searchVideos(query, current_page, searchFilters, search_order, function(datas) {
+					console.log(datas)
                     getVideosDetails(datas, 'dailymotion', false);
                 });
             } else if (searchTypes_select === 'playlists') {
@@ -2848,16 +2858,28 @@ function startMegaServer() {
     }
 }
 
-//proxyServer = http.createServer(function(req, resp) {
-	//if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
-		//console.log(req)
-		//var url = XMLEscape.xmlUnescape(req.url.split('?stream=')[1]);
-		//console.log('streaming '+url)
-		////resp.headers["contentFeatures.dlna.org"] = 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000';
-		//popStreamer(url).pipe(resp);
-	//}
-//}).listen(8081);
-//console.log("proxy server running on port 8081")
+proxyServer = http.createServer(function(req, resp) {
+	if ((req.url !== "/favicon.ico") && (req.url !== "/")) {
+		var url = req.url.split('?link=')[1];
+		var jqxhr = $.get(url, function(data) {
+		})
+		.done(function(data) {
+			if(typeof(data) === 'object'){
+				resp.writeHead(200,{'Content-type': 'application/json;charset=utf-8','Access-Control-Allow-Origin' : '*'});
+				resp.end(JSON.stringify(data));
+			} else {
+				resp.writeHead(200,{'Content-type': 'text/html;charset=utf-8','Access-Control-Allow-Origin' : '*'});
+				resp.end(data);
+			}
+		})
+		.fail(function(err) {
+			console.log(err)
+			resp.writeHead(200,{'Content-type': 'text/html;charset=utf-8','Access-Control-Allow-Origin' : '*'});
+			resp.end(err);
+		});
+	}
+}).listen(8081);
+
 
 function getMetadata(req, res) {
     var ffprobe;

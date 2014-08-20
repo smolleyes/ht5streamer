@@ -1,3 +1,6 @@
+V 1.7
+  * fix youtube/dailymotion requests
+
 V 1.6
   * add option to enable/disable transcoding
   * startPlay methods rewritted
