@@ -8,6 +8,7 @@ var sudo = require('sudo');
 var execDir;
 var online_version;
 var pbar;
+var updatePath;
 
 $(document).ready(function(){
     try {
@@ -64,6 +65,13 @@ $(document).ready(function(){
         }
         downloadUpdate(link,file);
     });
+    
+    $(document).on('click','#startWinUpdate',function(e) {
+        e.preventDefault();
+        gui.Shell.openItem(updatePath);
+        setTimeout(function(){win.emit('close')},3000);
+    });
+    
 });
 
 function downloadUpdate(link,filename) {
@@ -113,9 +121,9 @@ function downloadUpdate(link,filename) {
 	    $('#updateProgress strong').html(_('Installing update...'));
 	    
 	    if (process.platform === 'win32') {
-			var f = tmpPath.replace(/\\/g,"\\\\")+'\\\\ht5streamer-setup.exe';
-			var exe = exec(f); 
-			setTimeout(function(){win.emit('close')},3000);
+			$('.notification').click();
+			$.notif({title: 'Ht5streamer:',cls:'green',timeout:10000,icon: '&#10003;',content:_("Click ok to launch the update installer"),btnId:'startWinUpdate',btnTitle:'Ok',btnColor:'black',btnDisplay: 'block',updateDisplay:'none'});
+			updatePath = tmpPath.replace(/\\/g,"\\\\")+'\\\\ht5streamer-setup.exe';
  	    } else if (process.platform === 'darwin') {
 			var dest = path.dirname(execDir.match(/(.*)Ht5streamer.app(.*?)/)[0]);
 			var args = ['-o',filename,'-d',dest];
