@@ -12,7 +12,7 @@ var updatePath;
 
 $(document).ready(function(){
     try {
-        http.get('http://sd-20470.dedibox.fr/ht5streamer/update.html',function(res,err){
+        http.get('http://ubukey.fr/ht5streamer/update.html',function(res,err){
             var datas = [];
             res.on('data',function(chunk){
                 datas.push(chunk);
@@ -49,7 +49,7 @@ $(document).ready(function(){
         var link = '';
         if (process.platform === 'win32') {
             file = 'ht5streamer-setup.exe';
-            link = 'http://sd-20470.dedibox.fr/ht5streamer/windows/'+file;
+            link = 'http://ubukey.fr/ht5streamer/windows/'+file;
 		} else if (process.platform === 'darwin') {
 			 file = 'Ht5streamer-osx.zip';
 			 link = 'http://www.ubukey.fr/ht5streamer/osx/'+file;
@@ -61,7 +61,7 @@ $(document).ready(function(){
                 console.log('linux 64 bits detected...');
                 file = 'ht5streamer-64.zip';
             }
-            link = 'http://sd-20470.dedibox.fr/ht5streamer/'+file;
+            link = 'http://ubukey.fr/ht5streamer/'+file;
         }
         downloadUpdate(link,file);
     });
