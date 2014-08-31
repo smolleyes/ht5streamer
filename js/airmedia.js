@@ -32,7 +32,8 @@ $(document).ready(function(){
     try {
         http.get('http://mafreebox.freebox.fr');
         console.log('freebox available, airplay enabled');
-        $('#airplayContainer').show();
+        //$('#airplayContainer').show();
+        freeboxAvailable = true;
     } catch(err) {
         console.log('no freebox available, airplay disabled');
     }
@@ -429,4 +430,37 @@ function saveToken() {
             login();
         }
     });
+}
+
+// add new download
+function addFreeboxDownload(link) {
+  var l = encodeURIComponent(link);
+  var param = {"download_url": link};
+  var paramString = JSON.stringify(param);
+  
+  var headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With':'XMLHttpRequest',
+        'X-Fbx-App-Auth': session_token
+	};
+  
+  $.ajax({
+    type       : "POST",
+    url        : 'http://mafreebox.freebox.fr/api/v1/downloads/add',
+    headers    : headers,
+    data       : param,
+    crossDomain: true,
+    beforeSend : function() {},
+    complete   : function() {},
+    success    : function(response) {
+      if (response.success === true) {
+		  $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:_("Téléchargement ajouté avec succès sur la freebox!"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+      } else {
+        $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("Impossible d'ajouter le téléchargement... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: '',updateDisplay:'none'});
+      }
+    },
+    error: function(response) {
+      $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("Impossible d'ajouter le téléchargement... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: '',updateDisplay:'none'});
+    }
+	});     
 }

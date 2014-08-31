@@ -191,6 +191,7 @@ var pluginsList = ['grooveshark', 'mega-search', 'cpasbien', 'songza', 'thepirat
 var excludedPlugins = ['mega', 'mega-files', 'vimeo'];
 var loadedTimeout;
 var playlistMode = 'normal';
+var freeboxAvailable = false;
 
 // settings
 var confDir;
@@ -1618,7 +1619,13 @@ function getNext() {
 		if ($('.tabActiveHeader').attr('id') === 'tabHeader_1' || $('.tabActiveHeader').attr('id') === 'tabHeader_4') {
 			try {
 				engine.play_next();
-			} catch(err) {}
+			} catch(err) {
+				if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
+					try {
+						$('.highlight').closest('li').next().find('a')[0].click();
+					} catch (err) {}
+				}
+			}
 		}
 		if ($('.tabActiveHeader').attr('id') === 'tabHeader_1') {
 			try {
@@ -1640,7 +1647,7 @@ function getNext() {
 			}
 		} else {
 			try {
-				$('.highlight').closest('li').next().find('a.preload')[0].click();
+				$('.highlight').closest('li').next().find('a')[0].click();
 			} catch (err) {
 				playNextVideo(next_vid);
 			}

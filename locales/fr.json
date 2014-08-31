@@ -137,5 +137,7 @@
 	"play and stop": "mode normal",
 	"playlist mode": "mode liste de lecture",
 	"repeat mode": "mode boucle",
-	"Click ok to launch the update installer" : "Cliquez sur ok pour démarrer l'installation !"
+	"Click ok to launch the update installer": "Cliquez sur ok pour démarrer l'installation !",
+	"Impossible d'ajouter le téléchargement... !": "Impossible d'ajouter le téléchargement... !",
+	"Téléchargement ajouté avec succès sur la freebox!": "Téléchargement ajouté avec succès sur la freebox!"
 }
