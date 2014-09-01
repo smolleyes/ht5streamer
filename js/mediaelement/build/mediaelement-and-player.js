@@ -2257,10 +2257,13 @@ if (typeof jQuery != 'undefined') {
 			
 			if (t.controlsAreVisible)
 				return;
+				
+			$('body').css('cursor','default');
 			
 			if (doAnimation) {
 				t.controls
 					.css('visibility','visible')
+					.css('cursor','default')
 					.stop(true, true).fadeIn(200, function() {
 					      t.controlsAreVisible = true;
 					      t.container.trigger('controlsshown');
@@ -2274,11 +2277,13 @@ if (typeof jQuery != 'undefined') {
 			} else {
 				t.controls
 					.css('visibility','visible')
+					.css('cursor','default')
 					.css('display','block');
 	
 				// any additional controls people might add and want to hide
 				t.container.find('.mejs-control')
 					.css('visibility','visible')
+					.css('cursor','default')
 					.css('display','block');
 					
 				t.controlsAreVisible = true;
@@ -2296,6 +2301,10 @@ if (typeof jQuery != 'undefined') {
 			
 			if (!t.controlsAreVisible)
 				return;
+				
+			if(t.isFullScreen) {
+				$('body').css('cursor','none');
+			}
 			
 			if (doAnimation) {
 				// fade out main controls
