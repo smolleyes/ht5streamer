@@ -139,5 +139,9 @@
 	"repeat mode": "mode boucle",
 	"Click ok to launch the update installer": "Cliquez sur ok pour démarrer l'installation !",
 	"Impossible d'ajouter le téléchargement... !": "Impossible d'ajouter le téléchargement... !",
-	"Téléchargement ajouté avec succès sur la freebox!": "Téléchargement ajouté avec succès sur la freebox!"
+	"Téléchargement ajouté avec succès sur la freebox!": "Téléchargement ajouté avec succès sur la freebox!",
+	"Connecting... please wait (test %s/%s)": "Connexion... merci de patienter (essai %s/%s)",
+	"Connecting... please wait": "Connexion... merci de patienter",
+	"Downloading %s%% done at %s": "Téléchargement %s%% effectué à %s",
+	"Corrupted torrent or no seeders, can't open your torrent file": "Corrupted torrent or no seeders, can't open your torrent file"
 }

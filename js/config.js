@@ -23,12 +23,12 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.7.4";
+var version = "1.7.5";
 
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
-var localeList = ['en', 'fr', 'es'];
+var localeList = ['en', 'fr', 'es', 'gr','it'];
 var locale = 'en';
 var locale_changed = false;
 var shares_changed = false;
@@ -109,7 +109,9 @@ var htmlConfig='<div style="height:36px;"> \
 		<select name="countries" id="countries" style="width:300px;"> \
 		  <option value="en" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag gb" data-title="England">English</option> \
 		  <option value="fr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag fr" data-title="France">French</option> \
-      <option value="es" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag es" data-title="Spain">Spanish</option> \
+		  <option value="es" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag es" data-title="Spain">Spanish</option> \
+		  <option value="gr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag gr" data-title="Greek">Greek</option> \
+		  <option value="it" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag it" data-title="Italia">Italia</option> \
 		</select> \
     </div> \
     <div style="height:36px;"> \

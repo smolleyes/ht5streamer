@@ -18,7 +18,7 @@ var fs = require('fs');
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
-var localeList = ['en', 'fr'];
+var localeList = ['en', 'fr', 'es', 'gr','it'];
 var locale = 'en';
 var util = require('util');
 // settings

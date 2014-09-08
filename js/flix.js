@@ -121,15 +121,15 @@ app.updateStats = function(streamInfo) {
       if(stateModel.state != 'ready') {
           if(stateModel.state === 'connecting') {
               if(parseInt(stateModel.numTry) >= 90) {
-                setTimeout(function() {$('#preloadProgress').empty().append('Torrent invalide ou pas de seeders, impossible de télécharger...!');},5000);
+                setTimeout(function() {$('#preloadProgress').empty().append(_('Corrupted torrent or no seeders, can\'t open your torrent file'));},5000);
                 clearTimeout(statsUpdater);
                 return;
               } else {
-                $('#preloadProgress').empty().append('Connexion... merci de patienter (essai '+stateModel.numTry+'/'+maxTry+')');
+                $('#preloadProgress').empty().append(_('Connecting... please wait (test %s/%s)',stateModel.numTry,maxTry));
               }
           } else if (stateModel.state === 'downloading' || stateModel.state === 'startingDownload') {
               if (parseInt(this.percent) > 0 && parseInt(this.percent) < 100) {
-                  $('#preloadProgress').empty().append('Chargement  '+ this.percent +' % effectué à '+ this.downloadSpeed);
+                  $('#preloadProgress').empty().append(_('Downloading %s%% done at %s',this.percent,this.downloadSpeed));
                   $('#preloadTorrent progress').attr('value',this.percent).text(this.percent);
               }
           }
@@ -234,7 +234,7 @@ function handleTorrent(torrent, stateModel) {
   $('#preloadTorrent').empty().remove();
   $('.mejs-container').append('<div id="preloadTorrent" \
   style="position: absolute;top: 45%;margin: 0 50%;color: white;font-size: 12px;text-align: center;z-index: 10000;width: 450px;right: 50%;left: -225px;"> \
-  <p><b id="preloadProgress">Connexion... merci de patienter</b></p> \
+  <p><b id="preloadProgress">'+_("Connecting... please wait")+'</b></p> \
   <progress value="5" min="0" max="100">0%</progress> \
   </div>');
   videoStreamer = peerflix(torrent.info, {

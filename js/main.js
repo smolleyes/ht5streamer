@@ -104,7 +104,7 @@ win.on('loaded', function() {
 //localize
 var i18n = require("i18n");
 var _ = i18n.__;
-var localeList = ["en", "fr", "es"];
+var localeList = ['en', 'fr', 'es', 'gr','it'];
 var locale = 'en';
 
 //engines

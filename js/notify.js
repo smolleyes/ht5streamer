@@ -10,6 +10,53 @@ var online_version;
 var pbar;
 var updatePath;
 
+//localize
+var i18n = require("i18n");
+var _ = i18n.__;
+var localeList = ['en', 'fr', 'es', 'gr','it'];
+var locale = 'en';
+
+// settings
+var confDir;
+if (process.platform === 'win32') {
+    confDir = process.env.APPDATA + '/ht5streamer';
+} else {
+    confDir = getUserHome() + '/.config/ht5streamer';
+}
+var settings = JSON.parse(fs.readFileSync(confDir + '/ht5conf.json', encoding = "utf-8"));
+var download_dir = settings.download_dir;
+var selected_resolution = settings.resolution;
+var ipaddress = settings.ipaddress;
+
+if (settings.shared_dirs === undefined) {
+	settings.shared_dirs = [];
+	fs.writeFile(confDir + '/ht5conf.json', JSON.stringify(settings), function(err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
+
+// setup loccale
+i18n.configure({
+    defaultLocale: 'en',
+    locales: localeList,
+    directory: path.dirname(process.execPath) + '/locales',
+    updateFiles: true
+});
+
+if (in_array(settings.locale, localeList)) {
+    locale = settings.locale;
+    i18n.setLocale(locale);
+} else {
+    i18n.setLocale('en');
+}
+
+var localeCode = 'US';
+if (locale === 'fr') {
+    localeCode = 'FR';
+}
+
 $(document).ready(function(){
     try {
         http.get('http://ubukey.fr/ht5streamer/update.html',function(res,err){
@@ -28,15 +75,20 @@ $(document).ready(function(){
 					console.log(err);
 					return;
 				}
-                if (online_version === settings.version) {
+				if (online_version === undefined) {
+					$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("Website ubukey.fr is unreachable !"),btnId:'updateBtn',btnTitle:_('Update'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
+				} else if (online_version === settings.version) {
                     $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:_("Your software is up to date !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
-                    
-                } else {
+                } else if (online_version !== settings.version && online_version !== undefined) {
                     $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("A new version is available !"),btnId:'updateBtn',btnTitle:_('Update'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
-                }
+                } else {
+					$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("ubukey is unreachable !"),btnId:'updateBtn',btnTitle:_('Update'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
+				}
                 $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',timeout:7000,content:_("Please DONATE if you like this software !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'})
             });
-        });
+        }).error(function(err) {
+			$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("ubukey is unreachable !"),btnId:'updateBtn',btnTitle:_('Update'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
+		});
     } catch (err) {
         console.log("offline mode or update server down....");
     }
