@@ -365,9 +365,15 @@ height : calc(100% - 37px) !important;
 
 #items_container {
     border: 1px solid black;
+}
+
+#nanoContent {
     position: relative;
-    left:7px;
-    top:115px;
+    left:6px;
+    top:107px !important;
+}
+#nanoContent a{
+    cursor:pointer;
 }
 
 #video_search {

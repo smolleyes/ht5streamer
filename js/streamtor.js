@@ -6,6 +6,9 @@ MIN_SIZE_LOADED = 10 * 1024 * 1024;
 var selected;
 var loadedTimeout;
 
+var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
+if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
+
 
 function getTorrent(link) {
   stopTorrent();
@@ -34,6 +37,40 @@ function getTorrent(link) {
       });
     }
   }
+}
+
+function stopTorrent(res) {
+  torrentPlaying = false;
+  $.each(torrentsArr,function(index,torrent) {
+    wipeTmpFolder();
+    try {
+    videoStreamer = null;
+    clearTimeout(statsUpdater);
+    console.log("stopping torrent :" + torrent.name);
+    var flix = torrent.obj;
+    torrentsArr.pop(index,1);
+    flix.destroy();
+    delete flix;
+  } catch(err) {
+      console.log(err);
+  }
+  });
+}
+
+
+var wipeTmpFolder = function() {
+    if( typeof tmpFolder != 'string' ){ return; }
+    fs.readdir(tmpFolder, function(err, files){
+		$.each(files,function(index,dir) {
+			try {
+				rmdir( tmpFolder+'/'+dir, function ( err, dirs, files ){
+					console.log( 'file '+files+' removed' );
+				});
+			} catch(err) {
+				console.log('can t remove file '+files)
+			}
+		});
+    });
 }
 
 function startTorrent(link) {

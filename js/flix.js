@@ -5,8 +5,6 @@ var proc = require('child_process');
 var rTorrent = require('read-torrent');
 var peerflix = require('peerflix');
 var mime = require('mime');
-var ts = require('torrent-stream');
-var rmdir = require('rmdir');
 
 var path = require('path');
 var mime = require('mime');
@@ -31,8 +29,6 @@ var STREAM_PORT = 21584; // 'PT'!
 // Minimum bytes loaded to open video
 var BUFFERING_SIZE = 10 * 1024 * 1024;
 
-var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
-if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 var playStarted = false;
 var downloadedPct = 0;
 var torrentSrc = '';
@@ -46,6 +42,7 @@ $(document).ready(function(){
 });
 
 function getTorrent(link) {
+	console.log('torrent link: '+ link)
   initPlayer();
   stopTorrent();
   stateModel = {state: 'connecting', backdrop: '',numTry: 0};
@@ -146,7 +143,9 @@ app.updateStats = function(streamInfo) {
 		 } else {
 			 torrentSrc = videoStreamer.path;
 			 torrentName = videoStreamer.server.index.name;
-			 downloadedPct = (swarm.downloaded / streamInfo.server.index.length * 100).toFixed(2);
+			 try {
+				downloadedPct = (swarm.downloaded / streamInfo.server.index.length * 100).toFixed(2);
+			 } catch(err) {}
 			 if(parseInt(downloadedPct) >= 100){
 				clearTimeout(statsUpdater);
 				var t = _('(%s%% downloaded)',100);
@@ -190,39 +189,6 @@ function saveToDisk(src,name) {
 			}
 		});
 	}
-}
-
-function stopTorrent(res) {
-  torrentPlaying = false;
-  $.each(torrentsArr,function(index,torrent) {
-    wipeTmpFolder();
-    try {
-    videoStreamer = null;
-    clearTimeout(statsUpdater);
-    console.log("stopping torrent :" + torrent.name);
-    var flix = torrent.obj;
-    torrentsArr.pop(index,1);
-    flix.destroy();
-    delete flix;
-  } catch(err) {
-      console.log(err);
-  }
-  });
-}
-
-var wipeTmpFolder = function() {
-    if( typeof tmpFolder != 'string' ){ return; }
-    fs.readdir(tmpFolder, function(err, files){
-		$.each(files,function(index,dir) {
-			try {
-				rmdir( tmpFolder+'/'+dir, function ( err, dirs, files ){
-					console.log( 'file '+files+' removed' );
-				});
-			} catch(err) {
-				console.log('can t remove file '+files)
-			}
-		});
-    });
 }
 
 function handleTorrent(torrent, stateModel) {

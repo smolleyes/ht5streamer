@@ -2258,12 +2258,12 @@ if (typeof jQuery != 'undefined') {
 			if (t.controlsAreVisible)
 				return;
 				
-			$('body').css('cursor','default');
+			$('body').css({'cursor':'default'});
 			
 			if (doAnimation) {
 				t.controls
 					.css('visibility','visible')
-					.css('cursor','default')
+					.css({'cursor':'default'})
 					.stop(true, true).fadeIn(200, function() {
 					      t.controlsAreVisible = true;
 					      t.container.trigger('controlsshown');
@@ -2277,13 +2277,13 @@ if (typeof jQuery != 'undefined') {
 			} else {
 				t.controls
 					.css('visibility','visible')
-					.css('cursor','default')
+					.css({'cursor':'default'})
 					.css('display','block');
 	
 				// any additional controls people might add and want to hide
 				t.container.find('.mejs-control')
 					.css('visibility','visible')
-					.css('cursor','default')
+					.css({'cursor':'default'})
 					.css('display','block');
 					
 				t.controlsAreVisible = true;
@@ -2295,16 +2295,18 @@ if (typeof jQuery != 'undefined') {
 		},
 
 		hideControls: function(doAnimation) {
+			console.log("hidden mouse")
+			
 			var t = this;
+			
+			if(t.isFullScreen) {
+				$('body').css('cursor','none');
+			}
 			
 			doAnimation = typeof doAnimation == 'undefined' || doAnimation;
 			
 			if (!t.controlsAreVisible)
 				return;
-				
-			if(t.isFullScreen) {
-				$('body').css('cursor','none');
-			}
 			
 			if (doAnimation) {
 				// fade out main controls
@@ -2324,7 +2326,7 @@ if (typeof jQuery != 'undefined') {
 						.css('display','block');
 				});	
 			} else {
-				
+				$('body').css('cursor','none');
 				// hide main controls
 				t.controls
 					.css('visibility','hidden')
@@ -3722,13 +3724,13 @@ if (typeof jQuery != 'undefined') {
 				if (t.media.pluginType === 'native' || (!t.options.usePluginFullScreen && !mejs.MediaFeatures.isFirefox)) {
 
 					fullscreenBtn.click(function() {
-						var isFullScreen = (mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || player.isFullScreen;
+						//var isFullScreen = (mejs.MediaFeatures.hasTrueNativeFullScreen && mejs.MediaFeatures.isFullScreen()) || player.isFullScreen;
 
-						if (isFullScreen) {
-							player.exitFullScreen();
-						} else {
-							player.enterFullScreen();
-						}
+						//if (isFullScreen) {
+							//player.exitFullScreen();
+						//} else {
+							//player.enterFullScreen();
+						//}
 					});
 
 				} else {

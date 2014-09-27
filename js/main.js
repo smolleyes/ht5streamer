@@ -92,10 +92,16 @@ var upnpClient = require('upnp-client');
 var cli = new upnpClient();
 var parseString = require('xml2js').parseString;
 var __ = require('underscore');
+var rmdir = require('rmdir');
+var extPlayers = [];
+
 var mediaServer;
 var relTime;
 var trackDuration;
 var timeUpdater;
+
+var tmpFolder = path.join(os.tmpDir(), 'ht5Torrents');
+if( ! fs.existsSync(tmpFolder) ) { fs.mkdir(tmpFolder); }
 
 win.on('loaded', function() {
     win.show();
@@ -327,7 +333,10 @@ var htmlStr = '<div id="menu"> \
                             </p></div> \
                             <div id="pagination"></div> \
                         </div> \
-                        <div id="items_container"></div> \
+                        <div id="nanoContent" class="nano"> \
+							<div id="items_container" class="nano-content"> \
+							</div> \
+						</div> \
                     </div> \
                     <div class="tabpage" id="tabpage_2"> \
                         <div id="treeview"> \
@@ -456,28 +465,33 @@ function main() {
     var left;
     var right;
     $(document).on('click', '.mejs-fullscreen-button', function(e) {
+		console.log("clicked")
+		e.preventDefault();
         if (win.isFullscreen === true) {
             win.toggleFullscreen();
             $('#mep_0').removeClass('mejs-container-fullscreen');
-            $('#mep_0').attr('style', 'height:calc(100% - 37px) !important;top:37px;');
             $('#left-component').show();
             $('#menu').show();
+            player.isFullScreen = false;
             setTimeout(function() {
                 $('#my-divider').css({
                     right: right + 'px'
                 }).fadeIn();
                 $.prototype.splitPane()
                 $('#right-component').width($(document).width() - $('#left-component').width() - 5);
+                $('#mep_0').attr('style', 'height:calc(100% - 37px) !important;top:37px;width:'+$('#right-component').width()+';');
             }, 200);
         } else {
             left = $('#left-component').width();
             right = $(document).width() - $('#my-divider').position.left;
-            $('#mep_0').attr('style', 'height:100% !important;top:0;width:calc(100% + 10px);');
             $('#my-divider').hide();
             $('#left-component').hide();
             $('#right-component').width(screen.width);
             $('#menu').hide();
-            win.toggleFullscreen();
+            player.isFullScreen = true;
+            win.enterFullscreen();
+            $('#mep_0').attr('style', 'height:100% !important;top:0;width:100% !important;');
+            $('#mep_0').addClass('mejs-container-fullscreen');
         }
     });
     // click on tab1 get focus
@@ -780,12 +794,12 @@ function main() {
             $("#searchTypesMenu_label").show();
             $("#items_container").empty().hide();
             $("#cover").remove();
-            $('#items_container').css({
-                "border": "1px solid black",
-                "position": "relative",
-                "left": "5px",
-                "top": "110px"
-            });
+            //$('#items_container').css({
+                //"border": "1px solid black",
+                //"position": "fixed !important",
+                //"left": "5px",
+                //"top": "150px"
+            //});
             $('#search').css({
                 "position": "fixed",
                 "z-index": "500",
@@ -1126,6 +1140,7 @@ function main() {
             $.prototype.splitPane()
             $('#right-component').width($(document).width() - $('#left-component').width() - 5);
         }, 200);
+        $(".nano").nanoScroller();
     });
 
     win.on('unmaximize', function() {
@@ -1136,7 +1151,12 @@ function main() {
             }).fadeIn();
             $.prototype.splitPane()
             $('#right-component').width($(document).width() - $('#left-component').width() - 5);
+            $(".nano").nanoScroller();
         }, 200);
+    });
+    
+    win.on('resize', function() {
+        $(".nano").nanoScroller();
     });
     
     setTimeout(function() {
@@ -1151,6 +1171,11 @@ function main() {
 	},2000);
 	
 	$('button[aria-label="playlist"]').attr('title','play and stop');
+	
+	$('#items_container').bind('DOMNodeInserted DOMNodeRemoved', function() {
+		$(".nano").nanoScroller();
+	});
+	$(".nano").nanoScroller();
     
 }
 
@@ -1169,6 +1194,56 @@ function startUPNPserver() {
             UPNPserver.start();
         }
     });
+}
+
+function getAuthTorrent(url,stream,toFbx) {
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function(){
+		if (this.readyState == 4 && this.status == 200){
+			var blob = this.response;
+			var arrayBuffer;
+			var fileReader = new FileReader();
+			fileReader.onload = function() {
+				arrayBuffer = this.result;
+				var nodeBuffer = new Buffer(arrayBuffer);
+				if(stream) {
+					getTorrent(nodeBuffer);
+				} else {
+					var id = ((Math.random() * 1e6) | 0);
+					var p = path.join(os.tmpDir(),''+id+'.torrent');
+					fs.writeFile(p, nodeBuffer, function(err) {
+					  if (err) throw err;
+						if(toFbx) {
+							var FormData = require('form-data');
+							var form = new FormData();
+							form.append('download_file',fs.createReadStream(p));
+							form.submit({
+							  host: 'mafreebox.freebox.fr',
+							  path: '/api/v3/downloads/add',
+							  headers: {'Content-Type': 'multipart/form-data;'+form.getBoundary(),
+								        'Content-Length': blob.size,
+								        'X-Requested-With':'XMLHttpRequest',
+										'X-Fbx-App-Auth': session_token
+						      }
+							}, function(err, res) {
+							  if(res.statusCode === 200) {
+								$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:_("Téléchargement ajouté avec succès sur la freebox!"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});  
+							  } else {
+								$.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("Impossible d'ajouter le téléchargement... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: '',updateDisplay:'none'});
+							  }
+							});
+						} else {
+							gui.Shell.openItem(p);
+						}
+					});
+				}
+			};
+			fileReader.readAsBinaryString(blob);
+		}
+	}
+	xhr.open('GET', url);
+	xhr.responseType = 'blob';
+	xhr.send(); 	
 }
 
 function AnimateRotate(angle) {
@@ -1308,6 +1383,45 @@ function launchPlay() {
 	}
 }
 
+function stopTorrent(res) {
+  torrentPlaying = false;
+  wipeTmpFolder();
+  $.each(torrentsArr,function(index,torrent) {
+    try {
+    clearTimeout(statsUpdater);
+    console.log("stopping torrent :" + torrent.name);
+    var flix = torrent.obj;
+    torrentsArr.pop(index,1);
+    flix.destroy();
+    delete flix;
+    videoStreamer = null;
+  } catch(err) {
+      console.log(err);
+  }
+  });
+}
+
+var wipeTmpFolder = function() {
+	var tmpDir2 = path.join(os.tmpDir(), 'torrent-stream');
+    rmdir( tmpDir2, function ( err, dirs, files ){
+		console.log( 'file '+files+' removed' );
+	});
+	
+    if( typeof tmpFolder != 'string' ){ return; }
+    fs.readdir(tmpFolder, function(err, files){
+		$.each(files,function(index,dir) {
+			try {
+				rmdir( tmpFolder+'/'+dir, function ( err, dirs, files ){
+					console.log( 'file '+files+' removed' );
+				});
+			} catch(err) {
+				console.log('can t remove file '+files)
+			}
+		});
+    });
+    
+}
+
 function initPlayer() {
     player.pause();
     player.setSrc('');
@@ -1337,9 +1451,7 @@ function initPlayer() {
     try {
         cleanffar();
         currentRes.end();
-    } catch (err) {
-        console.log(err);
-    }
+    } catch (err) {}
     try {
         $('#fbxMsg').remove();
     } catch (err) {}
@@ -1700,6 +1812,7 @@ function onKeyPress(key) {
         key.preventDefault();
         if (win.isFullscreen === true) {
             win.toggleFullscreen();
+            player.isFullScreen = false;
             $('#mep_0').removeClass('mejs-container-fullscreen');
             $('#mep_0').attr('style', 'height:calc(100% - 37px) !important;top:37px;');
             $('#left-component').show();
@@ -1717,25 +1830,28 @@ function onKeyPress(key) {
         if (win.isFullscreen === true) {
             win.toggleFullscreen();
             $('#mep_0').removeClass('mejs-container-fullscreen');
-            $('#mep_0').attr('style', 'height:calc(100% - 37px) !important;top:37px;');
             $('#left-component').show();
             $('#menu').show();
+            player.isFullScreen = false;
             setTimeout(function() {
                 $('#my-divider').css({
                     right: right + 'px'
                 }).fadeIn();
                 $.prototype.splitPane()
                 $('#right-component').width($(document).width() - $('#left-component').width() - 5);
+                $('#mep_0').attr('style', 'height:calc(100% - 37px) !important;top:37px;width:'+$('#right-component').width()+';');
             }, 200);
         } else {
             left = $('#left-component').width();
             right = $(document).width() - $('#my-divider').position.left;
-            $('#mep_0').attr('style', 'height:100% !important;top:0;width:calc(100% + 10px);');
             $('#my-divider').hide();
             $('#left-component').hide();
             $('#right-component').width(screen.width);
             $('#menu').hide();
-            win.toggleFullscreen();
+            player.isFullScreen = true;
+            win.enterFullscreen();
+            $('#mep_0').attr('style', 'height:100% !important;top:0;width:100% !important;');
+            $('#mep_0').addClass('mejs-container-fullscreen');
         }
     } else if (key.key === 'Spacebar') {
         key.preventDefault();
@@ -1801,7 +1917,6 @@ function startSearch(query) {
         if (search_engine === 'dailymotion') {
             if (searchTypes_select === 'videos') {
                 dailymotion.searchVideos(query, current_page, searchFilters, search_order, function(datas) {
-					console.log(datas)
                     getVideosDetails(datas, 'dailymotion', false);
                 });
             } else if (searchTypes_select === 'playlists') {
@@ -2344,6 +2459,7 @@ function fillPlaylist(items, sublist, sublist_id, engine) {
     if (load_first_song_next == true || load_first_song_prev === true) {
         playNextVideo();
     }
+    $(".nano").nanoScroller();
 }
 
 function printVideoInfos(infos, solo, sublist, sublist_id, engine) {
@@ -2858,7 +2974,7 @@ function startMegaServer() {
 				//'transferMode.dlna.org': 'Streaming',
 				//'contentFeatures.dlna.org':'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000'
 			//});
-                getMetadata(req, res);
+                getMetadata(req, res)
             }
         }).listen(8888);
         console.log('Megaserver ready on port 8888');
@@ -2928,9 +3044,9 @@ function getMetadata(req, res) {
     });
 
     ffprobe.on('exit', function(data) {
-        if (error) {
-            return;
-        }
+        //if (error) {
+            //return;
+        //}
         console.log('[DEBUG] ffprobe exited...' + bitrate + ' ' + resolution + ' ' + duration );
         var width = 640;
         var height = 480;
@@ -3064,7 +3180,7 @@ function startStreaming(req, res, width, height,duration) {
                     ffmpeg.stdout.pipe(res);
                 } else {
                     console.log('playing movie without transcoding');
-                    downloadFromMega(link, megaKey).pipe(res);
+                    downloadFromMega(decodeURIComponent(link), megaKey).pipe(res);
                 }
             } else {
                 console.log('fichier non video/audio ou téléchargement demandé... type:' + megaType);
@@ -3262,6 +3378,7 @@ function downloadFromMega(link, key, size) {
         downloadId: id,
         key: key
     });
+    console.log(m,link,key)
     var stream = mega.decrypt(m.key);
     var r = request(link);
     r.pipe(stream);

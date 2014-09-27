@@ -121,5 +121,6 @@
 	"Connecting... please wait": "Connecting... please wait",
 	"Connecting... please wait (test %s/%s)": "Connecting... please wait (test %s/%s)",
 	"Downloading %s%% done at %s": "Downloading %s%% done at %s",
-	"transcoding enabled": "transcoding enabled"
+	"transcoding enabled": "transcoding enabled",
+	"Downloading plugins...": "Downloading plugins..."
 }

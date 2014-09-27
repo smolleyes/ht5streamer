@@ -464,3 +464,37 @@ function addFreeboxDownload(link) {
     }
 	});     
 }
+
+function upToFreebox(form) {
+  console.log(form)
+  var headers = {
+        'Content-Type': 'multipart/form-data;'+form.getBoundary(),
+        'Content-Length': parseInt(form._stream[4]),
+        'X-Requested-With':'XMLHttpRequest',
+        'X-Fbx-App-Auth': session_token
+	};
+  
+  $.ajax({
+    type       : "POST",
+    url        : 'http://mafreebox.freebox.fr/api/v3/downloads/add',
+    headers    : headers,
+    data       : form._streams[0],
+    crossDomain: true,
+    contentType: false,
+    processData: false,
+    cache: false,
+    beforeSend : function() {},
+    complete   : function() {},
+    success    : function(response) {
+      if (response.success === true) {
+		  $.notif({title: 'Ht5streamer:',cls:'green',icon: '&#10003;',content:_("Téléchargement ajouté avec succès sur la freebox!"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: 'none',updateDisplay:'none'});
+      } else {
+        $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("Impossible d'ajouter le téléchargement... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: '',updateDisplay:'none'});
+      }
+    },
+    error: function(response) {
+		console.log(response)
+      $.notif({title: 'Ht5streamer:',cls:'red',icon: '&#59256;',timeout:0,content:_("Impossible d'ajouter le téléchargement... !"),btnId:'',btnTitle:'',btnColor:'',btnDisplay: '',updateDisplay:'none'});
+    }
+	});     
+}

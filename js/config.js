@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.7.5";
+var version = "1.8";
 
 //localize
 var i18n = require("i18n");
@@ -568,7 +568,7 @@ function savePopConf() {
 					if (settings.shared_dirs.length !== shared_length) {
 						console.log("Updating local files list...");
 						try {
-							window.haveParent.window.createServer();
+							window.haveParent.createServer();
 						} catch(err) {};
 					}
 				}
