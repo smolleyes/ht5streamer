@@ -193,7 +193,7 @@ var transcodeArray = ["avi", "flv", "mkv", "mpeg", "mpg", "wmv", "wma", "mov", "
 var currentMedia;
 var currentAirMedia = {};
 var fn;
-var pluginsList = ['grooveshark', 'mega-search', 'cpasbien', 'songza', 'thepiratebay'];
+var pluginsList = ['grooveshark', 'mega-search', 'cpasbien', 'songza', 'thepiratebay','t411','kickass'];
 var excludedPlugins = ['mega', 'mega-files', 'vimeo'];
 var loadedTimeout;
 var playlistMode = 'normal';
@@ -439,6 +439,7 @@ function main() {
 
     $("select#engines_select option:selected").each(function() {
         search_engine = $(this).val();
+        $(".nano").nanoScroller({ destroy: true });
     });
 
     player = MediaElementPlayer('#videoPlayer', {
@@ -773,6 +774,7 @@ function main() {
     //engine select
     $("select#engines_select").change(function() {
         $("select#engines_select option:selected").each(function() {
+			$(".nano").nanoScroller({ destroy: true });
             search_engine = $(this).val();
             searchTypes_select = 'videos';
             getCategories();
@@ -906,6 +908,7 @@ function main() {
                 }
             }
         });
+        $(".nano").nanoScroller({ destroy: true });
     });
     // search date select
     $("select#dateTypes_select").change(function() {
@@ -2832,7 +2835,7 @@ function editSettings() {
         } else {
             var new_win = gui.Window.open('config.html', {
                 "position": 'center',
-                "width": 680,
+                "width": 760,
                 "height": 670,
                 "toolbar": false
             });

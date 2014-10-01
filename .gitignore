@@ -3,3 +3,4 @@ nw.pak
 libffmpegsumo.so
 ffmpeg
 ffprobe
+icudtl.dat

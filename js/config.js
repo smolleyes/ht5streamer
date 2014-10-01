@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.8";
+var version = "1.8.1";
 
 //localize
 var i18n = require("i18n");
@@ -37,7 +37,7 @@ var plugins_changed = false;
 var settings = {};
 var selected_interface;
 var shared_length = 0;
-var pluginsList = ['grooveshark','mega-search','songza','cpasbien','thepiratebay','omgtorrent'];
+var pluginsList = ['grooveshark','mega-search','songza','cpasbien','thepiratebay','omgtorrent','t411','kickass'];
 
 // settings
 var confdir;
@@ -175,7 +175,16 @@ var htmlConfig='<div style="height:36px;"> \
           <label for="omgtorrent">Omgtorrent</label>\
           <input class="pluginCheckBox" type="checkbox" id="omgtorrent" name="omgtorrent">\
         </div>\
+        <div class="ItemCheckbox left">\
+          <label for="t411">T411</label>\
+          <input class="pluginCheckBox" type="checkbox" id="t411" name="t411">\
+        </div>\
+        <div class="ItemCheckbox left">\
+          <label for="kickass">Kickass</label>\
+          <input class="pluginCheckBox" type="checkbox" id="kickass" name="kickass">\
+        </div>\
       </div>\
+      <div style="clear:both;"></div> \
     </div> \
     <div style="height:240px;margin-top:30px;"> \
 			<p>'+_("Add or remove directories to scan for your local library:")+'</p> \
