@@ -108,6 +108,13 @@ var path = require('path');
 
 	var folderName = '';
 	var found = {};
+	extPlayers = [];
+	extPlayers.push({
+		id: 'Ht5streamer',
+		type: 'internal',
+		name: 'Ht5streamer',
+		path: ''
+	});
 
 	async.each(searchPaths[process.platform], function (folderName, pathcb) {
 		folderName = path.resolve(folderName);
@@ -144,7 +151,13 @@ var path = require('path');
 			console.error(err);
 			return;
 		} else {
-			win.info('External players Scan Finished');
+			extPlayers = __.uniq(extPlayers,function(item){return JSON.stringify(item);})
+			console.log('External players Scan Finished');
+			$('#playerSelect').empty();
+			$.each(extPlayers, function (index, player) {
+				console.log(player)
+				$('#playerSelect').append('<option name="'+player.name+'">'+player.name+'</option>')
+			});
 			return;
 		}
 	});

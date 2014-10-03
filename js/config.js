@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.8.1";
+var version = "1.8.2";
 
 //localize
 var i18n = require("i18n");
@@ -185,6 +185,10 @@ var htmlConfig='<div style="height:36px;"> \
         </div>\
       </div>\
       <div style="clear:both;"></div> \
+    </div> \
+    <p><u><b>'+_("Default player:")+'</b></u></p> \
+    <div id="externalPlayers"> \
+		<select id="playerSelect"></select> \
     </div> \
     <div style="height:240px;margin-top:30px;"> \
 			<p>'+_("Add or remove directories to scan for your local library:")+'</p> \
@@ -361,6 +365,18 @@ without notice.");
   }
   // init
   initCheck();
+  
+  // players
+  if(localStorage.ht5Player === undefined) {
+	localStorage.ht5Player = JSON.stringify({"name":'Ht5streamer',"path":''});
+  }
+  loadPlayers();
+  $("select#playerSelect").change(function() {
+	  $("select#playerSelect option:selected").each(function() {
+			localStorage.ht5Player = JSON.stringify({"name":$(this).attr("name"),"path":$(this).val()});
+	  });
+  });
+  
 });
 
 function writeConf(settings) {
@@ -598,6 +614,179 @@ function saveSettings() {
             console.log(err);
         }
     });
+}
+
+function loadPlayers() {
+	var path = require('path');
+	var fs = require('fs');
+	var readdirp = require('readdirp');
+	var async = require('async');
+	var child = require('child_process');
+	var __ = require('underscore');
+
+	//var External = App.Device.Generic.extend({
+		//defaults: {
+			//type: 'external',
+			//name: i18n.__('External Player'),
+		//},
+
+		//play: function (streamModel) {
+			//// "" So it behaves when spaces in path
+			//// TODO: Subtitles
+			//var url = streamModel.attributes.src;
+			//var cmd = path.normalize('"' + this.get('path') + '"');
+			//var subtitle = streamModel.attributes.subFile || '';
+			//cmd += getPlayerSwitches(this.get('id')) + '"' + subtitle + '" ' + url;
+			//win.info('Launching External Player: ' + cmd);
+			//child.exec(cmd);
+		//},
+
+		//pause: function () {
+			//var cmd = path.normalize('"' + this.get('path') + '"');
+			//cmd += ' ' + this.get('pause');
+			//child.exec(cmd);
+		//},
+
+		//stop: function () {
+			//var cmd = path.normalize('"' + this.get('path') + '"');
+			//cmd += ' ' + this.get('stop');
+			//child.exec(cmd);
+		//},
+
+		//unpause: function () {
+			//var cmd = path.normalize('"' + this.get('path') + '"');
+			//cmd += ' ' + this.get('unpause');
+			//child.exec(cmd);
+		//}
+	//});
+
+	function getPlayerName(loc) {
+		return path.basename(loc).replace(path.extname(loc), '');
+	}
+
+	function getPlayerCmd(loc) {
+		var name = getPlayerName(loc);
+		return players[name].cmd;
+	}
+
+	function getPlayerSwitches(loc) {
+		var name = getPlayerName(loc);
+		return players[name].switches || '';
+	}
+
+	var players = {
+		'VLC': {
+			type: 'Vlc',
+			cmd: '/Contents/MacOS/VLC',
+			switches: ' --no-video-title-show --sub-file=',
+			stop: 'vlc://quit',
+			pause: 'vlc://pause'
+		},
+		'MPlayer OSX Extended': {
+			type: 'Mplayer',
+			cmd: '/Contents/Resources/Binaries/mpextended.mpBinaries/Contents/MacOS/mplayer',
+			switches: ' -font "/Library/Fonts/Arial Bold.ttf" -sub '
+		},
+		'mpv': {
+			type: 'Mpv',
+			switches: ' --sub-file='
+		},
+		'MPC-HC': {
+			type: 'Mpc-hc',
+			switches: ' /sub '
+		},
+		'MPC-HC64': {
+			type: 'Mpc-hc64',
+			switches: ' /sub '
+		},
+		'SMPlayer': {
+			type: 'Smplayer',
+			switches: ' -sub ',
+			stop: 'smplayer -send-action quit',
+			pause: 'smplayer -send-action pause'
+		},
+		'cmplayer': {
+			type: 'Cmplayer',
+			switches: ' /sub'
+		},
+		'mplayer': {
+			type: 'Mplayer',
+			switches: ' /sub'
+		},
+		'mplayer2': {
+			type: 'Mplayer2',
+			switches: ' /sub'
+		}
+	};
+
+	/* map name back into the object as we use it in match */
+	__.each(players, function (v, k) {
+		players[k].name = k;
+	});
+
+	var searchPaths = {
+		linux: ['/usr/bin', '/usr/local/bin'],
+		darwin: ['/Applications'],
+		win32: ['C:\\Program Files\\', 'C:\\Program Files (x86)\\']
+	};
+
+	var folderName = '';
+	var found = {};
+	extPlayers = [];
+	extPlayers.push({
+		id: 'Ht5streamer',
+		type: 'Ht5streamer',
+		name: 'Ht5streamer',
+		path: ''
+	});
+
+	async.each(searchPaths[process.platform], function (folderName, pathcb) {
+		folderName = path.resolve(folderName);
+		console.log('Scanning: ' + folderName);
+		var appIndex = -1;
+		var fileStream = readdirp({
+			root: folderName,
+			depth: 3
+		});
+		fileStream.on('data', function (d) {
+			var app = d.name.replace('.app', '').replace('.exe', '').toLowerCase();
+			var match = __.filter(players, function (v, k) {
+				return k.toLowerCase() === app;
+			});
+
+			if (match.length) {
+				match = match[0];
+				console.log('Found External Player: ' + app + ' in ' + d.fullParentDir);
+				extPlayers.push({
+					id: match.name,
+					type: 'external-' + match.type,
+					name: match.type,
+					path: d.fullPath
+				});
+
+			}
+		});
+		fileStream.on('end', function () {
+			pathcb();
+		});
+	}, function (err) {
+
+		if (err) {
+			console.error(err);
+			return;
+		} else {
+			extPlayers = __.uniq(extPlayers,function(item){return JSON.stringify(item);})
+			console.log('External players Scan Finished');
+			$('#playerSelect').empty();
+			$.each(extPlayers, function (index, player) {
+				$('#playerSelect').append('<option name="'+player.name+'" value="'+player.path+'">'+player.name+'</option>')
+				if(index+1 === extPlayers.length) {
+					$("#playerSelect option[name='" + JSON.parse(localStorage.ht5Player).name + "']").attr('selected', 'selected');
+				}
+			});
+			return;
+		}
+	});
 }
 
 // extend array

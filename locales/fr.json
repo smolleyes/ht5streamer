@@ -143,5 +143,6 @@
 	"Connecting... please wait (test %s/%s)": "Connexion... merci de patienter (essai %s/%s)",
 	"Connecting... please wait": "Connexion... merci de patienter",
 	"Downloading %s%% done at %s": "Téléchargement %s%% effectué à %s",
-	"Corrupted torrent or no seeders, can't open your torrent file": "Corrupted torrent or no seeders, can't open your torrent file"
+	"Corrupted torrent or no seeders, can't open your torrent file": "Corrupted torrent or no seeders, can't open your torrent file",
+	"Default player:": "Default player:"
 }

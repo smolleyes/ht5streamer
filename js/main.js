@@ -171,6 +171,7 @@ var continueTransition = false;
 var transcoderEnabled= false;
 var currentRes = null;
 var megaDownload = null;
+var extPlayerProc = null;
 
 // global var
 var search_engine = 'youtube';
@@ -1380,9 +1381,23 @@ function launchPlay() {
 			return playUpnpRenderer(currentMedia);
 		}
 	} else {
+		var obj = JSON.parse(localStorage.ht5Player);
 		console.log('PLAYING in player: ' + currentMedia.link)
-		player.setSrc(currentMedia.link);
-		player.play();
+		if(obj.name === 'Ht5streamer') {
+			player.setSrc(currentMedia.link);
+			player.play();
+		} else {
+			try {extPlayerProc.kill();} catch(err){}
+			if(currentMedia.link.indexOf('mega.co') !== -1) {
+				extPlayerProc = exec(obj.path +' '+ ''+currentMedia.link+'');
+			} else {
+				extPlayerProc = exec(obj.path +' '+ ''+decodeURIComponent(currentMedia.link)+'');
+			}
+			extPlayerProc.on('exit',function() {
+				console.log(obj.name + ' process terminated....');
+				initPlayer();
+			});
+		}
 	}
 }
 
@@ -1463,6 +1478,10 @@ function initPlayer() {
 		 stopTorrent();
 		}
 	} catch (err) {}
+	
+	try {
+		extPlayerProc.kill('SIGKILL');
+	} catch(err) {}
 }
 
 function init() {
