@@ -1389,9 +1389,10 @@ function launchPlay() {
 		} else {
 			try {extPlayerProc.kill();} catch(err){}
 			if(currentMedia.link.indexOf('mega.co') !== -1) {
-				extPlayerProc = exec(obj.path +' '+ ''+currentMedia.link+'');
+				extPlayerProc = exec('"'+obj.path+'"' +' "'+currentMedia.link+'"');
 			} else {
-				extPlayerProc = exec(obj.path +' '+ ''+decodeURIComponent(currentMedia.link)+'');
+				console.log('"'+obj.path+'"' +' "'+decodeURIComponent(currentMedia.link)+'"')
+				extPlayerProc = exec('"'+obj.path+'"' +' "'+decodeURIComponent(currentMedia.link)+'"');
 			}
 			extPlayerProc.on('exit',function() {
 				console.log(obj.name + ' process terminated....');

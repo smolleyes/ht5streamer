@@ -23,7 +23,7 @@ var confWin = gui.Window.get();
 var os = require('os');
 var wrench = require('wrench');
 var nodeip = require("node-ip");
-var version = "1.8.2";
+var version = "1.8.3";
 
 //localize
 var i18n = require("i18n");
@@ -370,12 +370,12 @@ without notice.");
   if(localStorage.ht5Player === undefined) {
 	localStorage.ht5Player = JSON.stringify({"name":'Ht5streamer',"path":''});
   }
-  loadPlayers();
   $("select#playerSelect").change(function() {
 	  $("select#playerSelect option:selected").each(function() {
 			localStorage.ht5Player = JSON.stringify({"name":$(this).attr("name"),"path":$(this).val()});
 	  });
   });
+  loadPlayers();
   
 });
 
@@ -723,11 +723,11 @@ function loadPlayers() {
 	__.each(players, function (v, k) {
 		players[k].name = k;
 	});
-
-	var searchPaths = {
+	var searchPaths = [];
+	var searchPathsDir = {
 		linux: ['/usr/bin', '/usr/local/bin'],
 		darwin: ['/Applications'],
-		win32: ['C:\\Program Files\\', 'C:\\Program Files (x86)\\']
+		win32: ['C://Program Files//', 'C://Program Files (x86)//']
 	};
 
 	var folderName = '';
@@ -739,52 +739,64 @@ function loadPlayers() {
 		name: 'Ht5streamer',
 		path: ''
 	});
+	
+	$.each(searchPathsDir[process.platform],function(index,dir) {
+		if(fs.existsSync(dir)) {
+			searchPaths.push(dir);
+		}
+		if(index+1 === searchPathsDir[process.platform].length) {
+			async.each(searchPaths, function (folderName, pathcb) {
+				folderName = path.resolve(folderName);
+				console.log('Scanning: ' + folderName);
 
-	async.each(searchPaths[process.platform], function (folderName, pathcb) {
-		folderName = path.resolve(folderName);
-		console.log('Scanning: ' + folderName);
-		var appIndex = -1;
-		var fileStream = readdirp({
-			root: folderName,
-			depth: 3
-		});
-		fileStream.on('data', function (d) {
-			var app = d.name.replace('.app', '').replace('.exe', '').toLowerCase();
-			var match = __.filter(players, function (v, k) {
-				return k.toLowerCase() === app;
-			});
-
-			if (match.length) {
-				match = match[0];
-				console.log('Found External Player: ' + app + ' in ' + d.fullParentDir);
-				extPlayers.push({
-					id: match.name,
-					type: 'external-' + match.type,
-					name: match.type,
-					path: d.fullPath
+				var appIndex = -1;
+				var fileStream = readdirp({
+					root: folderName,
+					depth: 3
 				});
+				fileStream.on('data', function (d) {
+					var app = d.name.replace('.app', '').replace('.exe', '').toLowerCase();
+					var match = __.filter(players, function (v, k) {
+						return k.toLowerCase() === app;
+					});
 
-			}
-		});
-		fileStream.on('end', function () {
-			pathcb();
-		});
-	}, function (err) {
+					if (match.length) {
+						match = match[0];
+						//console.log('Found External Player: ' + app + ' in ' + d.fullParentDir);
+						extPlayers.push({
+							id: match.name,
+							type: 'external-' + match.type,
+							name: match.type,
+							path: d.fullPath
+						});
 
-		if (err) {
-			console.error(err);
-			return;
-		} else {
-			extPlayers = __.uniq(extPlayers,function(item){return JSON.stringify(item);})
-			console.log('External players Scan Finished');
-			$('#playerSelect').empty();
-			$.each(extPlayers, function (index, player) {
-				$('#playerSelect').append('<option name="'+player.name+'" value="'+player.path+'">'+player.name+'</option>')
-				if(index+1 === extPlayers.length) {
-					$("#playerSelect option[name='" + JSON.parse(localStorage.ht5Player).name + "']").attr('selected', 'selected');
+					}
+				});
+				fileStream.on('end', function () {
+					pathcb();
+				});
+				
+			}, function (err) {
+
+				if (err) {
+					console.error(err);
+					return;
+				} else {
+					extPlayers = __.uniq(extPlayers,function(item){return JSON.stringify(item);})
+					$('#playerSelect').empty();
+					$.each(extPlayers, function (index, player) {
+						$('#playerSelect').append('<option name="'+player.name+'" value="'+player.path+'">'+player.name+'</option>')
+						if(index+1 === extPlayers.length) {
+							if(localStorage.ht5Player !== null) {
+								$("#playerSelect option[name='" + JSON.parse(localStorage.ht5Player).name + "']").attr('selected', 'selected');
+							} else  {
+								$("#playerSelect option[name='Ht5streamer']").attr('selected', 'selected');
+							}
+						}
+					});
+					return;
 				}
 			});
-			return;
 		}
 	});
 }
