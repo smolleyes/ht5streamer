@@ -24,9 +24,9 @@ $(document).ready(function() {
   $(document).on("rightclick", "#left-component", function(e) {
         var text = clipboard.get('text');
         $('#custom-menu ol').empty();
-        if (text.indexOf('https://mega.co.nz') !== -1) {
+        if (text.indexOf('mega.co.nz') !== -1) {
             $('#custom-menu ol').empty().append('<li><a id="mega_link" href="#" alt="'+text+'">'+_("Open mega link")+'</a></li>');
-        } else if (text.indexOf('.torrent') !== -1){
+        } else if (text.indexOf('torrent') !== -1 && text.indexOf('magnet:?xt') === -1){
             $('#custom-menu ol').empty().append('<li><a id="torrent_link" href="#" alt="'+text+'">'+_("Open Torrent")+'</a></li>');
         } else if (text.indexOf('magnet:?xt') !== -1){
             $('#custom-menu ol').empty().append('<li><a id="magnet_link" href="#" alt="'+text+'">'+_("Open Magnet")+'</a></li>');
@@ -137,7 +137,7 @@ $(document).ready(function() {
       vlink = decodeURIComponent(vlink).replace("file://",'');
     }
     console.log(vlink);
-    getTorrent(vlink);
+    getAuthTorrent(vlink,true,false)
 		$('#custom-menu').hide();
 	});
   // open torrent magnet

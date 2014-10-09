@@ -145,12 +145,13 @@ app.updateStats = function(streamInfo) {
 			 torrentName = videoStreamer.server.index.name;
 			 try {
 				downloadedPct = (swarm.downloaded / streamInfo.server.index.length * 100).toFixed(2);
-			 } catch(err) {}
+			 } catch(err) {return;}
 			 if(parseInt(downloadedPct) >= 100){
 				clearTimeout(statsUpdater);
 				var t = _('(%s%% downloaded)',100);
 				$("#song-title").empty().text(_('Playing: ')+torrentName+" "+t);
 				$.notif({title: 'Ht5streamer:',cls:'green',icon: '&#59256;',timeout:0,content:_('Your torrent download is terminated, save it ?'),btnId:'saveTorrentBtn',btnTitle:_('Yes'),btnColor:'black',btnDisplay: 'block',updateDisplay:'none'})
+				statsUpdater = null
 			 } else {
 				var t = _('(%s%% downloaded)',downloadedPct);
 				if(upnpToggleOn) {

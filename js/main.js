@@ -1354,7 +1354,7 @@ function startPlay(media) {
 
 function launchPlay() {
 	// add link for transcoding
-	if(transcoderEnabled || currentMedia.link.indexOf('mega.co.nz') !== -1) {
+	if(transcoderEnabled || currentMedia.link.indexOf('mega.co') !== -1) {
 		var link = 'http://'+ipaddress+':8888/?file='+currentMedia.link;
 		currentMedia.link = link;
 	}
@@ -3087,9 +3087,9 @@ function startStreaming(req, res, width, height,duration) {
         var link;
         var megaSize;
         var mediaExt = currentMedia.title.split('.').slice(-1)[0];
-        var parsedLink = decodeURIComponent(url.parse(req.url).href).replace(/&amp;/g,'&');
+        var parsedLink = url.parse(req.url).href.replace(/&amp;/g,'&');
         var device = deviceType(req.headers['user-agent']);
-		
+		console.log('startstreaming parsedlink: ' + parsedLink)
 		res.writeHead(200, { // NOTE: a partial http response
 			// 'Date':date.toUTCString(),
 			'Connection': 'keep-alive',
@@ -3171,6 +3171,7 @@ function startStreaming(req, res, width, height,duration) {
         }
         // if local file
         if (playFromFile) {
+			console.log('Opening file link')
             var ffmpeg = spawnFfmpeg(link, device, '', bitrate,duration, function(code) { // exit
                 console.log('child process exited with code ' + code);
                 res.end();
@@ -3179,6 +3180,7 @@ function startStreaming(req, res, width, height,duration) {
         }
         //if mega userstorage link
         if (link.indexOf('userstorage.mega.co.nz') !== -1) {
+			console.log('Opening userstorage.mega.co.nz link')
             var newVar = currentMedia.title.split('.').slice(-1)[0];
             if ((in_array(newVar, videoArray)) && (parsedLink.indexOf('&download') === -1)) {
                 if (transcoderEnabled) {
@@ -3186,7 +3188,7 @@ function startStreaming(req, res, width, height,duration) {
                         console.log('child process exited with code ' + code);
                         res.end();
                     });
-                    megaDownload = downloadFromMega(link, megaKey, megaSize).pipe(ffmpeg.stdin);
+                    megaDownload = downloadFromMega(decodeURIComponent(link), megaKey, megaSize).pipe(ffmpeg.stdin);
                     megaDownload.on('error', function(err) {
                         console.log('ffmpeg stdin error...' + err);
                         if (err.stack.indexOf('codec') === -1) {
@@ -3207,12 +3209,13 @@ function startStreaming(req, res, width, height,duration) {
                 }
             } else {
                 console.log('fichier non video/audio ou téléchargement demandé... type:' + megaType);
-                downloadFileFromMega(megaName, link, megaKey, true, megaSize, '');
+                downloadFileFromMega(megaName, decodeURIComponent(link), megaKey, true, megaSize, '');
             }
             //normal mega link
         } else if (parsedLink.indexOf('mega.co') !== -1) {
             console.log("opening mega.co file: " + link);
-            var file = mega.file(link).loadAttributes(function(err, file) {
+            var file = mega.file(decodeURIComponent(link)).loadAttributes(function(err, file) {
+				if (err) { console.log(err)}
                 try {
                     megaSize = file.size;
                     megaName = file.name.replace(/ /g, '_');
