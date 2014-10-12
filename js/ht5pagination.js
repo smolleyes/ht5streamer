@@ -1,9 +1,9 @@
 function init_pagination(total, byPages, browse, has_more, pageNumber) {
     browse = browse;
+    if(browse === false) {
+        $("#search_results p").empty().append(_("Around %s results found", total)).show();
+    }
     if (pageNumber !== 0) {
-        if (parseInt(total) > 0) {
-            $("#search_results p").empty().append(_("Around %s results found", total)).show();
-        }
         $("#pagination").pagination({
             displayedPages: 5,
             pages: pageNumber,
