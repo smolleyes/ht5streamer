@@ -1,14 +1,6 @@
-var http = require('http');
-var fs = require('fs');
+var freeboxAvailable = false;
 
 // settings
-var confDir;
-if (process.platform === 'win32') {
-    confDir = process.env.APPDATA+'/ht5streamer';
-} else {
-    confDir = getUserHome()+'/.config/ht5streamer';
-}
-var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 var token_string = settings.airMediaToken;
 
 var APP_NAME       = 'ht5streamer';
@@ -28,7 +20,7 @@ var API = {};
 var BASE_URL = '';
 var session_token = '';
 
-$(document).ready(function(){
+function checkFreebox() {
     try {
         http.get('http://mafreebox.freebox.fr');
         console.log('freebox available, airplay enabled');
@@ -59,7 +51,7 @@ $(document).ready(function(){
             }
         });
     });
-});
+}
 
 function ask_authorization() {
     var param = {"app_id": APP_ID, "app_name": APP_NAME, "app_version": APP_VERSION, "device_name": 'pc'};
@@ -419,17 +411,10 @@ function stop_on_fbx() {
 }
 
 function saveToken() {
-    settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
     settings.airMediaToken = token_string;
-    fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-        if(err) {
-            console.log(err);
-            return;
-        } else {
-            console.log('token successfully saved to config file...');
-            login();
-        }
-    });
+    saveSettings();
+    console.log('token successfully saved to config file...');
+    login();
 }
 
 // add new download

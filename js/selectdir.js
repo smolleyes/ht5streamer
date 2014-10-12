@@ -14,9 +14,6 @@
 //~ along with this program; if not, write to the Free Software
 //~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-var fs = require('fs');
-var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-
 $(document).ready(function() {
 	$('body').css({"font" :"12px Verdana,Arial,Helvetica,sans-serif"});
 	createNodes();
@@ -25,8 +22,6 @@ $(document).ready(function() {
 });
 
 function createNodes() {
-	settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-	
 	$(function () {
 		$("#selector").jstree({
 			"plugins" : [ "themes", "json_data", "ui", "contextmenu","types","crrm" ],
@@ -128,14 +123,8 @@ function loadNodes(results){
 
 function onSelectedItemPopup(item) {
 	try {
-		settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 		settings.selectedDir = $.trim(item[0].ownerElement.innerText);
-		fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-			if(err) {
-				console.log(err);
-				return;
-			}
-		});
+		saveSettings();
 	} catch(err) {
 		console.log(err);
 	}
@@ -149,12 +138,7 @@ function onCreateItem(item) {
 			item.rslt.obj.remove();
 			settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 			settings.selectedDir="";
-			fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-				if(err) {
-					console.log(err);
-					return;
-				}
-			});
+			saveSettings();
 		} else {
 			var parent = $.trim(item.args[0].prevObject[0].innerText);
 			addCollection(name,parent,'');

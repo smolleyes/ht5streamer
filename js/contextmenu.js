@@ -59,11 +59,6 @@ $(document).ready(function() {
 				var engine='dailymotion';
 				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Copy dailymotion link")+'</a></li>');
 				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Save to playlist")+'</a></li>');
-			} else if (search_engine === 'youporn') {
-				var link = "http://www.youporn.com/watch/"+vid;
-				var engine='youporn';
-				$('#custom-menu ol').append('<li><a id="copy_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Copy youporn link")+'</a></li>');
-				$('#custom-menu ol').append('<li><a id="save_link" href="#" alt="'+vid+'::'+title+'::'+link+'::'+engine+'">'+_("Save to playlist")+'</a></li>');
 			}
 		} catch(err) {
 			console.log("can't detect link to copy..." + err);
@@ -173,7 +168,6 @@ $(document).ready(function() {
 	// save link
 	$(document).on('click','#save_link',function(e) {
 		e.preventDefault();
-		settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
 		settings.selectedDir = '';
 		var vid = $(this).attr('alt').split('::')[0];
 		var title= $(this).attr('alt').split('::')[1];
@@ -186,7 +180,7 @@ $(document).ready(function() {
               "toolbar": false
             });
             new_win.on('close', function() {
-				settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
+				settings = JSON.parse(localStorage.ht5Settings);
 				if ((settings.selectedDir === '') || (settings.selectedDir === undefined)) {
 					this.hide();
 					this.close(true);
@@ -197,12 +191,7 @@ $(document).ready(function() {
 				this.hide();
 				this.close(true);
 				settings.selectedDir = '';
-				fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-					if(err) {
-						console.log(err);
-						return;
-					}
-				});
+				saveSettings();
             });
 		$('#custom-menu').hide();
 		$('#save_link').parent().remove();

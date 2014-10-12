@@ -14,38 +14,10 @@
 //~ along with this program; if not, write to the Free Software
 //~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-var fs = require('fs');
-//localize
-var i18n = require("i18n");
-var _ = i18n.__;
-var localeList = ['en', 'fr', 'es', 'gr','it'];
-var locale = 'en';
 var db;
 // settings
 
-var confDir;
-if (process.platform === 'win32') {
-    confDir = process.env.APPDATA+'/ht5streamer';
-} else {
-    confDir = getUserHome()+'/.config/ht5streamer';
-}
-
 $(document).ready(function() {
-	var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-	// setup locale
-	i18n.configure({
-		defaultLocale: 'en',
-		locales:localeList,
-		directory: path.dirname(process.execPath) + '/locales',
-		updateFiles: true
-	});
-
-	if ($.inArray(settings.locale, localeList) >-1) {
-		locale=settings.locale;
-		i18n.setLocale(locale);
-	} else {
-		i18n.setLocale('en');
-	}
 	createRootNodes();
 });
 
@@ -69,14 +41,11 @@ function showItems(results) {
 }
 
 function onSelectedItem(data) {
-	console.log(data)
 	$(".mejs-overlay").show();
 	$(".mejs-layer").show();
 	$(".mejs-overlay-play").hide();
 	$(".mejs-overlay-loading").show();
 	var id = data.rslt.obj[0].id;
-	
-	console.log('#' +id+ " clicked class loaded = "+$('#'+id).hasClass('loaded'))
 	if(id.indexOf('upnpRootNode') !== -1 && $('#'+id).hasClass('loaded') === false) {
 		var serverId = parseInt(id.split('_')[0]);
 		$('#'+id).addClass('loaded');
@@ -115,7 +84,6 @@ function onSelectedItem(data) {
 }
 
 function renameItem(item) {
-  console.log(item);
 	var attr = item.rslt.obj[0].lastChild.attributes;
 	var old_name = item.rslt.old_name;
 	var new_name = item.rslt.new_name;
@@ -136,7 +104,6 @@ function renameItem(item) {
 function removeItem(item) {
 	var id = item.id.value;
   if (id.indexOf('_rootnode') !== -1) {
-    console.log("removing dir");
     removeDir(id.split('_rootnode')[0]);
   } else {
     removeFromDb(id);
@@ -147,7 +114,6 @@ function removeDir(name) {
   bongo.db('ht5').collection('Library').find({
     parent: name }).toArray(function(error,results) {
     if(!error) {
-      console.log(results, results.length)
       if (results.length === 0) {
         bongo.db('ht5').collection('Library').find({
           title: name }).toArray(function(error,results) {

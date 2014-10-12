@@ -14,198 +14,7 @@
 //~ along with this program; if not, write to the Free Software
 //~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-var path = require('path');
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-var util = require('util');
-var gui = require('nw.gui');
-var confWin = gui.Window.get();
-var os = require('os');
-var wrench = require('wrench');
-var nodeip = require("node-ip");
-var version = "1.8.5";
-
-//localize
-var i18n = require("i18n");
-var _ = i18n.__;
-var localeList = ['en', 'fr', 'es', 'gr','it'];
-var locale = 'en';
-var locale_changed = false;
-var shares_changed = false;
-var plugins_changed = false;
-
-var settings = {};
-var selected_interface;
-var shared_length = 0;
-var pluginsList = ['grooveshark','mega-search','songza','cpasbien','thepiratebay','omgtorrent','t411','kickass'];
-
-// settings
-var confdir;
-if (process.platform === 'win32') {
-    var cdir = process.env.APPDATA+'/ht5streamer';
-    confdir = cdir.replace(/\\/g,'//');
-} else {
-    confdir = getUserHome()+'/.config/ht5streamer';
-}
-
-try {
-    settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-    var ip = nodeip.address();
-    console.dir("Adresse ip: " +ip);
-    if ((settings.fromPopup === true) || (settings.fromPopup === true)) {
-      return;
-    }
-    if ((settings.edit === false) && (settings.fromPopup === false)) {
-      if ((settings.version === undefined) || (settings.version !== version))  {
-        settings.version = version;
-      } else if ((settings.ipaddress === '') || (settings.ipaddress !== ip)) {
-        settings.ipaddress = ip;
-      } else if (settings.init === undefined) {
-        settings.init = true;
-      } 
-      writeConf(settings);
-		} else {
-      if(settings.init === true) {
-        window.location="index.html";
-        return;
-      }
-		}
-} catch(err) {
-	
-}
-
-try {
-	settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
-	if ((settings.locale !== '') && (settings.locale !== undefined)) {
-		locale = settings.locale;
-	} else {
-		settings.locale = locale;
-	}
-}catch(err){
-	settings.locale = locale;
-}
-
-try {
-	shared_length = settings.shared_dirs.length;
-} catch(err) {
-}
-// setup locale
-i18n.configure({
-	defaultLocale: 'en',
-	locales:localeList,
-	directory: path.dirname(process.execPath) + '/locales',
-	updateFiles: true
-});
-
-if ($.inArray(settings.locale, localeList) >-1) {
-	locale=settings.locale;
-	i18n.setLocale(locale);
-} else {
-	i18n.setLocale('en');
-}
-
-var htmlConfig='<div style="height:36px;"> \
-		<label>'+_("Language:")+'</label> \
-		<select name="countries" id="countries" style="width:300px;"> \
-		  <option value="en" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag gb" data-title="England">English</option> \
-		  <option value="fr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag fr" data-title="France">French</option> \
-		  <option value="es" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag es" data-title="Spain">Spanish</option> \
-		  <option value="gr" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag gr" data-title="Greek">Greek</option> \
-		  <option value="it" data-image="images/msdropdown/icons/blank.gif" data-imagecss="flag it" data-title="Italia">Italia</option> \
-		</select> \
-    </div> \
-    <div style="height:36px;"> \
-      <label>'+_("Maximum resolution:")+'</label> \
-      <select id="resolutions_select"> \
-		    <option value = "1080p">1080p</option> \
-		    <option value = "720p">720p</option> \
-		    <option value = "480p">480p</option> \
-		    <option value = "360p">360p</option> \
-      </select> \
-    </div> \
-    <div style="height:36px;"> \
-      <label>'+_("Download directory:")+'</label> \
-      <input type="text" id="download_path"></input><button id="choose_download_dir">'+_("Select")+'</button> \
-    </div> \
-    <div> \
-			<label>'+_("Local network interface:")+'</label> \
-			<select id="interface_select"> \
-			</select> \
-    </div>\
-    <div> \
-      <p>'+_("<b><u>Gmail account (optional... used to report some errors) : </u></b>")+'</p> \
-			<label>'+_("Username: ")+'</label> \
-			<input type="text" id="gmailUser"></input> \
-      <br> \
-      <label>'+_("Password: ")+'</label> \
-			<input type="text" id="gmailPass"></input> \
-    </div>\
-    <div> \
-      <p> \
-        <b><u>'+_("Plugins choice:")+'</u></b> \
-        <br> \
-        '+_("Please read the disclaimer here : <u><a id='disclaimer' style='color:red;' href='#'>disclaimer</a></u>")+' \
-      </p> \
-      <div style="border: 1px solid black;height:34px;"> \
-        <!--<div class="ItemCheckbox left">\
-          <label for="vimeo">Vimeo</label>\
-          <input class="pluginCheckBox" type="checkbox" id="vimeo" name="vimeo">\
-        </div>-->\
-        <div class="ItemCheckbox left">\
-          <label for="songza">Songza</label>\
-          <input class="pluginCheckBox" type="checkbox" id="songza" name="songza">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="grooveshark">Grooveshark</label>\
-          <input class="pluginCheckBox" type="checkbox" id="grooveshark" name="grooveshark">\
-        </div>\
-        <div class="ItemCheckbox">\
-          <label for="mega-search">Mega-search.ws</label>\
-          <input class="pluginCheckBox" type="checkbox" id="mega-search" name="mega-search">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="omgtorrent">Cpasbien</label>\
-          <input class="pluginCheckBox" type="checkbox" id="cpasbien" name="cpasbien">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="omgtorrent">Thepiratebay</label>\
-          <input class="pluginCheckBox" type="checkbox" id="thepiratebay" name="thepiratebay">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="omgtorrent">Omgtorrent</label>\
-          <input class="pluginCheckBox" type="checkbox" id="omgtorrent" name="omgtorrent">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="t411">T411</label>\
-          <input class="pluginCheckBox" type="checkbox" id="t411" name="t411">\
-        </div>\
-        <div class="ItemCheckbox left">\
-          <label for="kickass">Kickass</label>\
-          <input class="pluginCheckBox" type="checkbox" id="kickass" name="kickass">\
-        </div>\
-      </div>\
-      <div style="clear:both;"></div> \
-    </div> \
-    <p><u><b>'+_("Default player:")+'</b></u></p> \
-    <div id="externalPlayers"> \
-		<select id="playerSelect"></select> \
-    </div> \
-    <div style="height:240px;margin-top:30px;"> \
-			<p>'+_("Add or remove directories to scan for your local library:")+'</p> \
-			<select id="shared_dir_select" multiple name="shared_dir"> \
-			</select> \
-		</div> \
-		<div id="shared_dir_controls"> \
-				<button id="add_shared_dir">'+_("Add")+'</button> \
-				<button id="remove_shared_dir" >'+_("Remove")+'</button> \
-		</div>\
-    <br\><br\> \
-    <button id="valid_config">'+_("Save")+'</button> \
-';
-
-$(document).ready(function() {
-    $('#main_config').empty().append(htmlConfig);
-    $('#version').empty().append("Version: "+version);
+function loadConfig() {
     $('#config_title').empty().append(_("Ht5streamer configuration:"));
     // start flags
     $('#download_path').val(settings.download_dir);
@@ -214,24 +23,16 @@ $(document).ready(function() {
 			locale = $(this).val();
       settings.locale = locale;
       locale_changed = true;
-      settings.edit = true;
-      if(settings.fromPopup === true) {
-          settings.locale_changed = true;
-      }
-      saveSettings();
-      confWin.reload();
+      settings.locale_changed = true;
+      setLocale();
+      saveSettings(settings);
+       loadSettingsPage(false);
 		});
     });
-    getInterfaces();
-    $("select#interface_select").change(function () {
-		$("select#interface_select option:selected").each(function () {
-				settings.interface = $(this).val();
-				getIpaddress();
-		});
-	});
     $('#valid_config').click(function(e) {
-      settings.init = true;
-      savePopConf();
+      settings.init=true;
+      saveSettings();
+      saveConf();
     });
     //resolutions select
     var selected_resolution = settings.resolution;
@@ -249,7 +50,7 @@ $(document).ready(function() {
     
     // choose download_dir
     $('#choose_download_dir').click(function() {
-	chooseDownloadDir();
+		chooseDownloadDir();
     });
     // shared dirs
     $('#add_shared_dir').click(function() {
@@ -262,14 +63,6 @@ $(document).ready(function() {
     shares_changed = true;
     settings.shares_changed = true;
     });
-    //init
-    if ((settings.interface === undefined) || (settings.interface === '')) {
-		selected_interface = '';
-		$("#interface_select").val('');
-	} else {
-		selected_interface = settings.interface;
-		$("#interface_select").val(selected_interface);
-	}
   $(document).on('change',"#sharedDirDialog",function(){
 		addDir($('#sharedDirDialog').val());
 	});
@@ -282,19 +75,6 @@ $(document).ready(function() {
 	$('#countries').val(settings.locale);
   $("#countries").msDropdown();
   
-  //gmail
-  guser = $("#gmailUser").val();
-  gpass = $("#gmailPass").val();
-  if ((settings.gmailUser === '') || (settings.gmailUser === undefined)) {
-      settings.gmailUser = '';
-  } else {
-      $("#gmailUser").val(settings.gmailUser);
-  }
-  if ((settings.gmailPass === '') || (settings.gmailPass === undefined)) {
-      settings.gmailPass = '';
-  }else {
-      $("#gmailPass").val(settings.gmailPass);
-  }
   //disclaimer
   $('#disclaimer').click(function(){
       var msg = _("The following are terms and conditions for use of Ht5streamer including all \
@@ -363,8 +143,6 @@ without notice.");
         $('input[name='+name+']').attr('checked','checked');
     });
   }
-  // init
-  initCheck();
   
   // players
   if(localStorage.ht5Player === undefined) {
@@ -377,10 +155,10 @@ without notice.");
   });
   loadPlayers();
   
-});
+}
 
 function writeConf(settings) {
-    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
+    fs.writeFile(confDir+'/ht5conf.json', JSON.stringify(settings), function(err) {
 				if(err) {
           console.log(err);
 				} else {
@@ -396,44 +174,44 @@ function getUserHome() {
 
 function initCheck() {
 	confWin.show();
-	fs.exists(confdir, function (exists) {
-		exists ? checkConf(confdir) : makeConfdir(confdir);
+	fs.exists(confDir, function (exists) {
+		exists ? checkConf(confDir) : makeConfdir(confDir);
 	});
 }
 
-function makeConfdir(confdir) {
-    mkdirp(confdir, function(err) { 
+function makeConfdir(confDir) {
+    mkdirp(confDir, function(err) { 
         if(err){
-	    console.log('can\'t create config dir '+confdir);
+	    console.log('can\'t create config dir '+confDir);
 	    return;
 	} else {
-	    console.log('Config dir '+confdir+' created successfully');
+	    console.log('Config dir '+confDir+' created successfully');
 	    checkConf();
 	}	
     });
 }
 
 function makeConfigFile() {
-    fs.writeFile(confdir+'/ht5conf.json', '{"init":false,"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false,"gmailUser":"","gmailPass":"","plugins":[]}', function(err) {
+    fs.writeFile(confDir+'/ht5conf.json', '{"init":false,"version": "'+version+'","resolution":"1080p","download_dir":"","locale":"en","edit":true,"collections":[{"name":"Library","parent":""}],"selectedDir":"","interface":"","shared_dirs":[],"fromPopup":false,"gmailUser":"","gmailPass":"","plugins":[]}', function(err) {
         if(err) {
             console.log(err);
 	    return;
         } else {
             console.log("ht5config file created!");
-            settings = JSON.parse(fs.readFileSync(confdir+'/ht5conf.json', encoding="utf-8"));
+            settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
             $('#resolutions_select').val('1080p');
         }
     });
 }
 
-function checkConf(confdir) {
+function checkConf(confDir) {
     $('#main_config').show();
-    fs.exists(confdir+'/ht5conf.json', function (exists) {
-       exists ? loadConf(confdir) : makeConfigFile(confdir);
+    fs.exists(confDir+'/ht5conf.json', function (exists) {
+       exists ? loadConf(confDir) : makeConfigFile(confDir);
     });
 }
 
-function chooseDownloadDir(confdir) {
+function chooseDownloadDir(confDir) {
     var download_dir = '';
     var chooser = $('#fileDialog');
     chooser.trigger('click');            
@@ -477,7 +255,7 @@ function addDir(dir) {
 	saveSettings();
 }
 
-function loadConf(confdir) {
+function loadConf(confDir) {
     // clear cache
     try {
 	    if (settings.edit === true) {
@@ -524,25 +302,19 @@ function getIpaddress() {
 	}
 }
 
-function savePopConf() {
-    var fromPopup = settings.fromPopup;
-    settings.edit=false;
-    settings.fromPopup = false;
+function saveConf() {
+	
+	if (settings.download_dir === '') {
+		$('#download_path').val('REQUIRED!!!').css({'color':'red'});
+		return;
+    }
+    
     var plugins_length = settings.plugins.length;
     if (settings.locale_changed) {
 		locale_changed = true;
-    settings.locale_changed = false;
+		settings.locale_changed = false;
 		settings.locale=locale;
 	}
-  //gmail
-  guser = $("#gmailUser").val();
-  gpass = $("#gmailPass").val();
-  if (settings.gmailUser === '') {
-      settings.gmailUser = guser;
-  }
-  if (settings.gmailPass === '') {
-      settings.gmailPass = gpass;
-  }
   //plugins
   var list = $('.pluginCheckBox');
   settings.plugins = [];
@@ -553,67 +325,28 @@ function savePopConf() {
       }
       //reload plugins if needed
       if (index+1 === list.length) {
-        if (fromPopup === true){
           if(settings.plugins_changed === true) {
-              settings.plugins_changed = false;
-              window.haveParent.window.settings=settings;
-              window.haveParent.window.reloadPlugins();
+              saveSettings();
+              reloadPlugins();
           }
-        }
       }
   });
   
+	if (settings.shares_changed === true) {
+		settings.shares_changed = false;
+		settings.scan_dirs = true;
+	} else {
+		settings.scan_dirs = false;
+	}
     
-    if (settings.fromPopup === true) {
-      if (settings.shares_changed === true) {
-        settings.shares_changed = false;
-        settings.scan_dirs = true;
-      } else {
-        settings.scan_dirs = false;
-      }
-    }
-  
-    if (settings.download_dir === '') {
-		$('#download_path').val('REQUIRED!!!').css({'color':'red'});
-		return;
-    }
-    var ip = nodeip.address();
-    if (settings.ipaddress !== ip) {
-      settings.ipaddress = ip;
-    }
-    fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-        if(err) {
-            console.log(err);
-        } else {
-			if (fromPopup === true){
-				if ((locale_changed === true) || (shares_changed === true)) {
-					window.haveParent.reload();
-				} else {
-					window.haveParent.window.settings=settings;
-					if (settings.shared_dirs.length !== shared_length) {
-						console.log("Updating local files list...");
-						try {
-							window.haveParent.createServer();
-						} catch(err) {};
-					}
-				}
-				confWin.hide();
-				confWin.close(true);
-			} else {
-				window.location='index.html';
-				window.window.settings=settings;
-			}
-			console.log("ht5config config updated successfully!");
-		}
-    });
-}
-
-function saveSettings() {
-	fs.writeFile(confdir+'/ht5conf.json', JSON.stringify(settings), function(err) {
-        if(err) {
-            console.log(err);
-        }
-    });
+	if (locale_changed || shares_changed || settings.scan_dirs) {
+		$('#settings').empty().slideToggle();
+		saveSettings();
+		location.reload();
+	} else {
+		$('#settings').empty().slideToggle();
+	}
+	console.log("ht5config config updated successfully!");
 }
 
 function loadPlayers() {

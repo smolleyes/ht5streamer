@@ -14,50 +14,13 @@
 //~ along with this program; if not, write to the Free Software
 //~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-var fs = require('fs');
-var path = require('path');
-//localize
-var i18n = require("i18n");
-var _ = i18n.__;
-var localeList = ['en', 'fr', 'es', 'gr','it'];
-var locale = 'en';
-var db;
-// settings
-
-var confDir;
-if (process.platform === 'win32') {
-    confDir = process.env.APPDATA+'/ht5streamer';
-} else {
-    confDir = getUserHome()+'/.config/ht5streamer';
-}
-var settings = JSON.parse(fs.readFileSync(confDir+'/ht5conf.json', encoding="utf-8"));
-var download_dir = settings.download_dir;
-var selected_resolution = settings.resolution;
 var db;
 
 $(document).ready(function() {
-	// setup locale
-	i18n.configure({
-		defaultLocale: 'en',
-		locales:localeList,
-		directory: path.dirname(process.execPath) + '/locales',
-		updateFiles: true
-	});
-
-	if ($.inArray(settings.locale, localeList) >-1) {
-		locale=settings.locale;
-		i18n.setLocale(locale);
-	} else {
-		i18n.setLocale('en');
-	}
-// load/create db
+	
 loadDb(function() {createRootNodes()});
 
 });
-
-function getUserHome() {
-  return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
-}
 
 function loadDb() {
 	bongo.db({

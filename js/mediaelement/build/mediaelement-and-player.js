@@ -2295,8 +2295,6 @@ if (typeof jQuery != 'undefined') {
 		},
 
 		hideControls: function(doAnimation) {
-			console.log("hidden mouse")
-			
 			var t = this;
 			
 			if(t.isFullScreen) {

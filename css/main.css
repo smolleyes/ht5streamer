@@ -363,10 +363,6 @@ height : calc(100% - 37px) !important;
     height:100%;
 }
 
-#items_container {
-    border: 1px solid black;
-}
-
 #nanoContent {
     position: relative;
     left:6px;
