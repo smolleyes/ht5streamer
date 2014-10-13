@@ -172,7 +172,7 @@ function launchPlay() {
 			return playUpnpRenderer(currentMedia);
 		}
 	} else {
-		var obj = settings.ht5Player;
+		var obj = JSON.parse(settings.ht5Player);
 		console.log('PLAYING in player: ' + currentMedia.link)
 		if(obj.name === 'Ht5streamer') {
 			player.setSrc(currentMedia.link);

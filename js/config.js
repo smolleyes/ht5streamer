@@ -145,12 +145,12 @@ without notice.");
   }
   
   // players
-  if(localStorage.ht5Player === undefined) {
-	localStorage.ht5Player = JSON.stringify({"name":'Ht5streamer',"path":''});
+  if(settings.ht5Player === undefined) {
+	settings.ht5Player = JSON.stringify({"name":'Ht5streamer',"path":''});
   }
   $("select#playerSelect").change(function() {
 	  $("select#playerSelect option:selected").each(function() {
-			localStorage.ht5Player = JSON.stringify({"name":$(this).attr("name"),"path":$(this).val()});
+			settings.ht5Player = JSON.stringify({"name":$(this).attr("name"),"path":$(this).val()});
 	  });
   });
   loadPlayers();
@@ -520,8 +520,8 @@ function loadPlayers() {
 					$.each(extPlayers, function (index, player) {
 						$('#playerSelect').append('<option name="'+player.name+'" value="'+player.path+'">'+player.name+'</option>')
 						if(index+1 === extPlayers.length) {
-							if(localStorage.ht5Player !== null) {
-								$("#playerSelect option[name='" + JSON.parse(localStorage.ht5Player).name + "']").attr('selected', 'selected');
+							if(settings.ht5Player !== null) {
+								$("#playerSelect option[name='" + JSON.parse(settings.ht5Player).name + "']").attr('selected', 'selected');
 							} else  {
 								$("#playerSelect option[name='Ht5streamer']").attr('selected', 'selected');
 							}
